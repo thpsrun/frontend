@@ -16,10 +16,11 @@ import { useGameLevels } from '@/hooks/useGameLevels'
 
 import { cn, slugify } from '@/utils'
 
-import type { LeaderboardRun } from '@/types/api'
+import type { LeaderboardRun, CategoryVariable } from '@/types/api'
 
 
 type CountryCode = keyof typeof flags
+type ModeType = 'per-game' | 'per-level'
 
 const getRankBackground = (place: number) => {
     if (place === 1) return "bg-yellow-500/50";
@@ -37,52 +38,27 @@ const CountryFlag = ({ countryCode }: { countryCode: CountryCode }) => {
 export const GameOverview = () => {
     // Get the game slug from the URL parameters
     const { gameSlug } = useParams<{ gameSlug: string }>();
-    if (!gameSlug) return <Navigate to='/' replace />;
-
-    // Fetch game categories from API
-    const { data: categories, isLoading: catsLoading, error: catsError } = useGameCategories({ gameId: gameSlug })
+    const safeGameSlug = gameSlug || '';
 
     // State for the current tab mode - matched to API category types
-    const [mode, setMode] = useState<'per-game' | 'per-level'>('per-game')
+    const [mode, setMode] = useState<ModeType>('per-game')
+    const [selectedCategoryId, setSelectedCategoryId] = useState('')
+    const [variableSelections, setVariableSelections] = useState<Record<string, string>>({})
+    const [selectedLevelSlug, setSelectedLevelSlug] = useState('')
+
+    // Fetch game categories from API
+    const { data: categories, isLoading: catsLoading, error: catsError } = useGameCategories({ gameId: safeGameSlug })
 
     const perGameCats = useMemo(() => (categories || []).filter(c => c.type === 'per-game'), [categories])
     const perLevelCats = useMemo(() => (categories || []).filter(c => c.type === 'per-level'), [categories])
     const catList = mode === 'per-game' ? perGameCats : perLevelCats
 
-    const [selectedCategoryId, setSelectedCategoryId] = useState('')
-    useEffect(() => { setSelectedCategoryId(catList[0]?.id || '') }, [mode, catList])
-    const selectedCategory = catList.find(c => c.id === selectedCategoryId)
+    const selectedCategory = useMemo(() => catList.find(c => c.id === selectedCategoryId), [catList, selectedCategoryId])
 
-    // Variable selections (per-game only usually)
-    const [variableSelections, setVariableSelections] = useState<Record<string, string>>({})
-    const variableList = selectedCategory?.variables || []
-
-    // Ugly useEffect to set default selections
-    useEffect(() => {
-        if (selectedCategoryId && variableList.length > 0) {
-            const defaults: Record<string, string> = {};
-            for (const v of variableList) {
-                if (v.values && v.values.length > 0) {
-                    defaults[v.id] = v.values[0].value;
-                }
-            }
-            setVariableSelections(defaults);
-        } else {
-            setVariableSelections({});
-        }
-    }, [selectedCategoryId, variableList])
+    const variableList: CategoryVariable[] = useMemo(() => selectedCategory?.variables || [], [selectedCategory])
 
     // Levels (for per-level mode)
-    const { data: levels } = useGameLevels(gameSlug, { enabled: mode === 'per-level' })
-    const [selectedLevelSlug, setSelectedLevelSlug] = useState('')
-
-    // Another ugly useEffect
-    useEffect(() => {
-        if (mode === 'per-level' && levels?.length) {
-            const first = levels[0]
-            setSelectedLevelSlug(first.slug || (first as any).id || slugify(first.name))
-        }
-    }, [mode, levels])
+    const { data: levels } = useGameLevels(safeGameSlug, { enabled: mode === 'per-level' })
 
     // Build path for per-game leaderboard categories: /categories/<game>/<base>/<varValSlug...>
     const perGamePathSegments = useMemo(() => {
@@ -104,9 +80,9 @@ export const GameOverview = () => {
 
     const { data: runs, isLoading: runsLoading, error: runsError } = useLeaderboardRuns(
         mode === 'per-game'
-            ? { gameSlug, pathSegments: perGamePathSegments }
-            : { gameSlug, pathSegments: [perLevelCategorySlug], query: { level: selectedLevelSlug } },
-        { enabled: mode === 'per-game' ? perGameReady : Boolean(perLevelCategorySlug && selectedLevelSlug) }
+            ? { gameSlug: safeGameSlug, pathSegments: perGamePathSegments }
+            : { gameSlug: safeGameSlug, pathSegments: [perLevelCategorySlug], query: { level: selectedLevelSlug } },
+        { enabled: !!safeGameSlug && (mode === 'per-game' ? perGameReady : Boolean(perLevelCategorySlug && selectedLevelSlug)) }
     )
 
     const sortedRuns: LeaderboardRun[] = useMemo(() => {
@@ -115,6 +91,35 @@ export const GameOverview = () => {
         if (hasPlaces) return runs.slice().sort((a, b) => (a.place || 99999) - (b.place || 99999))
         return runs.slice().sort((a, b) => a.times.time_secs - b.times.time_secs)
     }, [runs])
+
+    // Set default category when catList changes
+    useEffect(() => { setSelectedCategoryId(catList[0]?.id || '') }, [mode, catList])
+
+    // Set default variable selections when category changes
+    useEffect(() => {
+        if (selectedCategoryId && variableList.length > 0) {
+            const defaults: Record<string, string> = {};
+            for (const v of variableList) {
+                if (v.values && v.values.length > 0) {
+                    defaults[v.id] = v.values[0].value;
+                }
+            }
+            setVariableSelections(defaults);
+        } else {
+            setVariableSelections({});
+        }
+    }, [selectedCategoryId, variableList])
+
+    // Set default level when levels change
+    useEffect(() => {
+        if (mode === 'per-level' && levels?.length) {
+            const first = levels[0]
+            setSelectedLevelSlug(first.slug || first.id || slugify(first.name))
+        }
+    }, [mode, levels])
+
+    // Early return AFTER all hooks
+    if (!gameSlug) return <Navigate to='/' replace />;
 
     return (
         <div className="w-full flex flex-col gap-8">
@@ -173,7 +178,7 @@ export const GameOverview = () => {
                     {/* Mode + Category */}
                     <div className="flex flex-col gap-3">
                         <div className="flex flex-wrap items-center gap-4">
-                            <Tabs value={mode} onValueChange={(v) => setMode(v as any)}>
+                            <Tabs value={mode} onValueChange={(v) => setMode(v as ModeType)}>
                                 <TabsList className="h-auto flex gap-1 bg-muted/30 p-1 rounded-md">
                                     <TabsTrigger value="per-game" className="px-3 py-1 rounded-sm data-[state=active]:bg-background data-[state=active]:shadow">Full Game</TabsTrigger>
                                     <TabsTrigger value="per-level" className="px-3 py-1 rounded-sm data-[state=active]:bg-background data-[state=active]:shadow">Individual Level</TabsTrigger>
@@ -234,8 +239,8 @@ export const GameOverview = () => {
                                 <Tabs value={selectedLevelSlug} onValueChange={setSelectedLevelSlug}>
                                     <TabsList className="flex gap-1 overflow-x-auto scrollbar-thin scrollbar-thumb-muted/30 rounded-md bg-muted/20 p-1">
                                         {levels.map(l => {
-                                            const key = (l as any).id || l.slug || slugify(l.name)
-                                            const value = l.slug || (l as any).id || slugify(l.name)
+                                            const key = l.id || l.slug || slugify(l.name)
+                                            const value = l.slug || l.id || slugify(l.name)
                                             return <TabsTrigger key={key} value={value} className="whitespace-nowrap px-3 py-1 text-xs data-[state=active]:bg-background data-[state=active]:shadow">{l.name}</TabsTrigger>
                                         })}
                                     </TabsList>
@@ -251,7 +256,7 @@ export const GameOverview = () => {
                                     }).filter(Boolean).join(' / ')}</span>
                                 )}
                                 {mode === 'per-level' && selectedCategory && selectedLevelSlug && (
-                                    <span>Selected: <strong>{selectedCategory.name}</strong>{' / '}<strong>{levels?.find(l => (l.slug || (l as any).id) === selectedLevelSlug)?.name}</strong></span>
+                                    <span>Selected: <strong>{selectedCategory.name}</strong>{' / '}<strong>{levels?.find(l => (l.slug || l.id) === selectedLevelSlug)?.name}</strong></span>
                                 )}
                             </div>
                         </div>

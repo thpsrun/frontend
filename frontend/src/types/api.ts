@@ -86,7 +86,7 @@ export interface Run {
   system: System
   status: Status
   videos: Videos
-  variables: { [key: string]: any }
+  variables: { [key: string]: string }
   meta: Meta
   description?: string | null
 }
@@ -104,6 +104,7 @@ export interface CategoryVariable {
 export interface GameCategory {
   id: string
   name: string
+  slug: string
   type: 'per-game' | 'per-level'
   url: string
   hidden: boolean
@@ -140,12 +141,18 @@ export interface Record {
   players: RecordPlayer[]
 }
 
+export interface Streamer {
+  id: string
+  name: string
+  url: string
+}
+
 export interface ApiResponse {
   latest_wrs?: DetailedRun[]
   latest_pbs?: DetailedRun[]
   latest?: Run[]
   new_runs?: Run[]
   records?: Record[]
-  streamers?: any[]
-  runs?: any[]
+  streamers?: Streamer[]
+  runs?: Run[]
 }

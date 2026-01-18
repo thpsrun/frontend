@@ -49,7 +49,7 @@ const fetchGameSubcategories = async (params: UseTHPSGameSubcategoriesParams): P
   const data: GameSubcategoriesResponse = await res.json()
   // Normalize to array of { name, run_count? }
   const normalized: NormalizedSubcategoryItem[] = Array.isArray(data.subcategories)
-    ? data.subcategories.map((item: any) => {
+    ? data.subcategories.map((item: string | RawSubcategoryCountItem) => {
         if (typeof item === 'string') return { name: item }
         return { name: item.name, run_count: item.run_count }
       })

@@ -1,4 +1,4 @@
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "./ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table"
 import * as flags from "country-flag-icons/react/3x2"
 import type React from "react"
 import type { DetailedRun } from "@/types/api"
