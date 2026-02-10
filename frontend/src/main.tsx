@@ -5,8 +5,8 @@ import { Provider as JotaiProvider } from 'jotai'
 import './index.css'
 import App from './App.tsx'
 import {
-  createBrowserRouter,
-  RouterProvider,
+    createBrowserRouter,
+    RouterProvider,
 } from "react-router";
 import { MainPage } from './components/main-page.tsx'
 import { GameOverview } from './components/game-overview.tsx'
@@ -15,22 +15,22 @@ import { GameOverview } from './components/game-overview.tsx'
 const queryClient = new QueryClient()
 
 const router = createBrowserRouter([
-  {
-    path: "/",
-    Component: App,
-    children: [
-      { index: true, Component: MainPage },
-      { path: "game/:gameSlug", Component: GameOverview }
-    ]
-  },
+    {
+        path: "/",
+        Component: App,
+        children: [
+            { index: true, Component: MainPage },
+            { path: "game/:gameSlug", Component: GameOverview }
+        ]
+    },
 ]);
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <JotaiProvider>
-        <RouterProvider router={router} />
-      </JotaiProvider>
-    </QueryClientProvider>
-  </StrictMode>,
+    <StrictMode>
+        <QueryClientProvider client={queryClient}>
+            <JotaiProvider>
+                <RouterProvider router={router} />
+            </JotaiProvider>
+        </QueryClientProvider>
+    </StrictMode>,
 )

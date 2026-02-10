@@ -20,7 +20,6 @@ const fetchCategories = async (gameId: string): Promise<GameCategory[]> => {
 
 export const useGameCategories = (params: UseGameCategoriesParams, options?: QueryOptions) => {
     const enabled = !!params.gameId && (options?.enabled ?? true)
-    
     return useQuery<GameCategory[], Error>({
         queryKey: ['game-categories', params.gameId],
         queryFn: () => fetchCategories(params.gameId),
