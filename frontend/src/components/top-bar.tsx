@@ -1,6 +1,7 @@
 import { NavMenu } from "./nav-menu"
 import { Logo } from "./logo"
 import { Socials } from "./socials"
+import { AuthButton } from "./auth-button"
 
 export const TopBar = () => {
     return (
@@ -9,7 +10,10 @@ export const TopBar = () => {
                 <Logo/>
                 <NavMenu/>
             </div>
-            <Socials/>
-        </div> 
+            <div className="flex items-center space-x-4">
+                <Socials/>
+                <AuthButton/>
+            </div>
+        </div>
     )
 }
