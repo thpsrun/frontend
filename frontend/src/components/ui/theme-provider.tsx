@@ -24,7 +24,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 export function ThemeProvider({
     children,
     defaultTheme = "system",
-    storageKey = "vite-ui-theme",
+    storageKey = "thps-theme",
     ...props
 }: ThemeProviderProps) {
     const [theme, setTheme] = useState<Theme>(
@@ -33,20 +33,34 @@ export function ThemeProvider({
 
     useEffect(() => {
         const root = window.document.documentElement
+        const mediaQuery = window.matchMedia(
+            "(prefers-color-scheme: dark)",
+        )
 
-        root.classList.remove("light", "dark")
-
-        if (theme === "system") {
-            const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-                .matches
-                ? "dark"
-                : "light"
-
-            root.classList.add(systemTheme)
-            return
+        const applyTheme = () => {
+            root.classList.remove("light", "dark")
+            if (theme === "system") {
+                root.classList.add(
+                    mediaQuery.matches ? "dark" : "light",
+                )
+            } else {
+                root.classList.add(theme)
+            }
         }
 
-        root.classList.add(theme)
+        applyTheme()
+
+        // Update in real-time when the OS theme changes
+        // while the stored preference is "system"
+        if (theme === "system") {
+            mediaQuery.addEventListener("change", applyTheme)
+            return () => {
+                mediaQuery.removeEventListener(
+                    "change",
+                    applyTheme,
+                )
+            }
+        }
     }, [theme])
 
     const value = {

@@ -7,6 +7,16 @@
         <title>thps.run</title>
     </head>
     <body>
+        <script>
+            (function() {
+                var theme = localStorage.getItem("vite-ui-theme") || "dark";
+                if (theme === "system") {
+                    theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+                        ? "dark" : "light";
+                }
+                document.documentElement.classList.add(theme);
+            })();
+        </script>
         <div id="root"></div>
         <script type="module" src="/src/main.tsx"></script>
     </body>

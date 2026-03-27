@@ -1,21 +1,26 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Provider as JotaiProvider } from 'jotai'
-import './index.css'
-import App from './App.tsx'
+import { StrictMode } from "react"
+import { createRoot } from "react-dom/client"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { Provider as JotaiProvider } from "jotai"
+import "./index.css"
+import App from "./App.tsx"
 import {
     createBrowserRouter,
     RouterProvider,
 } from "react-router";
-import { MainPage } from './components/main-page.tsx'
-import { GameOverview } from './components/game-overview.tsx'
-import { LoginPage } from './components/login-page.tsx'
-import { RegisterPage } from './components/register-page.tsx'
-import { OAuthCancelledPage } from './components/oauth-cancelled-page.tsx'
-import { OAuthErrorPage } from './components/oauth-error-page.tsx'
-import { ProfileSettings } from './components/profile-settings.tsx'
-import { PlayerProfile } from './components/player-profile.tsx'
+import { MainPage } from "./components/home/main-page.tsx"
+import { GameOverview } from "./components/game/game-overview.tsx"
+import { LoginPage } from "./components/auth/login-page.tsx"
+import { RegisterPage } from "./components/auth/register-page.tsx"
+import { OAuthCancelledPage } from "./components/auth/oauth-cancelled-page.tsx"
+import { OAuthErrorPage } from "./components/auth/oauth-error-page.tsx"
+import { ProfileSettings } from "./components/profile/profile-settings.tsx"
+import { PlayerProfile } from "./components/player/player-profile.tsx"
+import { ProtectedRoute } from "./components/auth/protected-route.tsx"
+import { PrivacyPage } from "./components/legal/privacy-page.tsx"
+import { FAQPage } from "./components/legal/faq-page.tsx"
+import { ChangelogRedirect } from "./components/legal/changelog-redirect.tsx"
+import { SocialRedirect } from "./components/layout/social-redirect.tsx"
 
 const queryClient = new QueryClient()
 
@@ -25,18 +30,31 @@ const router = createBrowserRouter([
         Component: App,
         children: [
             { index: true, Component: MainPage },
-            { path: "game/:gameSlug", Component: GameOverview },
+            { path: ":gameSlug/*", Component: GameOverview },
             { path: "login", Component: LoginPage },
             { path: "register", Component: RegisterPage },
             { path: "login/cancelled", Component: OAuthCancelledPage },
             { path: "login/error", Component: OAuthErrorPage },
-            { path: "profile/settings", Component: ProfileSettings },
+            {   // Layout-only route — no path, just wraps children in auth guard
+                Component: ProtectedRoute,
+                children: [
+                    { path: "profile/settings", Component: ProfileSettings },
+                ],
+            },
             { path: "player/:playerName", Component: PlayerProfile },
+            { path: "privacy", Component: PrivacyPage },
+            { path: "faq", Component: FAQPage },
+            { path: "changelog", Component: ChangelogRedirect },
+            { path: "src", element: <SocialRedirect platform="Speedrun" /> },
+            { path: "discord", element: <SocialRedirect platform="Discord" /> },
+            { path: "bluesky", element: <SocialRedirect platform="Bluesky" /> },
+            { path: "youtube", element: <SocialRedirect platform="YouTube" /> },
+            { path: "twitch", element: <SocialRedirect platform="Twitch" /> },
         ]
     },
 ]);
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
     <StrictMode>
         <QueryClientProvider client={queryClient}>
             <JotaiProvider>
