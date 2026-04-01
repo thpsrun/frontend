@@ -41,11 +41,7 @@ interface ILDetailProps {
     lbError: Error | null | undefined
 }
 
-// ILDetail receives leaderboard data as props from
-// ILOverview (which owns the useILLeaderboard hook
-// to share data with the sidebar).
-// Variable toggles are always buttons per spec —
-// no dropdown fallback, even if a variable has 7+ values.
+// Leaderboard data comes from ILOverview (shared with sidebar).
 export const ILDetail = ({
     gameSlug,
     gameDetail,
@@ -102,6 +98,7 @@ export const ILDetail = ({
             .map((v) => v.values[0]?.slug || "")
             .filter(Boolean)
 
+        // Already on correct category with enough variable values - no redirect needed
         if (
             categorySlug === targetCat.slug
             && (vars.length === 0
@@ -220,7 +217,6 @@ export const ILDetail = ({
                 "px-4 pt-4 pb-2",
                 "flex flex-col gap-3",
             )}>
-                {/* Level dropdown */}
                 <div className="w-full max-w-xs">
                     <Select
                         value={levelSlug}
@@ -251,7 +247,6 @@ export const ILDetail = ({
                     </Select>
                 </div>
 
-                {/* Category tabs (only if 2+) */}
                 {ilCategories.length > 1 && (
                     <Tabs
                         value={categorySlug}
@@ -284,7 +279,6 @@ export const ILDetail = ({
                     </Tabs>
                 )}
 
-                {/* Variable toggles + WR History button */}
                 <div className="flex items-start gap-3">
                     <div className="flex-1">
                         {activeCategory && (
@@ -315,7 +309,6 @@ export const ILDetail = ({
                 </div>
             </div>
 
-            {/* WR History chart */}
             {showHistory && (
                 <WRHistoryChart
                     gameSlug={gameSlug}
@@ -325,7 +318,6 @@ export const ILDetail = ({
                 />
             )}
 
-            {/* Leaderboard table */}
             <div className="p-4">
                 {lbLoading && (
                     <div className="space-y-2">

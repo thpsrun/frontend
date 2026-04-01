@@ -1,21 +1,19 @@
 import { useState } from "react"
 import type { UseMutationResult } from "@tanstack/react-query"
-import type { AuthPlayer, VerifySrcRequest, SRCKeyStatusResponse } from "@/types/auth"
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-} from "@/components/ui/card"
+import type {
+    AuthPlayer, VerifySrcRequest, SRCKeyStatusResponse,
+} from "@/types/auth"
+import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ShieldCheck } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface ModerationSettingsProps {
     player: AuthPlayer
-    setSrcKey: UseMutationResult<SRCKeyStatusResponse, Error, VerifySrcRequest>
+    setSrcKey: UseMutationResult<
+        SRCKeyStatusResponse, Error, VerifySrcRequest
+    >
     deleteSrcKey: UseMutationResult<void, Error, void>
 }
 
@@ -30,7 +28,9 @@ export function ModerationSettings({
         text: string
     } | null>(null)
 
-    const handleSaveKey = async (e: React.SyntheticEvent) => {
+    const handleSaveKey = async (
+        e: React.SyntheticEvent,
+    ) => {
         e.preventDefault()
         setMessage(null)
 
@@ -40,7 +40,10 @@ export function ModerationSettings({
             const result = await setSrcKey.mutateAsync({
                 src_api_key: srcApiKey,
             })
-            setMessage({ type: "success", text: result.message })
+            setMessage({
+                type: "success",
+                text: result.message,
+            })
             setSrcApiKey("")
         } catch (err) {
             setMessage({
@@ -57,7 +60,10 @@ export function ModerationSettings({
 
         try {
             await deleteSrcKey.mutateAsync()
-            setMessage({ type: "success", text: "API key removed." })
+            setMessage({
+                type: "success",
+                text: "API key removed.",
+            })
         } catch (err) {
             setMessage({
                 type: "error",
@@ -72,103 +78,115 @@ export function ModerationSettings({
         .map((g) => g.slug.toUpperCase())
         .join(", ")
 
-    const isPending = setSrcKey.isPending || deleteSrcKey.isPending
+    const isPending = setSrcKey.isPending
+        || deleteSrcKey.isPending
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <ShieldCheck className="size-5" />
-                    Moderation
-                </CardTitle>
-                <CardDescription>
-                    Manage your Speedrun.com API key for run approvals.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <form
-                    onSubmit={handleSaveKey}
-                    className="flex flex-col gap-4"
-                >
-                    {gamesDisplay && (
-                        <p className="text-sm text-muted-foreground">
-                            You moderate: <strong>{gamesDisplay}</strong>
-                        </p>
-                    )}
+        <section className={cn(
+            "rounded-lg border border-border/40",
+            "bg-background/70 backdrop-blur-sm",
+            "shadow-sm p-5",
+        )}>
+            <h2 className="text-xl font-semibold">
+                SRC API Key
+            </h2>
+            <p className={cn(
+                "text-sm text-muted-foreground mb-4",
+            )}>
+                Manage your Speedrun.com API key for run
+                approvals.
+            </p>
+            <form
+                onSubmit={handleSaveKey}
+                className="flex flex-col gap-4"
+            >
+                {gamesDisplay && (
+                    <p className={cn(
+                        "text-sm text-muted-foreground",
+                    )}>
+                        You moderate:{" "}
+                        <strong>{gamesDisplay}</strong>
+                    </p>
+                )}
+
+                {player.has_src_key && (
+                    <AlertBanner variant="success">
+                        You already have an SRC API Key
+                        associated. <br />
+                        You can replace your key or delete
+                        it with the options below.
+                    </AlertBanner>
+                )}
+
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="src-api-key">
+                        {player.has_src_key
+                            ? "Replace API Key"
+                            : "SRC API Key"}
+                    </Label>
+                    <Input
+                        id="src-api-key"
+                        type="password"
+                        value={srcApiKey}
+                        onChange={(e) => {
+                            setSrcApiKey(e.target.value)
+                            setMessage(null)
+                        }}
+                        placeholder="Paste your API key"
+                    />
+                    <p className={cn(
+                        "text-xs text-muted-foreground",
+                    )}>
+                        Get your API key from{" "}
+                        <a
+                            href="https://www.speedrun.com/settings/api"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={cn(
+                                "underline",
+                                "hover:text-foreground",
+                            )}
+                        >
+                            speedrun.com/settings/api
+                        </a>
+                    </p>
+                </div>
+
+                {message && (
+                    <AlertBanner variant={message.type}>
+                        {message.text}
+                    </AlertBanner>
+                )}
+
+                <div className="flex gap-2">
+                    <Button
+                        type="submit"
+                        disabled={
+                            isPending
+                            || !srcApiKey.trim()
+                        }
+                    >
+                        {setSrcKey.isPending
+                            ? "Saving..."
+                            : player.has_src_key
+                                ? "Replace Key"
+                                : "Save Key"}
+                    </Button>
 
                     {player.has_src_key && (
-                        <div className="rounded-md bg-success/10 border border-success/20 px-4 py-3 text-sm text-success">
-                            You already have an SRC API Key associated. <br />
-                            You can replace your key or delete it with the options below.
-                        </div>
-                    )}
-
-                    <div className="flex flex-col gap-2">
-                        <Label htmlFor="src-api-key">
-                            {player.has_src_key
-                                ? "Replace API Key"
-                                : "SRC API Key"}
-                        </Label>
-                        <Input
-                            id="src-api-key"
-                            type="password"
-                            value={srcApiKey}
-                            onChange={(e) => {
-                                setSrcApiKey(e.target.value)
-                                setMessage(null)
-                            }}
-                            placeholder="Paste your API key"
-                        />
-                        <p className="text-xs text-muted-foreground">
-                            Get your API key from{" "}
-                            <a
-                                href="https://www.speedrun.com/settings/api"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="underline hover:text-foreground"
-                            >
-                                speedrun.com/settings/api
-                            </a>
-                        </p>
-                    </div>
-
-                    {message && (
-                        <div className={`rounded-md px-4 py-3 text-sm ${
-                            message.type === "success"
-                                ? "bg-success/10 border border-success/20 text-success"
-                                : "bg-destructive/10 border border-destructive/20 text-destructive"
-                        }`}>
-                            {message.text}
-                        </div>
-                    )}
-
-                    <div className="flex gap-2">
                         <Button
-                            type="submit"
-                            disabled={isPending || !srcApiKey.trim()}
+                            type="button"
+                            variant="destructive"
+                            disabled={isPending}
+                            onClick={handleRemoveKey}
                         >
-                            {setSrcKey.isPending
-                                ? "Saving..."
-                                : player.has_src_key
-                                    ? "Replace Key"
-                                    : "Save Key"}
+                            {deleteSrcKey.isPending
+                                ? "Removing..."
+                                : "Remove Key"}
                         </Button>
-
-                        {player.has_src_key && (
-                            <Button
-                                type="button"
-                                variant="destructive"
-                                disabled={isPending}
-                                onClick={handleRemoveKey}
-                            >
-                                {deleteSrcKey.isPending
-                                    ? "Removing..."
-                                    : "Remove Key"}
-                            </Button>
-                        )}
-                    </div>
-                </form>
-            </CardContent>
-        </Card>
+                    )}
+                </div>
+            </form>
+        </section>
     )
 }

@@ -70,7 +70,7 @@ function NavItemList({
             {items.map(item => {
                 const hasChildren = item.children.length > 0
 
-                // Group header — children but no URL
+                // Group header - children but no URL
                 if (hasChildren && !item.url) {
                     return (
                         <li
@@ -94,7 +94,7 @@ function NavItemList({
                     )
                 }
 
-                // Flyout trigger — has URL and children
+                // Flyout trigger - has URL and children
                 if (hasChildren) {
                     const isActive =
                         activeFlyout?.name === item.name

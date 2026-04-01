@@ -8,7 +8,7 @@ import {
     FaBluesky,
     FaDiscord,
 } from "react-icons/fa6"
-import { Cloud, Play, User } from "lucide-react"
+import { Cloud, Loader2, Play, User } from "lucide-react"
 
 import {
     Table,
@@ -47,10 +47,11 @@ import {
 import type { PlayerRun, Game } from "@/types/api"
 
 
+// Base points for 1st place; points above this are streak bonuses
 const FG_BASE_POINTS = 1000
 const IL_BASE_POINTS = 250
 
-type SortMode = "latest" | "chronological"
+type SortMode = "latest" | "chronological" | "all"
 
 function groupRunsByGame(runs: PlayerRun[]): Map<string, PlayerRun[]> {
     const grouped = new Map<string, PlayerRun[]>()
@@ -66,7 +67,8 @@ function groupRunsByGame(runs: PlayerRun[]): Map<string, PlayerRun[]> {
     return grouped
 }
 
-function buildRunLeaderboardPath(r: PlayerRun): string {
+function buildRunLeaderboardPath(r: PlayerRun): string | null {
+    if (!r.category) return null
     if (r.level) {
         // IL: /:gameSlug/ils/:levelSlug/:categorySlug/:valueSlugs
         return `/${[
@@ -165,7 +167,7 @@ function RunsColumn({
 }) {
     const grouped = useMemo(() => {
         const byGame = groupRunsByGame(runs)
-        if (sortMode === "chronological" && games) {
+        if (sortMode === "chronological" && games && games.length > 0) {
             const gameOrder = new Map(
                 games.map((g, i) => [g.slug, i]),
             )
@@ -241,7 +243,8 @@ function RunsColumn({
                                 const relativeDate = r.date
                                     ? timeAgo(r.date)
                                     : ""
-                                const categoryText = r.subcategory
+                                const categoryText = r.subcategory ?? ""
+                                // Parse "Category (Variable)" format from API
                                 const parenMatch = categoryText.match(
                                     /^(.+)\s+\(([^)]+)\)$/,
                                 )
@@ -262,17 +265,23 @@ function RunsColumn({
                                             className="text-sm py-1
                                                 overflow-hidden"
                                         >
-                                            <Link
-                                                to={leaderboardPath}
-                                                className="hover:underline
-                                                    text-link"
-                                            >
+                                            {leaderboardPath ? (
+                                                <Link
+                                                    to={leaderboardPath}
+                                                    className="hover:underline
+                                                        text-link"
+                                                >
+                                                    <div className="truncate">
+                                                        {parenMatch
+                                                            ? parenMatch[1]
+                                                            : categoryText}
+                                                    </div>
+                                                </Link>
+                                            ) : (
                                                 <div className="truncate">
-                                                    {parenMatch
-                                                        ? parenMatch[1]
-                                                        : categoryText}
+                                                    {categoryText || "-"}
                                                 </div>
-                                            </Link>
+                                            )}
                                             {parenMatch && (
                                                 <div className="truncate
                                                     text-xs
@@ -283,18 +292,26 @@ function RunsColumn({
                                             )}
                                         </TableCell>
                                         <TableCell className="text-center">
-                                            <div
-                                                className={cn(
-                                                    "flex items-center justify-center",
-                                                    "w-8 h-8 rounded-full text-center",
-                                                    "text-xs font-semibold mx-auto",
-                                                    getRankBackground(
-                                                        r.place,
-                                                    ),
-                                                )}
-                                            >
-                                                {r.place}
-                                            </div>
+                                            {r.obsolete ? (
+                                                <span className="text-xs
+                                                    text-muted-foreground"
+                                                >
+                                                    -
+                                                </span>
+                                            ) : (
+                                                <div
+                                                    className={cn(
+                                                        "flex items-center justify-center",
+                                                        "w-8 h-8 rounded-full text-center",
+                                                        "text-xs font-semibold mx-auto",
+                                                        getRankBackground(
+                                                            r.place,
+                                                        ),
+                                                    )}
+                                                >
+                                                    {r.place}
+                                                </div>
+                                            )}
                                         </TableCell>
                                         <TableCell
                                             className="text-center font-mono
@@ -331,28 +348,42 @@ function RunsColumn({
                                             "tabular-nums tracking-tight",
                                             "text-sm hidden sm:table-cell",
                                         )}>
-                                            {r.points}
-                                            {(() => {
-                                                const base = r.level === null
-                                                    ? FG_BASE_POINTS
-                                                    : IL_BASE_POINTS
-                                                const bonus = r.points - base
-                                                if (bonus <= 0) return null
-                                                return (
-                                                    <sup
-                                                        className={cn(
-                                                            "text-[0.6em]",
-                                                            "text-muted-foreground",
-                                                            "cursor-help ml-0.5",
-                                                        )}
-                                                        title={
-                                                            `Streak Bonus: ${bonus} points`
+                                            {r.obsolete ? (
+                                                <span className="text-xs
+                                                    text-muted-foreground"
+                                                >
+                                                    -
+                                                </span>
+                                            ) : (
+                                                <>
+                                                    {r.points}
+                                                    {(() => {
+                                                        const base =
+                                                            r.level === null
+                                                                ? FG_BASE_POINTS
+                                                                : IL_BASE_POINTS
+                                                        const bonus =
+                                                            r.points - base
+                                                        if (bonus <= 0) {
+                                                            return null
                                                         }
-                                                    >
-                                                        †
-                                                    </sup>
-                                                )
-                                            })()}
+                                                        return (
+                                                            <sup
+                                                                className={cn(
+                                                                    "text-[0.6em]",
+                                                                    "text-muted-foreground",
+                                                                    "cursor-help ml-0.5",
+                                                                )}
+                                                                title={
+                                                                    `Streak Bonus: ${bonus} points`
+                                                                }
+                                                            >
+                                                                †
+                                                            </sup>
+                                                        )
+                                                    })()}
+                                                </>
+                                            )}
                                         </TableCell>
                                         <TableCell className="text-center">
                                             <div className="inline-flex
@@ -444,6 +475,15 @@ export function PlayerProfile() {
     const [ilSort, setIlSort] = useState<SortMode>("latest")
     const [activeTab, setActiveTab] = useState("fg")
 
+    const showObsolete = fgSort === "all" || ilSort === "all"
+    const {
+        data: obsoleteProfile,
+        isFetching: isObsoleteFetching,
+    } = usePlayerProfile(playerName || "", {
+        includeObsolete: true,
+        enabled: showObsolete,
+    })
+
     const placements = useMemo(() => {
         if (!profile) return { first: 0, second: 0, third: 0, total: 0 }
         const allRuns = [...profile.fg, ...profile.il]
@@ -491,8 +531,12 @@ export function PlayerProfile() {
     const displayName = profile.nickname || profile.name
     const totalPoints =
         (profile.stats?.fg_points ?? 0) + (profile.stats?.il_points ?? 0)
-    const hasFG = profile.fg.length > 0
-    const hasIL = profile.il.length > 0
+    const fgRuns = fgSort === "all" && obsoleteProfile
+        ? obsoleteProfile.fg : profile.fg
+    const ilRuns = ilSort === "all" && obsoleteProfile
+        ? obsoleteProfile.il : profile.il
+    const hasFG = fgRuns.length > 0
+    const hasIL = ilRuns.length > 0
 
     return (
         <div className="w-full flex flex-col lg:flex-row gap-6">
@@ -541,7 +585,11 @@ export function PlayerProfile() {
                                 />
                             </span>
                         )}
-                        <h1 className="text-xl font-bold">
+                        <h1
+                            className="text-xl font-bold"
+                            title={profile.nickname
+                                ? profile.name : undefined}
+                        >
                             {displayName}
                         </h1>
                     </div>
@@ -825,24 +873,52 @@ export function PlayerProfile() {
                                         <SelectItem value="chronological">
                                             Chronological
                                         </SelectItem>
+                                        <SelectItem value="all">
+                                            All Runs
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
-                            <TabsContent value="fg" className="mt-0">
-                                <RunsColumn
-                                    runs={profile.fg}
-                                    games={games}
-                                    sortMode={fgSort}
-                                />
-                            </TabsContent>
-                            <TabsContent value="il" className="mt-0">
-                                <RunsColumn
-                                    runs={profile.il}
-                                    games={games}
-                                    sortMode={ilSort}
-                                />
-                            </TabsContent>
+                            <div className="relative">
+                                {showObsolete && isObsoleteFetching && (
+                                    <div className="absolute inset-0
+                                        bg-background/80 z-10
+                                        flex items-center justify-center"
+                                    >
+                                        <div className="flex items-center
+                                            gap-2 text-sm
+                                            text-muted-foreground"
+                                        >
+                                            <Loader2
+                                                size={16}
+                                                className="animate-spin"
+                                            />
+                                            Loading...
+                                        </div>
+                                    </div>
+                                )}
+                                <TabsContent
+                                    value="fg"
+                                    className="mt-0"
+                                >
+                                    <RunsColumn
+                                        runs={fgRuns}
+                                        games={games}
+                                        sortMode={fgSort}
+                                    />
+                                </TabsContent>
+                                <TabsContent
+                                    value="il"
+                                    className="mt-0"
+                                >
+                                    <RunsColumn
+                                        runs={ilRuns}
+                                        games={games}
+                                        sortMode={ilSort}
+                                    />
+                                </TabsContent>
+                            </div>
                         </Tabs>
                     </div>
                 ) : (

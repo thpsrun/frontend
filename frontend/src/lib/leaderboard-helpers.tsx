@@ -8,8 +8,29 @@ import type {
     CategoryVariable,
 } from "@/types/api"
 
+import traFlag from "@/assets/flags/tra.svg"
+import enbyFlag from "@/assets/flags/enby.svg"
+import priFlag from "@/assets/flags/pri.svg"
+import eskiFlag from "@/assets/flags/es-ki.svg"
+import gbEngFlag from "@/assets/flags/gb-eng.svg"
+import gbNirFlag from "@/assets/flags/gb-nir.png"
+import gbSctFlag from "@/assets/flags/gb-sct.svg"
+import gbWlsFlag from "@/assets/flags/gb-wls.svg"
+import vhFlag from "@/assets/flags/vh.png"
 
-export type CountryCode = keyof typeof flags
+const customFlags: Record<string, string> = {
+    TRA: traFlag,
+    ENBY: enbyFlag,
+    PRI: priFlag,
+    "ES-KI": eskiFlag,
+    "GB-ENG": gbEngFlag,
+    "GB-NIR": gbNirFlag,
+    "GB-SCT": gbSctFlag,
+    "GB-WLS": gbWlsFlag,
+    VH: vhFlag,
+}
+
+export type CountryCode = keyof typeof flags | string
 
 export const getRankBackground = (place: number) => {
     if (place === 1) return "bg-yellow-500/50"
@@ -19,24 +40,37 @@ export const getRankBackground = (place: number) => {
 }
 
 export const CountryFlag = (
-    { countryCode, title }: {
+    { countryCode, title, className }: {
         countryCode: CountryCode;
         title?: string;
+        className?: string;
     },
 ) => {
-    const FlagIcon =
-        flags[countryCode.toUpperCase() as CountryCode]
+    const code = countryCode.toUpperCase()
+    const classes = className ?? "w-7 pr-[5px] inline"
+    const customSrc = customFlags[code]
+    if (customSrc) {
+        return (
+            <img
+                src={customSrc}
+                alt={title ?? code}
+                title={title}
+                className={classes}
+            />
+        )
+    }
+    const FlagIcon = flags[code as keyof typeof flags]
     if (!FlagIcon) return null
     return (
         <FlagIcon
-            className="w-7 pr-[5px] inline"
+            className={classes}
             title={title}
         />
     )
 }
 
 export const formatLongDate = (
-    dateStr: string,
+    dateStr: string | null,
 ): string => {
     if (!dateStr) return ""
     return new Date(dateStr).toLocaleDateString(
@@ -103,7 +137,6 @@ export const getApplicableVariables = (
     )
 }
 
-/** Build a URL path to a specific leaderboard. */
 export const buildLeaderboardPath = (
     gameSlug: string,
     categorySlug: string,

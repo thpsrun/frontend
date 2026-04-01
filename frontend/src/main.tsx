@@ -17,6 +17,8 @@ import { OAuthErrorPage } from "./components/auth/oauth-error-page.tsx"
 import { ProfileSettings } from "./components/profile/profile-settings.tsx"
 import { PlayerProfile } from "./components/player/player-profile.tsx"
 import { ProtectedRoute } from "./components/auth/protected-route.tsx"
+import { SubmissionsHub } from "./components/submissions/submissions-hub.tsx"
+import { AdminHub } from "./components/admin/admin-hub.tsx"
 import { PrivacyPage } from "./components/legal/privacy-page.tsx"
 import { FAQPage } from "./components/legal/faq-page.tsx"
 import { ChangelogRedirect } from "./components/legal/changelog-redirect.tsx"
@@ -35,10 +37,12 @@ const router = createBrowserRouter([
             { path: "register", Component: RegisterPage },
             { path: "login/cancelled", Component: OAuthCancelledPage },
             { path: "login/error", Component: OAuthErrorPage },
-            {   // Layout-only route — no path, just wraps children in auth guard
+            {   // Layout-only route - no path, just wraps children in auth guard
                 Component: ProtectedRoute,
                 children: [
                     { path: "profile/settings", Component: ProfileSettings },
+                    { path: "submissions", Component: SubmissionsHub },
+                    { path: "admin", Component: AdminHub },
                 ],
             },
             { path: "player/:playerName", Component: PlayerProfile },

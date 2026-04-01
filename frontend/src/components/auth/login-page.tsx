@@ -3,11 +3,11 @@ import { useNavigate, Navigate, Link } from "react-router"
 import { useAuth } from "@/hooks/auth/useAuth"
 import { OAUTH_BASE_URL } from "@/constants"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-// Login flow: credentials -> optional TOTP -> optional email verification
 type LoginStep = "login" | "totp" | "email-verification"
 
 export function LoginPage() {
@@ -73,7 +73,7 @@ export function LoginPage() {
 
     return (
         <div className="flex justify-center pt-12">
-            <Card className="w-full max-w-[400px]">
+            <Card className="w-full max-w-100">
                 <CardHeader>
                     <CardTitle className="text-xl">
                         {titles[step]}
@@ -81,9 +81,9 @@ export function LoginPage() {
                 </CardHeader>
                 <CardContent className="flex flex-col gap-6">
                     {error && (
-                        <div className="rounded-md bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
+                        <AlertBanner variant="error">
                             {error}
-                        </div>
+                        </AlertBanner>
                     )}
 
                     {step === "email-verification" ? (
@@ -175,16 +175,6 @@ export function LoginPage() {
                                 </Button>
                             </form>
 
-                            <div className="relative flex items-center">
-                                <div className="flex-1 border-t border-border" />
-                                <span className="px-3 text-xs text-muted-foreground">or</span>
-                                <div className="flex-1 border-t border-border" />
-                            </div>
-
-                            <Button variant="outline" disabled>
-                                Passkeys (Coming Soon)
-                            </Button>
-
                             <div className="flex flex-col gap-2">
                                 <Button
                                     variant="outline"
@@ -205,7 +195,7 @@ export function LoginPage() {
                             </div>
 
                             <p className="text-center text-sm text-muted-foreground">
-                                Don&apos;t have an account?{" "}
+                                Don't have an account?{" "}
                                 <Link
                                     to="/register"
                                     className="text-foreground underline underline-offset-4 hover:text-primary"

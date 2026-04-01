@@ -7,6 +7,7 @@ import { useGameGroupSpans, PlayerCell } from "@/lib/home-table-helpers"
 import type React from "react"
 import type { LatestRun } from "@/types/api"
 
+// Display name overrides for THPS remake slugs (e.g. thps12 -> THPS1+2)
 const DISPLAY_NAME_OVERRIDES: Record<string, string> = {
     "thps12": "THPS1+2",
     "thps12ce": "THPS1+2CE",
@@ -35,9 +36,9 @@ export const LatestRuns: React.FC<LatestRunsProps> = ({ title, data }) => {
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="w-[100px]">Game</TableHead>
+                        <TableHead className="w-25">Game</TableHead>
                         <TableHead>Category</TableHead>
-                        <TableHead className="w-[300px]">Player</TableHead>
+                        <TableHead className="w-75">Player</TableHead>
                         <TableHead>Time</TableHead>
                     </TableRow>
                 </TableHeader>

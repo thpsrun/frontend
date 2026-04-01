@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600">
+  <!-- Rainbow stripes background -->
+  <rect y="0" width="900" height="100" fill="#E40303"/>
+  <rect y="100" width="900" height="100" fill="#FF8C00"/>
+  <rect y="200" width="900" height="100" fill="#FFED00"/>
+  <rect y="300" width="900" height="100" fill="#008026"/>
+  <rect y="400" width="900" height="100" fill="#004DFF"/>
+  <rect y="500" width="900" height="100" fill="#750787"/>
+  <!-- Progress chevron -->
+  <polygon points="0,0 0,600 180,600 300,300 180,0" fill="#000000"/>
+  <polygon points="0,0 0,600 135,600 255,300 135,0" fill="#784F17"/>
+  <polygon points="0,0 0,600 90,600 210,300 90,0" fill="#5BCEFA"/>
+  <polygon points="0,0 0,600 45,600 165,300 45,0" fill="#F5A9B8"/>
+  <polygon points="0,0 0,600 0,600 120,300 0,0" fill="#FFFFFF"/>
+</svg>

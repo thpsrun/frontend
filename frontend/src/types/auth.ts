@@ -1,4 +1,3 @@
-// Response from GET /api/v1/auth/me
 export interface AuthPlayer {
     player_id: string
     name: string
@@ -10,25 +9,19 @@ export interface AuthPlayer {
     twitter: string | null
     bluesky: string | null
     discord: string | null
+    ex_stream: boolean
     pfp: string | null
     is_claimed: boolean
     username: string
-    is_moderator: boolean
     has_src_key: boolean
     moderated_games: ModeratedGame[]
+    is_superuser: boolean
 }
 
-// Request types
 export interface VerifySrcRequest {
     src_api_key: string
 }
 
-export interface VerifySrcResponse {
-    player_id: string
-    player_name: string
-}
-
-// Moderation types
 export interface ModeratedGame {
     id: string
     name: string
@@ -41,6 +34,8 @@ export interface SRCKeyStatusResponse {
 }
 
 export interface RegisterRequest {
+    src_api_key: string
+    save_key?: boolean
     username: string
     email: string
     password1: string
@@ -58,13 +53,11 @@ export interface LoginRequest {
     password: string
 }
 
-// Custom endpoint error shape (/api/v1/auth/)
 export interface AuthError {
     error: string
     details: Record<string, string> | null
 }
 
-// Allauth response shapes
 export interface AllauthUser {
     id: number
     username: string
@@ -96,13 +89,11 @@ export interface AllauthErrorResponse {
     errors: AllauthError[]
 }
 
-// Country option from GET /api/v1/auth/countries
 export interface Country {
     id: string
     name: string
 }
 
-// Profile update request - all fields optional (PATCH /api/v1/auth/me)
 export interface UpdateProfileRequest {
     name?: string
     nickname?: string | null
@@ -113,20 +104,18 @@ export interface UpdateProfileRequest {
     twitter?: string | null
     bluesky?: string | null
     discord?: string | null
+    ex_stream?: boolean
 }
 
-// Password change request (allauth)
 export interface ChangePasswordRequest {
     current_password: string
     new_password: string
 }
 
-// PFP upload response
 export interface PfpResponse {
     pfp: string
 }
 
-// Normalized session state used by useAuth
 export interface SessionState {
     isAuthenticated: boolean
     user?: AllauthUser

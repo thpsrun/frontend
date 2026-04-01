@@ -1,11 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { API_BASE_URL, ALLAUTH_API_URL } from "@/constants"
+import {
+    getCsrfToken,
+    mutationHeaders,
+    handleApiError,
+} from "@/lib/api"
 import type {
     AuthPlayer,
     LoginRequest,
     RegisterRequest,
     VerifySrcRequest,
-    VerifySrcResponse,
     RegisterResponse,
     SessionState,
     AllauthSessionResponse,
@@ -16,39 +20,7 @@ import type {
     SRCKeyStatusResponse,
 } from "@/types/auth"
 
-// Django CSRF double-submit pattern: read token from cookie, send back in header
-function getCsrfToken(): string {
-    const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]*)/)
-    return match ? decodeURIComponent(match[1]) : ""
-}
-
-function mutationHeaders(): HeadersInit {
-    return {
-        "Content-Type": "application/json",
-        "X-CSRFToken": getCsrfToken(),
-    }
-}
-
-// Shared error handler for API responses. Handles rate limiting (429),
-// custom endpoint errors ({ error }), and allauth errors ({ errors[] }).
-async function handleApiError(
-    res: Response,
-    fallbackMsg: string,
-): Promise<never> {
-    if (res.status === 429) {
-        throw new Error("Too many attempts. Please wait and try again.")
-    }
-    const body = await res.json().catch(() => null)
-    if (body?.error) {
-        throw new Error(body.error)
-    }
-    if (body?.errors?.length) {
-        throw new Error(body.errors[0].message)
-    }
-    throw new Error(`${fallbackMsg}: ${res.status}`)
-}
-
-// Checks the current session and helps normalize the HTTP 200 and 401 requests.
+// Returns typed SessionState for both authenticated (200) and unauthenticated (401) responses.
 async function checkSession(): Promise<SessionState> {
     const res = await fetch(`${ALLAUTH_API_URL}/auth/session`, {
         credentials: "include",
@@ -132,7 +104,7 @@ async function loginFn(data: LoginRequest): Promise<LoginResult> {
         throw new Error("Invalid credentials. Please try again.")
     }
 
-    await handleApiError(res, "Login failed")
+    return handleApiError(res, "Login failed")
 }
 
 async function submitTotpFn(code: string): Promise<void> {
@@ -165,20 +137,6 @@ async function logoutFn(): Promise<void> {
     }
 }
 
-async function verifySrcFn(
-    data: VerifySrcRequest,
-): Promise<VerifySrcResponse> {
-    const res = await fetch(`${API_BASE_URL}/auth/verify-src`, {
-        method: "POST",
-        credentials: "include",
-        headers: mutationHeaders(),
-        body: JSON.stringify(data),
-    })
-
-    if (!res.ok) await handleApiError(res, "Verification failed")
-    return res.json()
-}
-
 async function registerFn(
     data: RegisterRequest,
 ): Promise<RegisterResponse> {
@@ -189,15 +147,7 @@ async function registerFn(
         body: JSON.stringify(data),
     })
 
-    if (!res.ok) {
-        if (res.status === 403) {
-            throw new Error(
-                "SRC verification expired. Please verify your API key again.",
-            )
-        }
-        await handleApiError(res, "Registration failed")
-    }
-
+    if (!res.ok) await handleApiError(res, "Registration failed")
     return res.json()
 }
 
@@ -352,10 +302,6 @@ export function useAuth() {
         onSuccess: () => invalidateAuth(),
     })
 
-    const verifySrc = useMutation({
-        mutationFn: verifySrcFn,
-    })
-
     const register = useMutation({
         mutationFn: registerFn,
         onSuccess: () => invalidateAuth(),
@@ -416,7 +362,6 @@ export function useAuth() {
         login,
         submitTotp,
         logout,
-        verifySrc,
         register,
         updateProfile,
         uploadPfp,

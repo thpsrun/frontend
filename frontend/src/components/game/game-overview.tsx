@@ -37,9 +37,9 @@ export const GameOverview = () => {
     const navigate = useNavigate()
     const safeGameSlug = gameSlug || ""
 
-    // URL format:
-    //   /:gameSlug/:categorySlug/:val1/:val2  (full-game)
-    //   /:gameSlug/ils/:levelSlug/:catSlug/:val1  (ILs)
+    // URLs are formatted based on the type of run it is:
+    // - /:gameSlug/:categorySlug/:val1/:val2  (full-game)
+    // - /:gameSlug/ils/:levelSlug/:catSlug/:val1  (ILs)
     const segments = useMemo(
         () => (splat || "")
             .split("/")
@@ -60,7 +60,6 @@ export const GameOverview = () => {
         [segments, isILView],
     )
 
-    // ---- Data hooks ----
     const {
         data: gameDetail,
         isLoading: gameLoading,
@@ -94,7 +93,6 @@ export const GameOverview = () => {
             [categories, categorySlug],
         )
 
-    // Variable groups applicable to the active category
     const applicableVariables = useMemo(
         () => activeCategory
             ? getApplicableVariables(activeCategory)
@@ -111,16 +109,18 @@ export const GameOverview = () => {
     const hasLevels = (gameDetail?.levels?.length ?? 0) > 0
     const [showHistory, setShowHistory] = useState(false)
 
-    // Redirect /:gameSlug/ils back to /:gameSlug when
-    // the game has no individual levels.
+    // Redirects /:gameSlug/ils back to /:gameSlug when
+    // the game has no individual levels. Sometimes this happens
+    // with games like THP8.
     useEffect(() => {
         if (isILView && !gameLoading && gameDetail && !hasLevels) {
             navigate(`/${safeGameSlug}`, { replace: true })
         }
     }, [isILView, gameLoading, gameDetail, hasLevels, safeGameSlug, navigate])
 
-    // Redirect /:gameSlug to /:gameSlug/ils when the game
-    // has no full-game categories but does have levels.
+    // The inverse of the above function - /:gameSlug to /:gameSlug/ils when
+    // game has no full-game categories, but it does have ILs. THPS3+4CE is
+    // one example of this.
     useEffect(() => {
         if (
             !isILView
@@ -136,11 +136,7 @@ export const GameOverview = () => {
         categories, hasLevels, safeGameSlug, navigate,
     ])
 
-    // ---- Default redirect ----
-    // Redirect when: no category selected, OR category
-    // has variables but URL is missing value slugs.
-    // Skip entirely when in IL view — ILOverview handles
-    // its own redirects.
+    // Default redirect when category or required variable value slugs are missing from URL
     useEffect(() => {
         if (isILView) return
         if (categories.length === 0) return
@@ -157,7 +153,6 @@ export const GameOverview = () => {
             .map((v) => v.values[0]?.slug || "")
             .filter(Boolean)
 
-        // Already has the right slug segments — skip
         if (
             categorySlug === targetCat.slug
             && (vars.length === 0
@@ -176,7 +171,6 @@ export const GameOverview = () => {
         valueSlugs, safeGameSlug, navigate,
     ])
 
-    // ---- Navigation handlers ----
     const handleCategoryChange = (
         newCategorySlug: string,
     ) => {
@@ -199,9 +193,7 @@ export const GameOverview = () => {
         navigate(path)
     }
 
-    // Rebuild the full values array: replace the changed
-    // group's slug, preserve existing selections for other
-    // groups, fall back to each variable's first value.
+    // Replace one variable value by index; preserve current or default for the rest
     const handleValueChange = (
         groupIndex: number,
         newValueSlug: string,
@@ -224,10 +216,8 @@ export const GameOverview = () => {
         navigate(path)
     }
 
-    // Early return AFTER all hooks
     if (!gameSlug) return <Navigate to="/" replace />
 
-    // Loading spinner before redirect completes
     if (!categorySlug && !isILView) {
         return (
             <div className="flex items-center justify-center p-12">
@@ -249,9 +239,7 @@ export const GameOverview = () => {
                 />
             ) : (
             <>
-            {/* ---------- Main area ---------- */}
             <div className="flex-1 flex flex-col gap-6">
-                {/* Category tabs */}
                 <div className={cn(
                     "rounded-lg border border-border/40",
                     "bg-background/70 backdrop-blur-sm",
@@ -262,7 +250,6 @@ export const GameOverview = () => {
                         "px-4 pt-4 pb-2",
                         "flex flex-col gap-3",
                     )}>
-                        {/* Category row */}
                         <Tabs
                             value={categorySlug}
                             onValueChange={
@@ -300,7 +287,6 @@ export const GameOverview = () => {
                             </TabsList>
                         </Tabs>
 
-                        {/* Variable selectors + WR History button */}
                         <div className="flex items-start gap-3">
                             <div className="flex-1">
                                 {activeCategory && (
@@ -334,7 +320,6 @@ export const GameOverview = () => {
                         </div>
                     </div>
 
-                    {/* WR History chart */}
                     {showHistory && (
                         <WRHistoryChart
                             gameSlug={safeGameSlug}
@@ -343,7 +328,6 @@ export const GameOverview = () => {
                         />
                     )}
 
-                    {/* Leaderboard table */}
                     <div className="p-4">
                         {lbLoading && (
                             <div className="space-y-2">
@@ -376,7 +360,6 @@ export const GameOverview = () => {
                 </div>
             </div>
 
-            {/* ---------- Right sidebar ---------- */}
             <GameSidebar
                 gameSlug={safeGameSlug}
                 gameDetail={gameDetail}

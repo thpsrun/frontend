@@ -26,7 +26,7 @@ interface ILOverviewProps {
  * also renders the shared GameSidebar with IL stats.
  *
  * Returns a Fragment (<>) containing the main area div
- * and the sidebar div — these become direct children of
+ * and the sidebar div - these become direct children of
  * the flex container in game-overview.tsx.
  */
 export const ILOverview = ({
@@ -175,7 +175,6 @@ export const ILOverview = ({
 
     return (
         <>
-            {/* Main area */}
             <div className="flex-1 flex flex-col gap-6">
                 {levelSlug ? (
                     <ILDetail
@@ -190,7 +189,6 @@ export const ILOverview = ({
                     />
                 ) : (
                     <>
-                        {/* Filter panel */}
                         {hasFilters && !gameLoading && (
                             <ILFilterPanel
                                 ilCategories={
@@ -234,7 +232,6 @@ export const ILOverview = ({
                 )}
             </div>
 
-            {/* Sidebar */}
             <GameSidebar
                 gameSlug={gameSlug}
                 gameDetail={gameDetail}

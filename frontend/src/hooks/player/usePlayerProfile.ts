@@ -17,9 +17,15 @@ class PlayerNotFoundError extends Error {
     }
 }
 
-const fetchPlayerProfile = async (playerName: string): Promise<PlayerProfile> => {
+const fetchPlayerProfile = async (
+    playerName: string,
+    includeObsolete: boolean = false,
+): Promise<PlayerProfile> => {
+    const embed = includeObsolete
+        ? "country,awards,profile-obsolete,stats"
+        : "country,awards,profile,stats"
     const url = `${API_BASE_URL}/players/${encodeURIComponent(playerName)}`
-        + `?embed=country,awards,profile,stats`
+        + `?embed=${embed}`
 
     const res = await fetch(url, {
         headers: { "Accept": "application/json" },
@@ -38,11 +44,12 @@ const fetchPlayerProfile = async (playerName: string): Promise<PlayerProfile> =>
 
 export const usePlayerProfile = (
     playerName: string,
-    options?: QueryOptions,
+    options?: QueryOptions & { includeObsolete?: boolean },
 ) => {
+    const includeObsolete = options?.includeObsolete ?? false
     return useQuery<PlayerProfile, Error>({
-        queryKey: ["player-profile", playerName],
-        queryFn: () => fetchPlayerProfile(playerName),
+        queryKey: ["player-profile", playerName, includeObsolete],
+        queryFn: () => fetchPlayerProfile(playerName, includeObsolete),
         staleTime: 5 * 60 * 1000,
         retry: (failureCount, error) => {
             if (error instanceof PlayerNotFoundError) return false

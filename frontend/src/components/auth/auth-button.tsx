@@ -11,7 +11,7 @@ import {
     DropdownMenuItem,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { UserIcon } from "lucide-react"
+import { UserIcon, Inbox, ShieldCheck } from "lucide-react"
 
 export function AuthButton() {
     const {
@@ -20,10 +20,10 @@ export function AuthButton() {
     const navigate = useNavigate()
     const location = useLocation()
     const [showLogoutMsg, setShowLogoutMsg] = useState(false)
-    // Track the path at logout time so we can cancel the
-    // redirect if the user navigates away during the delay
+
     const logoutPathRef = useRef(location.pathname)
 
+    // Show logout banner for 2s, then redirect home only if user hasn't navigated away
     useEffect(() => {
         if (!showLogoutMsg) return
         logoutPathRef.current = location.pathname
@@ -97,7 +97,7 @@ export function AuthButton() {
                 </button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem asChild>
                     <Link to={playerProfile}>
                         Player Profile
@@ -108,6 +108,21 @@ export function AuthButton() {
                         Edit Profile
                     </Link>
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                    <Link to="/submissions" className="flex items-center gap-2">
+                        <Inbox className="size-4" />
+                        Submissions Hub
+                    </Link>
+                </DropdownMenuItem>
+                {player?.is_superuser && (
+                    <DropdownMenuItem asChild>
+                        <Link to="/admin" className="flex items-center gap-2">
+                            <ShieldCheck className="size-4" />
+                            Admin Hub
+                        </Link>
+                    </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                     className="text-destructive"

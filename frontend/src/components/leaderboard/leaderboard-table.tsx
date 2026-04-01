@@ -91,6 +91,7 @@ export const LeaderboardTable = (
 const LeaderboardRow = (
     { run: r, idx }: { run: LbsRun; idx: number },
 ) => {
+    // place <= 0 means unranked/obsolete; fall back to table position
     const rank = r.place > 0 ? r.place : idx + 1
     const firstPlayer = r.players[0] ?? null
 

@@ -18,10 +18,8 @@ import type {
 } from "@/types/api"
 
 
-/**
- * Build a leaderboard URL for a recent run by
- * looking up category/level slugs via gameDetail.
- */
+// API recent runs have IDs, not slugs - reconstruct the URL by
+// matching against gameDetail's categories and levels.
 const buildLeaderboardUrl = (
     gameSlug: string,
     run: LbsRecentRun,
@@ -104,13 +102,12 @@ export const GameSidebar = ({
                             )}
                         />
                     )}
-                    {/* FG/IL Toggle */}
                     {hasLevels && hasFullGame && (
                         <div className={cn(
                             "flex gap-1 p-2",
                             "border-b border-border/40",
                             "bg-muted/10",
-                            "outline outline-2 outline-border/40",
+                            "outline outline-border/40",
                             "rounded-md",
                         )}>
                             <button

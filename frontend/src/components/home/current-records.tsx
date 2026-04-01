@@ -25,9 +25,9 @@ export const CurrentRecords = () => {
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="w-[100px]">Game</TableHead>
+                        <TableHead className="w-25">Game</TableHead>
                         <TableHead>Category</TableHead>
-                        <TableHead className="w-[300px]">Player</TableHead>
+                        <TableHead className="w-75">Player</TableHead>
                         <TableHead>Time</TableHead>
                         <TableHead>Date</TableHead>
                     </TableRow>

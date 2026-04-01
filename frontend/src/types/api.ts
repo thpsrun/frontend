@@ -1,4 +1,4 @@
-// API types — organized by endpoint origin
+// API types - organized by endpoint origin
 
 export interface Game {
     id: string
@@ -198,6 +198,7 @@ export interface PlayerRun {
     video: string | null
     arch_video: string | null
     url: string | null
+    obsolete?: boolean
 }
 
 export interface PlayerCountry {

@@ -35,7 +35,6 @@ export const ILFilterPanel = ({
             "px-4 py-3",
             "flex flex-col gap-3",
         )}>
-            {/* Category tabs (only if 2+) */}
             {ilCategories.length > 1 && (
                 <Tabs
                     value={activeCatSlug}

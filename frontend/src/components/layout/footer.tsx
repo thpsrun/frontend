@@ -39,7 +39,7 @@ export function Footer() {
                     subsidiaries. All trademarks, game names, skater
                     names, and logos appearing on the site are the
                     property of their respective owners. Any reference to
-                    the Tony Hawk's Pro Skater game is for descriptive
+                    the Tony Hawk's series is for descriptive
                     purposes only and does not imply any association with
                     or endorsement by the game's creators.
                 </p>

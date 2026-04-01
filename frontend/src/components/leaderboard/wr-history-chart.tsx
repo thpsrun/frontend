@@ -17,8 +17,6 @@ import { useWRHistory } from "@/hooks/leaderboard/useWRHistory"
 import type { WRHistoryEntry } from "@/types/api"
 
 
-// ---- Types ----
-
 interface WRHistoryChartProps {
     gameSlug: string
     categorySlug: string
@@ -40,7 +38,6 @@ interface ChartDataPoint {
 }
 
 
-// ---- Formatting helpers ----
 
 const formatTimeSecs = (secs: number): string => {
     const h = Math.floor(secs / 3600)
@@ -103,7 +100,6 @@ const getVideoUrl = (
 }
 
 
-// ---- Data processing ----
 
 /**
  * Collapse tied WR entries into single chart points.
@@ -181,8 +177,6 @@ const processEntries = (
     return points
 }
 
-
-// ---- Sub-components ----
 
 const CustomDot = (props: {
     cx?: number
@@ -301,8 +295,6 @@ const CustomTooltip = ({
 }
 
 
-// ---- Main component ----
-
 export const WRHistoryChart = ({
     gameSlug,
     categorySlug,
@@ -340,6 +332,7 @@ export const WRHistoryChart = ({
         return ticks
     }, [chartData])
 
+    // processEntries appends a synthetic current-date point when data exists, so 1 = no real entries
     const hasData = chartData.length > 1
     const noHistory = data
         && (data.entries?.length ?? 0) === 0
@@ -349,7 +342,6 @@ export const WRHistoryChart = ({
             "relative border-b border-border/40",
             "px-4 py-4",
         )}>
-            {/* Loading overlay */}
             {isFetching && (
                 <div className={cn(
                     "absolute inset-0 z-10",
@@ -366,7 +358,6 @@ export const WRHistoryChart = ({
                 </div>
             )}
 
-            {/* Empty state */}
             {noHistory && !isFetching && (
                 <div className={cn(
                     "flex items-center justify-center",
@@ -381,7 +372,6 @@ export const WRHistoryChart = ({
                 </div>
             )}
 
-            {/* Chart */}
             {hasData && (
                 <ResponsiveContainer
                     width="100%"
