@@ -47,8 +47,7 @@ const formatTimeSecs = (secs: number): string => {
     if (h > 0) parts.push(`${h}h`)
     if (m > 0) parts.push(`${m}m`)
     if (s > 0 || parts.length === 0) {
-        // Round to 1 decimal to avoid float noise
-        // from Recharts axis interpolation
+        // Round to 1 decimal to avoid float issues later.
         const rounded = Math.round(s * 10) / 10
         const sStr = rounded % 1 === 0
             ? rounded.toFixed(0)
@@ -81,11 +80,8 @@ const formatDelta = (delta: number): string => {
     return `${sign}${m}:${sStr}`
 }
 
-/**
- * Get the best video URL for a record.
- * Prefers arch_video when the primary video is from Twitch,
- * since Twitch VODs expire. Falls back to primary video.
- */
+// Gets the best URL video to display on the record.
+// arch_video > Twitch VOD.
 const getVideoUrl = (
     video: string | null,
     archVideo: string | null,
@@ -99,17 +95,8 @@ const getVideoUrl = (
     return video ?? archVideo
 }
 
-
-
-/**
- * Collapse tied WR entries into single chart points.
- * Groups consecutive entries with the same time; keeps
- * only the first entry per group (the runner who first
- * achieved that time). Appends a synthetic point at
- * the current date to extend the step line.
- *
- * Assumes entries are sorted chronologically (oldest first).
- */
+// Oldest run is shown first, with all other runs collapsing.
+// Example: Anastasia (+2 Ties)
 const processEntries = (
     entries: WRHistoryEntry[],
 ): ChartDataPoint[] => {
@@ -120,7 +107,6 @@ const processEntries = (
         const entry = entries[i]
         const currentTime = entry.history_time_secs
 
-        // Count consecutive tied entries
         let tieCount = 0
         let j = i + 1
         while (
@@ -361,7 +347,7 @@ export const WRHistoryChart = ({
             {noHistory && !isFetching && (
                 <div className={cn(
                     "flex items-center justify-center",
-                    "h-[300px]",
+                    "h-75",
                 )}>
                     <span className={cn(
                         "text-muted-foreground",

@@ -31,7 +31,7 @@ export function SocialRedirect({ platform }: SocialRedirectProps) {
     )) {
         return (
             <div className="flex justify-center pt-12 text-sm text-muted-foreground">
-                Link not found.
+                Link Not Found?
             </div>
         )
     }

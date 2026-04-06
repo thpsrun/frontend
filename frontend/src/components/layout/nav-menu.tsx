@@ -70,7 +70,6 @@ function NavItemList({
             {items.map(item => {
                 const hasChildren = item.children.length > 0
 
-                // Group header - children but no URL
                 if (hasChildren && !item.url) {
                     return (
                         <li
@@ -94,7 +93,6 @@ function NavItemList({
                     )
                 }
 
-                // Flyout trigger - has URL and children
                 if (hasChildren) {
                     const isActive =
                         activeFlyout?.name === item.name
@@ -126,7 +124,6 @@ function NavItemList({
                     )
                 }
 
-                // Leaf link
                 return (
                     <li
                         key={item.name}
@@ -165,7 +162,7 @@ function NavDropdown({ items }: { items: NavItem[] }) {
             {flyout && flyout.children.length > 0 && (
                 <div className={cn(
                     "border-l pl-2 ml-2",
-                    "min-w-[140px]",
+                    "min-w-35",
                 )}>
                     <ul className="grid gap-0.5">
                         {flyout.children.map(child => (

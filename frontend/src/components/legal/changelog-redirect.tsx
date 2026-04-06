@@ -10,7 +10,7 @@ export function ChangelogRedirect() {
 
     return (
         <div className="flex justify-center pt-12 text-sm text-muted-foreground">
-            Redirecting to changelog...
+            Redirecting to Changelog...
         </div>
     )
 }

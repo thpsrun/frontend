@@ -135,7 +135,6 @@ export function SubmissionsHub() {
             "mx-auto max-w-5xl px-4 py-8",
             "space-y-6",
         )}>
-            {/* Edit notice */}
             <div className={cn(
                 "flex items-start gap-2.5 rounded-lg",
                 "border border-border/40",
@@ -166,7 +165,6 @@ export function SubmissionsHub() {
                 </span>
             </div>
 
-            {/* My Pending Runs */}
             <section className={cn(
                 "rounded-lg border border-border/40",
                 "bg-background/70 backdrop-blur-sm",
@@ -250,7 +248,6 @@ export function SubmissionsHub() {
                 )}
             </section>
 
-            {/* Moderation Queue */}
             {data?.moderation_queue && (
                 <ModerationQueue
                     groups={data.moderation_queue}

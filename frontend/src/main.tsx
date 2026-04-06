@@ -37,7 +37,7 @@ const router = createBrowserRouter([
             { path: "register", Component: RegisterPage },
             { path: "login/cancelled", Component: OAuthCancelledPage },
             { path: "login/error", Component: OAuthErrorPage },
-            {   // Layout-only route - no path, just wraps children in auth guard
+            {
                 Component: ProtectedRoute,
                 children: [
                     { path: "profile/settings", Component: ProfileSettings },

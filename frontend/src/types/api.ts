@@ -1,5 +1,4 @@
-// API types - organized by endpoint origin
-
+// Utilized on /api/v1/games/all
 export interface Game {
     id: string
     name: string
@@ -13,7 +12,7 @@ export interface Game {
     ipointsmax: number
 }
 
-// Shared embedded sub-types used across multiple endpoints
+// Shared embedded sub-types used across multiple endpoints - not endpoint-specific
 export interface Award {
     name: string
 }
@@ -31,8 +30,6 @@ export interface Player {
     twitter?: string | null
     ex_stream: boolean
     awards: Award[]
-    // Homepage endpoint uses main_pts/il_pts naming
-    // (vs fg_points/il_points on the player profile endpoint)
     stats: {
         total_pts: number
         main_pts: number
@@ -52,7 +49,6 @@ export interface Times {
 }
 
 export interface System {
-    // String in compact responses; object when ?embed=platforms
     platform: string | { id: string; name: string }
     emulated: boolean
 }
@@ -77,13 +73,13 @@ export interface Meta {
 export interface Run {
     id: string
     runtype: string
-    game: string // Game ID as string for basic runs
-    category: string // Category ID as string
-    level: string | null // Level ID as string or null
+    game: string
+    category: string
+    level: string | null // ILs obviously have levels, full games don't.
     subcategory: string
     place: number
     lb_count: number
-    players: Player[] // Array of players for multi-player runs
+    players: Player[]
     date: string
     record: string
     times: Times
@@ -95,7 +91,8 @@ export interface Run {
     description?: string | null
 }
 
-// Category variable value (embedded in game detail categories)
+// Utilized on /api/v1/games/{gameSlug}?embed=categories,levels,platforms
+// Nested under GameCategory and GameLevel variable definitions.
 export interface CategoryVariableValue {
     value: string
     name: string
@@ -106,7 +103,7 @@ export interface CategoryVariableValue {
     rules: string | null
 }
 
-// Category variable group (embedded in game detail categories)
+// Utilized on /api/v1/games/{gameSlug}?embed=categories,levels,platforms
 export interface CategoryVariable {
     id: string
     name: string
@@ -116,7 +113,7 @@ export interface CategoryVariable {
     values: CategoryVariableValue[]
 }
 
-// Game category (embedded in game detail via ?embed=categories)
+// Utilized on /api/v1/games/{gameSlug}?embed=categories,levels,platforms
 export interface GameCategory {
     id: string
     name: string
@@ -126,10 +123,11 @@ export interface GameCategory {
     rules: string | null
     appear_on_main: boolean
     archive: boolean
+    players: number
     variables: CategoryVariable[]
 }
 
-// Game level (embedded in game detail via ?embed=levels)
+// Utilized on /api/v1/games/{gameSlug}?embed=categories,levels,platforms
 export interface GameLevel {
     id: string
     name: string
@@ -139,14 +137,14 @@ export interface GameLevel {
     variables: CategoryVariable[]
 }
 
-// Player as returned by main page endpoints (latest_wrs, latest_pbs, records)
+// Utilized on /api/v1/website/main?embed=latest-wrs,latest-pbs,records
 export interface MainPlayer {
     name: string
     nickname: string | null
     country: { id: string; name: string } | null
 }
 
-// Homepage latest WR/PB (game is a flat slug string)
+// Utilized on /api/v1/website/main?embed=latest-wrs,latest-pbs
 export interface LatestRun {
     id: string
     game_slug: string
@@ -159,7 +157,7 @@ export interface LatestRun {
     value_slugs: string[]
 }
 
-// Homepage record (game is an object with name for display)
+// Utilized on /api/v1/website/main?embed=records
 export interface RecordRun {
     id: string
     game: { name: string; slug: string }
@@ -172,18 +170,22 @@ export interface RecordRun {
     value_slugs: string[]
 }
 
+// Utilized on /api/v1/website/main?embed=streamers
 export interface Streamer {
     id: string
     name: string
     url: string
 }
 
+// Utilized on /api/v1/players/{playerName}?embed=country,awards,profile,stats
 export interface PlayerAward {
     name: string
     description: string | null
     image: string | null
 }
 
+// Utilized on /api/v1/players/{playerName}?embed=country,awards,profile,stats
+// Used for the runs within a player's fg[] and il[] arrays from that endpoint.
 export interface PlayerRun {
     id: string
     game: { name: string; slug: string }
@@ -201,19 +203,20 @@ export interface PlayerRun {
     obsolete?: boolean
 }
 
+// Utilized on /api/v1/players/{playerName}?embed=country,awards,profile,stats
 export interface PlayerCountry {
     id: string
     name: string
 }
 
-// Player profile endpoint uses fg_points/il_points naming
-// (vs main_pts/il_pts on the homepage Player.stats)
+// Utilized on /api/v1/players/{playerName}?embed=country,awards,profile,stats
 export interface PlayerStats {
     total_runs: number
     fg_points: number
     il_points: number
 }
 
+// Utilized on /api/v1/players/{playerName}?embed=country,awards,profile,stats
 export interface PlayerProfile {
     id: string
     name: string
@@ -235,8 +238,8 @@ export interface PlayerProfile {
     il: PlayerRun[]
 }
 
-// All-optional bag of homepage response fields. Not a discriminated
-// union, so callers must use optional chaining on each field.
+// Utilized on /api/v1/website/main
+// Union response since it depends on ?embed= query parameters.
 export interface ApiResponse {
     latest_wrs?: LatestRun[]
     latest_pbs?: LatestRun[]
@@ -247,26 +250,28 @@ export interface ApiResponse {
     runs?: Run[]
 }
 
-// Game Detail (from /api/v1/games/{slug}?embed=platforms)
+// Utilized on /api/v1/games/{gameSlug}?embed=categories,levels,platforms
 export interface GamePlatform {
     id: string
     name: string
     slug: string
 }
 
-// Game Detail (from /api/v1/games/{slug}?embed=categories,levels,platforms)
+// Utilized on /api/v1/games/{gameSlug}?embed=categories,levels,platforms
 export interface GameDetail extends Game {
     categories: GameCategory[]
     levels: GameLevel[]
     platforms: GamePlatform[]
 }
 
-// Leaderboard (from /api/v1/website/lbs/{game}/{cat}?values=...&embed=stats,recent)
+// Utilized on /api/v1/website/lbs/{gameSlug}/
+// Lightweight player shape used in leaderboard run entries.
 export interface LbsPlayer {
     name: string
     country: { id: string; name: string } | null
 }
 
+// Utilized on /api/v1/website/lbs/{gameSlug}/
 export interface LbsRun {
     id: string
     place: number
@@ -280,6 +285,7 @@ export interface LbsRun {
     players: LbsPlayer[]
 }
 
+// Utilized on /api/v1/website/lbs/{gameSlug}/
 export interface LbsRecentRun {
     runtype: string
     category: string
@@ -297,60 +303,69 @@ export interface LbsRecentRun {
     value_slugs: string[] | null
 }
 
+// Utilized on /api/v1/website/lbs/{gameSlug}/
 export interface LbsStats {
     main_count: number
     il_count: number
     player_count: number
 }
 
+// Utilized on /api/v1/website/lbs/{gameSlug}/category/{categorySlug}
+// Also used for /api/v1/website/lbs/{gameSlug}/level/{levelSlug}/{categorySlug}
 export interface LbsResponse {
     runs: LbsRun[]
     stats: LbsStats
     recent: LbsRecentRun[]
 }
 
-// IL Overview (from /api/v1/website/lbs/{game}/levels?embed=stats,recent)
+// Utilized on /api/v1/website/lbs/{gameSlug}/levels
 export interface ILOverviewCategory {
     name: string
     slug: string
     runs: LbsRun[]
 }
 
+// Utilized on /api/v1/website/lbs/{gameSlug}/levels
 export interface ILOverviewLevel {
     name: string
     slug: string
     categories: ILOverviewCategory[]
 }
 
+// Utilized on /api/v1/website/lbs/{gameSlug}/levels
 export interface ILOverviewResponse {
     levels: ILOverviewLevel[]
     stats: LbsStats
     recent: LbsRecentRun[]
 }
 
-// Navbar endpoint (/api/v1/website/navbar)
+// Utilized on /api/v1/website/navbar
 export interface NavItem {
     name: string
     url: string | null
     children: NavItem[]
 }
 
+// Utilized on /api/v1/website/navbar
 export interface SocialLink {
     platform: string
     url: string
 }
 
+// Utilized on /api/v1/website/navbar
 export interface NavbarResponse {
     nav: NavItem[]
     social: SocialLink[]
 }
 
-// WR History (from /api/v1/history/{game}/category/{cat} or /level/{lvl}/{cat})
+// Utilized on /api/v1/history/{gameSlug}/category/{categorySlug}
+// Also used for /api/v1/history/{gameSlug}/level/{levelSlug}/{categorySlug}
 export interface WRHistoryPlayer {
     name: string
     nickname: string | null
 }
 
+// Utilized on /api/v1/history/{gameSlug}/...
 export interface WRHistoryEntry {
     run_id: string
     players: WRHistoryPlayer[]
@@ -363,6 +378,8 @@ export interface WRHistoryEntry {
     end_date: string | null
 }
 
+// Utilized on /api/v1/history/{gameSlug}/category/{categorySlug}
+// Also used for /api/v1/history/{gameSlug}/level/{levelSlug}/{categorySlug}
 export interface WRHistoryResponse {
     game: string
     category: string

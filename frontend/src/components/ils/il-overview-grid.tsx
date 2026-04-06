@@ -74,7 +74,7 @@ export const ILOverviewGrid = ({
                 "p-4 border",
                 "border-red-500/20 rounded",
             )}>
-                Error loading individual levels.
+                Error Loading ILs...
             </div>
         )
     }
@@ -86,7 +86,7 @@ export const ILOverviewGrid = ({
                 "p-4 border border-dashed",
                 "border-border/40 rounded",
             )}>
-                No individual levels found.
+                No ILs Found...
             </div>
         )
     }
@@ -103,7 +103,6 @@ export const ILOverviewGrid = ({
                     ) ?? level.categories[0]
                 const runs = matchedCat?.runs ?? []
 
-                // Build URL with category + values
                 const linkParts = [
                     gameSlug,
                     "ils",

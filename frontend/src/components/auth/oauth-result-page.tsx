@@ -16,7 +16,7 @@ export function OAuthResultPage({ title, message }: OAuthResultPageProps) {
                 to="/login"
                 className="text-sm text-foreground underline underline-offset-4 hover:text-primary"
             >
-                Back to login
+                Back to Login
             </Link>
         </div>
     )

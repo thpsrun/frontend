@@ -1,6 +1,6 @@
 export function validateUsername(value: string): string | null {
     if (value.length < 3 || value.length > 20) {
-        return "Username must be 3-20 characters."
+        return "Usernames must be between 3 and 20 characters."
     }
     if (!/^[\w.@+-]+$/.test(value)) {
         return "Username can only contain letters, digits, and @/./+/-/_ characters."

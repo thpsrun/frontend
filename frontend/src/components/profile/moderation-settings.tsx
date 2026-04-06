@@ -50,7 +50,7 @@ export function ModerationSettings({
                 type: "error",
                 text: err instanceof Error
                     ? err.message
-                    : "Failed to store API key.",
+                    : "Failed to Store API Key",
             })
         }
     }
@@ -62,14 +62,14 @@ export function ModerationSettings({
             await deleteSrcKey.mutateAsync()
             setMessage({
                 type: "success",
-                text: "API key removed.",
+                text: "API Key Removed!",
             })
         } catch (err) {
             setMessage({
                 type: "error",
                 text: err instanceof Error
                     ? err.message
-                    : "Failed to remove API key.",
+                    : "Failed to Remove API Key",
             })
         }
     }
@@ -93,8 +93,7 @@ export function ModerationSettings({
             <p className={cn(
                 "text-sm text-muted-foreground mb-4",
             )}>
-                Manage your Speedrun.com API key for run
-                approvals.
+                Manage your Speedrun.com API key for run approvals.
             </p>
             <form
                 onSubmit={handleSaveKey}
@@ -111,10 +110,8 @@ export function ModerationSettings({
 
                 {player.has_src_key && (
                     <AlertBanner variant="success">
-                        You already have an SRC API Key
-                        associated. <br />
-                        You can replace your key or delete
-                        it with the options below.
+                        You already have an SRC API Key associated. <br />
+                        You can replace your key or delete it with the options below.
                     </AlertBanner>
                 )}
 

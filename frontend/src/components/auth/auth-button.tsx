@@ -11,7 +11,7 @@ import {
     DropdownMenuItem,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { UserIcon, Inbox, ShieldCheck } from "lucide-react"
+import { UserIcon } from "lucide-react"
 
 export function AuthButton() {
     const {
@@ -23,7 +23,7 @@ export function AuthButton() {
 
     const logoutPathRef = useRef(location.pathname)
 
-    // Show logout banner for 2s, then redirect home only if user hasn't navigated away
+    // Shows the logout banner for 2s, then redirects them home automatically.
     useEffect(() => {
         if (!showLogoutMsg) return
         logoutPathRef.current = location.pathname
@@ -70,7 +70,7 @@ export function AuthButton() {
             await logout.mutateAsync()
             setShowLogoutMsg(true)
         } catch (err) {
-            console.error("Logout failed:", err)
+            console.error("Logout Failed:", err)
         }
     }
 
@@ -111,14 +111,16 @@ export function AuthButton() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                     <Link to="/submissions" className="flex items-center gap-2">
-                        <Inbox className="size-4" />
                         Submissions Hub
                     </Link>
                 </DropdownMenuItem>
+
+                {/* This should only be proc'd when the user is a Django super admin;
+                the root account would need to set this per user, and should only be
+                given to super moderators and trusted peeps.*/}
                 {player?.is_superuser && (
                     <DropdownMenuItem asChild>
                         <Link to="/admin" className="flex items-center gap-2">
-                            <ShieldCheck className="size-4" />
                             Admin Hub
                         </Link>
                     </DropdownMenuItem>

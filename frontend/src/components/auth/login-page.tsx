@@ -90,7 +90,8 @@ export function LoginPage() {
                         <div className="flex flex-col gap-4">
                             <p className="text-sm text-muted-foreground">
                                 Please verify your email address before logging in.
-                                Check your inbox for a verification link.
+                                Check your inbox for a verification link. If you are having
+                                issues, contact Anastasia on the Discord.
                             </p>
                             <button
                                 type="button"
@@ -137,7 +138,7 @@ export function LoginPage() {
                                     setError(null)
                                 }}
                             >
-                                Back to login
+                                Back to Login
                             </button>
                         </form>
                     ) : (
@@ -171,7 +172,7 @@ export function LoginPage() {
                                     type="submit"
                                     disabled={login.isPending}
                                 >
-                                    {login.isPending ? "Logging in..." : "Log In"}
+                                    {login.isPending ? "Logging In..." : "Log In"}
                                 </Button>
                             </form>
 
@@ -202,6 +203,10 @@ export function LoginPage() {
                                 >
                                     Register
                                 </Link>
+                            </p>
+                            <p className="text-center text-xs text-muted-foreground">
+                                Note: To register, you need to have at least one speedrun imported from Speedrun.com (SRC).
+                                If you submitted a run on SRC, it will be imported automatically.
                             </p>
                         </>
                     )}

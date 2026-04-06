@@ -101,42 +101,36 @@ export function RegisterPage() {
                         </h3>
                         <div className="text-sm text-muted-foreground space-y-3">
                             <p>
-                                thps.run requires users to have at
-                                least one speedrun pulled in from
-                                Speedrun.com. This registration
-                                process will bind a brand new login
-                                with the data from your SRC profile.
+                                thps.run requires users to have at least one Tony Hawk speedrun
+                                pulled in from Speedrun.com. If you do not have one at LEAST
+                                submitted, you cannot register. This registration process will
+                                bind a brand new login with the data pulled in from your SRC profile.
                             </p>
                             <p>
-                                You can choose to keep or remove your
-                                SRC API key after registration:
+                                You can choose to keep or remove your SRC API key after registration:
                             </p>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>
                                     <strong className="text-foreground">
                                         Keep Key:
                                     </strong>
-                                    {" "}Submit and sync runs
-                                    to SRC, approve runs if you are a
+                                    {" "}Submit runs to SRC from thps.run, approve runs if you are a
                                     moderator, and manage profile settings.
                                 </li>
                                 <li>
                                     <strong className="text-foreground">
                                         Remove Key:
                                     </strong>
-                                    {" "}Manage profile settings.
+                                    {" "} Only managing profile settings is available.
                                 </li>
                             </ul>
                             <p>
-                                Upon registration, metadata from your
-                                SRC profile (profile picture, pronouns,
-                                etc.) will no longer be pulled
-                                automatically. Only one thps.run
-                                account can be bound to an SRC account.
+                                Upon registration, metadata from your SRC profile (profile picture,
+                                pronouns, etc.) will no longer be pulled automatically, Only one
+                                thps.run account can be bound to an SRC account.
                             </p>
                             <p>
-                                You can add or remove your SRC API Key
-                                at any time in your profile settings.
+                                You can add or remove your SRC API Key at any time in your profile settings.
                             </p>
                         </div>
                     </div>
@@ -190,8 +184,7 @@ export function RegisterPage() {
                                 htmlFor="save-key"
                                 className="text-sm font-normal cursor-pointer"
                             >
-                                Save my SRC API key (encrypted) for
-                                future use
+                                Save SRC API Key (encrypted)
                             </Label>
                         </div>
                         <div className="flex flex-col gap-2">
@@ -200,7 +193,7 @@ export function RegisterPage() {
                                 id="username"
                                 type="text"
                                 autoComplete="username"
-                                placeholder="Choose a username"
+                                placeholder="Choose a Username"
                                 value={username}
                                 onChange={(e) =>
                                     setUsername(e.target.value)
@@ -290,7 +283,7 @@ export function RegisterPage() {
                                 to="/login"
                                 className="text-foreground underline underline-offset-4 hover:text-primary"
                             >
-                                Log in
+                                Log In
                             </Link>
                         </p>
                     </form>

@@ -15,8 +15,7 @@ interface VariableTogglesProps {
     variables: CategoryVariable[]
     valueSlugs: string[]
     onValueChange: (groupIndex: number, slug: string) => void
-    /** Use a Select dropdown when a variable has more values than this.
-     *  Omit or set to Infinity for buttons-only (IL default). */
+    // Variable toggle is changed to a dropdown after a certain value.
     dropdownThreshold?: number
 }
 

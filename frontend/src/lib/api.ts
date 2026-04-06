@@ -1,6 +1,3 @@
-// Shared fetch utilities for authenticated API calls
-
-// Django CSRF double-submit pattern: read token from cookie, send back in header
 export function getCsrfToken(): string {
     const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]*)/)
     return match ? decodeURIComponent(match[1]) : ""
@@ -13,8 +10,6 @@ export function mutationHeaders(): HeadersInit {
     }
 }
 
-// Handles rate limiting (429), custom endpoint errors ({ error }),
-// and allauth errors ({ errors[] }).
 export async function handleApiError(
     res: Response,
     fallbackMsg: string,

@@ -17,8 +17,11 @@ import { WRHistoryChart } from "@/components/leaderboard/wr-history-chart"
 import { useGameDetail } from "@/hooks/game/useGameDetail"
 import { useLeaderboard } from "@/hooks/leaderboard/useLeaderboard"
 
+import { useAuth } from "@/hooks/auth/useAuth"
+import { SubmitRunDialog } from "@/components/submissions/submit-run-dialog"
+
 import { cn } from "@/lib/utils"
-import { ChartLine } from "lucide-react"
+import { ChartLine, Send } from "lucide-react"
 
 import {
     SkeletonRow,
@@ -37,9 +40,10 @@ export const GameOverview = () => {
     const navigate = useNavigate()
     const safeGameSlug = gameSlug || ""
 
-    // URLs are formatted based on the type of run it is:
-    // - /:gameSlug/:categorySlug/:val1/:val2  (full-game)
-    // - /:gameSlug/ils/:levelSlug/:catSlug/:val1  (ILs)
+    // URLs within the project are formatted based on the type of run it is.
+    // Full-Game -> /:gameSlug:/:categorySlug:/:val1:/:val2:
+    // ILs -> /:gameSlug:/ils/:levelSlug:/:catSlug:/:val1:
+
     const segments = useMemo(
         () => (splat || "")
             .split("/")
@@ -85,6 +89,8 @@ export const GameOverview = () => {
         [gameDetail],
     )
 
+    // Automatically sets a specific category (and the applicable variables)
+    // so you can navigate to it via URL.
     const activeCategory: GameCategory | undefined =
         useMemo(
             () => categories.find(
@@ -108,17 +114,18 @@ export const GameOverview = () => {
 
     const hasLevels = (gameDetail?.levels?.length ?? 0) > 0
     const [showHistory, setShowHistory] = useState(false)
+    const { isAuthenticated, player } = useAuth()
+    const [showSubmit, setShowSubmit] = useState(false)
 
-    // Redirects /:gameSlug/ils back to /:gameSlug when
-    // the game has no individual levels. Sometimes this happens
-    // with games like THP8.
+    // Redirects /:gameSlug:/ils back to /:gameSlug: when the game has
+    // no individual levels. Sometimes this happens for games (like THP8).
     useEffect(() => {
         if (isILView && !gameLoading && gameDetail && !hasLevels) {
             navigate(`/${safeGameSlug}`, { replace: true })
         }
     }, [isILView, gameLoading, gameDetail, hasLevels, safeGameSlug, navigate])
 
-    // The inverse of the above function - /:gameSlug to /:gameSlug/ils when
+    // The inverse of the above function - /:gameSlug: to /:gameSlug:/ils when
     // game has no full-game categories, but it does have ILs. THPS3+4CE is
     // one example of this.
     useEffect(() => {
@@ -193,7 +200,6 @@ export const GameOverview = () => {
         navigate(path)
     }
 
-    // Replace one variable value by index; preserve current or default for the rest
     const handleValueChange = (
         groupIndex: number,
         newValueSlug: string,
@@ -304,6 +310,26 @@ export const GameOverview = () => {
                                     />
                                 )}
                             </div>
+                            {isAuthenticated && (
+                                <span
+                                    title={
+                                        !player?.has_src_key
+                                            ? "Valid SRC API Key is required to submit runs."
+                                            : undefined
+                                    }
+                                >
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setShowSubmit(true)}
+                                        disabled={!player?.has_src_key}
+                                        className="shrink-0 text-xs"
+                                    >
+                                        <Send className="size-3.5" />
+                                        Submit Run
+                                    </Button>
+                                </span>
+                            )}
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -347,13 +373,16 @@ export const GameOverview = () => {
                                 "border-red-500/20",
                                 "rounded",
                             )}>
-                                Error loading leaderboard.
+                                Error Loading Leaderboard...
                             </div>
                         )}
                         {!lbLoading && !lbError
                             && categorySlug && (
                             <LeaderboardTable
                                 runs={runs}
+                                expectedPlayers={
+                                    activeCategory?.players
+                                }
                             />
                         )}
                     </div>
@@ -370,6 +399,15 @@ export const GameOverview = () => {
                 statsError={!!lbError}
                 isILView={false}
             />
+            {isAuthenticated && activeCategory && gameDetail && (
+                <SubmitRunDialog
+                    open={showSubmit}
+                    onOpenChange={setShowSubmit}
+                    gameDetail={gameDetail}
+                    activeCategory={activeCategory}
+                    valueSlugs={valueSlugs}
+                />
+            )}
             </>
             )}
         </div>

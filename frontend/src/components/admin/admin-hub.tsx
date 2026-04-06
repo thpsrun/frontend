@@ -32,6 +32,8 @@ const statusVariant: Record<
     failed: "destructive",
 }
 
+// The API returns an ISO-compliant string, but this is to help
+// normalize it and have it appear as a date.
 function formatDate(iso: string): string {
     return new Date(iso).toLocaleString()
 }
@@ -45,6 +47,12 @@ function actionLabel(action: string): string {
     }
 }
 
+// This function is to setup how the table is formatted within the
+// admin hub. The admin hub is supposed to be a collection of the
+// CURRENT speedruns waiting to be synced with SRC, their status,
+// and any issues they have come across. There will be more specifics
+// (e.g. the JSON output) on the Django admin portal, but this should
+// capture a lot of the major issues (unless SRC is super broken).
 function LogRow({
     entry,
     idx,
@@ -71,7 +79,7 @@ function LogRow({
                     )}>
                         {entry.run.category_name}
                         {entry.run.level_name &&
-                            ` — ${entry.run.level_name}`}
+                            ` - ${entry.run.level_name}`}
                     </span>
                 </div>
             </TableCell>
@@ -92,7 +100,7 @@ function LogRow({
             <TableCell className="text-center">
                 {entry.attempts}/{entry.max_attempts}
             </TableCell>
-            <TableCell className="max-w-[200px]">
+            <TableCell className="max-w-50">
                 {entry.last_error ? (
                     <span
                         className={cn(
@@ -107,7 +115,7 @@ function LogRow({
                     <span className={cn(
                         "text-xs text-muted-foreground",
                     )}>
-                        —
+                        -
                     </span>
                 )}
             </TableCell>
@@ -176,7 +184,8 @@ export function AdminHub() {
         { enabled: !!player?.is_superuser },
     )
 
-    // Superuser guard
+    // If the user is not a superuser within the Django admin panel,
+    // then they are sent back to the main page.
     if (!authLoading && !player?.is_superuser) {
         return <Navigate to="/" replace />
     }
@@ -208,41 +217,37 @@ export function AdminHub() {
 
     return (
         <div className={cn(
-            "mx-auto max-w-6xl px-4 py-8",
+            "mx-auto w-full max-w-6xl px-4 py-8",
             "space-y-6",
         )}>
-            {/* Error state */}
             {error && (
                 <AlertBanner variant="error">
                     {error.message}
                 </AlertBanner>
             )}
 
-            {/* Loading state */}
             {isLoading && (
                 <div className={cn(
                     "flex items-center gap-2",
                     "text-muted-foreground py-8",
                 )}>
                     <Loader2 className="size-4 animate-spin" />
-                    Loading sync logs...
+                    Loading SRC-thps.run sync logs...
                 </div>
             )}
 
-            {/* Sync Logs */}
             {data && (
                 <div className={cn(
                     "rounded-lg border border-border/40",
                     "bg-background/70 backdrop-blur-sm",
-                    "shadow-sm p-5",
+                    "shadow-sm p-5 w-full",
                 )}>
                     <h2 className={cn(
                         "text-xl font-semibold mb-4",
                     )}>
-                        SRC Sync Logs
+                        SRC-thps.run Sync Logs
                     </h2>
 
-                    {/* Filters */}
                     <div className={cn(
                         "flex flex-wrap gap-3 mb-4",
                     )}>
@@ -373,8 +378,7 @@ export function AdminHub() {
                                                 "text-muted-foreground",
                                             )}
                                         >
-                                            No sync logs
-                                            found.
+                                            No sync logs found.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
@@ -404,7 +408,6 @@ export function AdminHub() {
                         </Table>
                     </div>
 
-                    {/* Pagination */}
                     {totalPages > 1 && (
                         <div className={cn(
                             "flex items-center",

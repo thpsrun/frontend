@@ -25,7 +25,6 @@ interface AvatarCropDialogProps {
     onCancel: () => void
 }
 
-// Final avatar resolution in px; must match backend upload constraints
 const OUTPUT_SIZE = 256
 
 async function getCroppedImage(

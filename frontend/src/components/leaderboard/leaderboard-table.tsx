@@ -31,7 +31,10 @@ import type {
 
 
 export const LeaderboardTable = (
-    { runs }: { runs: LbsRun[] },
+    { runs, expectedPlayers }: {
+        runs: LbsRun[];
+        expectedPlayers?: number;
+    },
 ) => {
     if (runs.length === 0) {
         return (
@@ -79,6 +82,9 @@ export const LeaderboardTable = (
                             key={r.id}
                             run={r}
                             idx={idx}
+                            expectedPlayers={
+                                expectedPlayers
+                            }
                         />
                     ))}
                 </TableBody>
@@ -89,7 +95,11 @@ export const LeaderboardTable = (
 
 
 const LeaderboardRow = (
-    { run: r, idx }: { run: LbsRun; idx: number },
+    { run: r, idx, expectedPlayers }: {
+        run: LbsRun;
+        idx: number;
+        expectedPlayers?: number;
+    },
 ) => {
     // place <= 0 means unranked/obsolete; fall back to table position
     const rank = r.place > 0 ? r.place : idx + 1
@@ -121,20 +131,26 @@ const LeaderboardRow = (
                     />
                 )}
                 {r.players.length > 0 ? (
-                    r.players.map((p, i) => (
-                        <span key={p.name}>
-                            {i > 0 && ", "}
-                            <Link
-                                to={`/player/${p.name}`}
-                                className={cn(
-                                    "text-link",
-                                    "hover:underline",
-                                )}
-                            >
-                                {p.name || "Anonymous"}
-                            </Link>
-                        </span>
-                    ))
+                    <>
+                        {r.players.map((p, i) => (
+                            <span key={p.name}>
+                                {i > 0 && " & "}
+                                <Link
+                                    to={`/player/${p.name}`}
+                                    className={cn(
+                                        "text-link",
+                                        "hover:underline",
+                                    )}
+                                >
+                                    {p.name || "Anonymous"}
+                                </Link>
+                            </span>
+                        ))}
+                        {expectedPlayers
+                            && r.players.length
+                                < expectedPlayers
+                            && " & Anonymous"}
+                    </>
                 ) : "Unknown"}
             </TableCell>
             <TableCell className={cn(
@@ -222,7 +238,7 @@ const LeaderboardRow = (
                                 "hover:bg-muted/40",
                                 "text-muted-foreground",
                             )}
-                            title="Archive video"
+                            title="Archive Video"
                         >
                             <Cloud size={14} />
                         </a>
@@ -266,7 +282,7 @@ export const RecentRunItem = ({
     run: r,
     leaderboardUrl,
 }: RecentRunItemProps) => {
-    // IL runs: "Level: {name}", FG runs: subcategory
+    // IL runs: "Level: {name}", full-game runs: subcategory
     const label = r.level
         ? `Level: ${r.level}`
         : r.subcategory

@@ -20,15 +20,6 @@ interface ILOverviewProps {
     ilSegments: string[]
 }
 
-/**
- * Top-level IL component. Owns the data-fetching hooks
- * and passes data down to the grid or detail view, and
- * also renders the shared GameSidebar with IL stats.
- *
- * Returns a Fragment (<>) containing the main area div
- * and the sidebar div - these become direct children of
- * the flex container in game-overview.tsx.
- */
 export const ILOverview = ({
     gameSlug,
     gameDetail,
@@ -42,7 +33,9 @@ export const ILOverview = ({
         [ilSegments],
     )
 
-    // Per-level categories from game detail
+    // URLs within the project are formatted based on the type of run it is.
+    // ILs -> /:gameSlug:/ils/:levelSlug:/:catSlug:/:val1:
+
     const ilCategories = useMemo(
         () => (gameDetail?.categories ?? []).filter(
             (c) => c.type === "per-level",
@@ -50,8 +43,6 @@ export const ILOverview = ({
         [gameDetail],
     )
 
-    // --- Overview filter state ---
-    // Compute defaults from first category
     const defaultCatSlug =
         ilCategories[0]?.slug ?? ""
     const defaultValues = useMemo(() => {
@@ -63,10 +54,9 @@ export const ILOverview = ({
             .filter(Boolean)
     }, [ilCategories])
 
-    // Selected category for the overview grid filter
     const [overviewCatSlug, setOverviewCatSlug] =
         useState("")
-    // Selected variable values for overview filter
+
     const [overviewValues, setOverviewValues] =
         useState<string[]>([])
 
@@ -92,13 +82,11 @@ export const ILOverview = ({
         [overviewCategory],
     )
 
-    // Whether the filter panel should show
+    // Quick check to see if the filter panel needs to be shown.
     const hasFilters =
         ilCategories.length > 1
         || overviewVariables.length > 0
 
-    // IL overview data (for grid + sidebar stats
-    // when no level is selected)
     const {
         data: overview,
         isLoading: overviewLoading,
@@ -109,8 +97,8 @@ export const ILOverview = ({
             : undefined,
     })
 
-    // IL leaderboard data (for detail view + sidebar
-    // stats when a level IS selected)
+    // Displays IL leaderboard data (for detailed view and sidebar
+    // stats when the level is selected.)
     const {
         data: ilLbData,
         isLoading: ilLbLoading,
@@ -127,7 +115,6 @@ export const ILOverview = ({
         },
     )
 
-    // --- Filter handlers ---
     const handleOverviewCatChange = (
         newCatSlug: string,
     ) => {
@@ -162,7 +149,6 @@ export const ILOverview = ({
         )
     }
 
-    // Determine sidebar stats source
     const sidebarStats = levelSlug
         ? ilLbData?.stats
         : overview?.stats

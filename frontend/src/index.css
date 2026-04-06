@@ -4,7 +4,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Reset for full-screen background */
 * {
 
     box-sizing: border-box;

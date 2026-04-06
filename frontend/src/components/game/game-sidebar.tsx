@@ -18,8 +18,9 @@ import type {
 } from "@/types/api"
 
 
-// API recent runs have IDs, not slugs - reconstruct the URL by
-// matching against gameDetail's categories and levels.
+// The recent runs from the API only has IDs, not slugs, since another
+// request should already have them (maybe a good idea? lol). This will
+// reconstruct the URL by matching the gameDetail information against it.
 const buildLeaderboardUrl = (
     gameSlug: string,
     run: LbsRecentRun,
@@ -300,7 +301,7 @@ export const GameSidebar = ({
                 {!statsLoading && !statsError
                     && recentRuns.length === 0 && (
                     <div className="text-xs text-muted-foreground">
-                        No recent runs.
+                        No Recent Speedruns
                     </div>
                 )}
             </div>

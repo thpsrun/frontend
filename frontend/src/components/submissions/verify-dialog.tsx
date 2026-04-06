@@ -43,7 +43,7 @@ export function VerifyDialog({
 
     const playerNames = run.players.map((p) => p.name).join(", ")
     const levelLabel = run.level
-        ? `${run.category.name} — ${run.level.name}`
+        ? `${run.category.name} - ${run.level.name}`
         : run.category.name
 
     const handleSubmit = () => {

@@ -1,7 +1,4 @@
-// Types for the Submissions Hub and Admin Hub API endpoints
-
-// --- Shared sub-types ---
-
+// Utilized on /api/v1/auth/submissions
 export interface SubmissionTimes {
     time: string
     time_secs: number
@@ -13,12 +10,14 @@ export interface SubmissionTimes {
     p_time_secs: number
 }
 
+// Utilized on /api/v1/auth/submissions
 export interface SubmissionPlayer {
     id: string
     name: string
     countrycode: string | null
 }
 
+// Utilized on /api/v1/auth/submissions
 export interface SrcSyncEntry {
     action: "verify" | "reject" | "change_players"
     status: "pending" | "failed"
@@ -27,8 +26,7 @@ export interface SrcSyncEntry {
     updated_at: string
 }
 
-// --- GET /auth/submissions ---
-
+// Utilized on /api/v1/auth/submissions
 export interface PendingRun {
     id: string
     runtype: string
@@ -49,6 +47,7 @@ export interface PendingRun {
     src_sync: SrcSyncEntry[]
 }
 
+// Utilized on /api/v1/auth/submissions
 export interface ModerationGameGroup {
     game_id: string
     game_name: string
@@ -57,19 +56,20 @@ export interface ModerationGameGroup {
     pending_runs: PendingRun[]
 }
 
+// Utilized on /api/v1/auth/submissions
 export interface SubmissionsResponse {
     pending_runs: PendingRun[]
     edit_notice: string
     moderation_queue: ModerationGameGroup[] | null
 }
 
-// --- PUT /auth/submissions/{run_id}/status ---
-
+// Utilized on PUT /api/v1/auth/submissions/{runId}/status
 export interface VerifyRejectRequest {
     status: "verified" | "rejected"
     reason?: string
 }
 
+// Utilized on PUT /api/v1/auth/submissions/{runId}/status
 export interface VerifyRejectResponse {
     run_id: string
     status: string
@@ -77,17 +77,18 @@ export interface VerifyRejectResponse {
     message: string
 }
 
-// --- PUT /auth/submissions/{run_id}/players ---
-
+// Utilized on PUT /api/v1/auth/submissions/{runId}/players
 export interface ChangePlayerEntry {
     rel: "user" | "guest"
     name: string
 }
 
+// Utilized on PUT /api/v1/auth/submissions/{runId}/players
 export interface ChangePlayersRequest {
     players: ChangePlayerEntry[]
 }
 
+// Utilized on PUT /api/v1/auth/submissions/{runId}/players
 export interface ChangePlayersResponse {
     run_id: string
     players: SubmissionPlayer[]
@@ -95,8 +96,7 @@ export interface ChangePlayersResponse {
     message: string
 }
 
-// --- GET /auth/admin/sync-logs ---
-
+// Utilized on /api/v1/auth/admin/sync-logs
 export interface SyncLogRun {
     id: string
     game_name: string
@@ -106,6 +106,7 @@ export interface SyncLogRun {
     url: string
 }
 
+// Utilized on /api/v1/auth/admin/sync-logs
 export interface SyncLogEntry {
     id: number
     run: SyncLogRun
@@ -120,11 +121,13 @@ export interface SyncLogEntry {
     updated_at: string
 }
 
+// Utilized on /api/v1/auth/admin/sync-logs
 export interface SyncLogsResponse {
     count: number
     results: SyncLogEntry[]
 }
 
+// Utilized on /api/v1/auth/admin/sync-logs
 export interface SyncLogsParams {
     status?: "pending" | "synced" | "failed"
     action?: "verify" | "reject" | "change_players"
@@ -133,9 +136,46 @@ export interface SyncLogsParams {
     offset?: number
 }
 
-// --- POST /auth/admin/sync-logs/{task_id}/retry ---
-
+// Utilized on POST /api/v1/auth/admin/sync-logs/{taskId}/retry
 export interface RetryResponse {
     task_id: number
     message: string
+}
+
+// Utilized on POST /api/v1/auth/submissions/submit
+export interface SubmitPlayerEntry {
+    rel: "user" | "guest"
+    id: string | null
+    name: string | null
+}
+
+// Utilized on POST /api/v1/auth/submissions/submit
+export interface SubmitRunPayload {
+    game_id: string
+    category_id: string
+    level_id: string | null
+    players: SubmitPlayerEntry[]
+    time: string | null
+    timenl: string | null
+    timeigt: string | null
+    video: string
+    comment: string | null
+    date: string | null
+    variable_values: Record<string, string> | null
+}
+
+// Utilized on POST /api/v1/auth/submissions/submit
+export interface SubmitRunResponse {
+    run_id: string
+    src_url: string
+    vid_status: string
+    message: string
+}
+
+// Utilized on /api/v1/players/search?q={query}&limit=10
+export interface PlayerSearchResult {
+    id: string
+    name: string
+    nickname: string | null
+    country_id: string | null
 }

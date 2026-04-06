@@ -33,7 +33,7 @@ function ModRunRow({
     const [playersOpen, setPlayersOpen] = useState(false)
 
     const levelLabel = run.level
-        ? `${run.category.name} — ${run.level.name}`
+        ? `${run.category.name} - ${run.level.name}`
         : run.category.name
 
     return (

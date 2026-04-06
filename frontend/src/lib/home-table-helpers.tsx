@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import { useMemo, useState } from "react"
 import { Link } from "react-router"
 
@@ -11,13 +10,7 @@ interface GameSpan {
     groupIndex: number
 }
 
-/**
- * Computes row-span metadata for grouping consecutive table rows
- * that share the same game. Builds an array parallel to the data
- * where each entry indicates whether to show the merged game cell,
- * how many rows it spans, and which group it belongs to (for hover
- * highlighting).
- */
+
 export function useGameGroupSpans<T>(
     data: T[],
     getGameKey: (item: T) => string,
@@ -65,10 +58,6 @@ interface PlayerCellProps {
     players: PlayerInfo[]
 }
 
-/**
- * Renders a list of players with country flags, profile links,
- * and comma separators. Used by both CurrentRecords and LatestRuns.
- */
 export const PlayerCell = ({ players }: PlayerCellProps) => {
     if (players.length === 0) return <>Anonymous</>
 

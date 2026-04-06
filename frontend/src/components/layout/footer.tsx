@@ -32,16 +32,11 @@ export function Footer() {
                 </div>
 
                 <p className="text-[0.65rem] text-muted-foreground/60 leading-snug">
-                    thps.run is an independent fan website and is not
-                    affiliated with, endorsed by, or in any way officially
-                    connected with the Tony Hawk's Pro Skater franchise,
-                    its developers, Activision, or any of its
-                    subsidiaries. All trademarks, game names, skater
-                    names, and logos appearing on the site are the
-                    property of their respective owners. Any reference to
-                    the Tony Hawk's series is for descriptive
-                    purposes only and does not imply any association with
-                    or endorsement by the game's creators.
+                    thps.run is an independent fan website and is not affiliated with,
+                    endorsed by, or in any wasy officially connected with the Tony Hawk's
+                    franchise, its developers, Activision, or any of its subsidiaries. All
+                    trademarks, game names, skate names, and logos appearing on this site
+                    are the property of their respective owners.
                 </p>
             </div>
         </footer>

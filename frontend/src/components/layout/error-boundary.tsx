@@ -30,7 +30,7 @@ export class ErrorBoundary extends Component<
                 <div className="flex flex-col items-center gap-4 pt-20 text-center">
                     <AlertTriangle className="size-8 text-destructive" />
                     <h2 className="text-xl font-semibold">
-                        Something went wrong
+                        Something Went Wrong????
                     </h2>
                     <p className="max-w-sm text-sm text-muted-foreground">
                         An unexpected error occurred. If this

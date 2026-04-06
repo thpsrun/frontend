@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import * as flags from "country-flag-icons/react/3x2"
 
 import { cn } from "@/lib/utils"
@@ -8,14 +7,14 @@ import type {
     CategoryVariable,
 } from "@/types/api"
 
-import traFlag from "@/assets/flags/tra.svg"
-import enbyFlag from "@/assets/flags/enby.svg"
-import priFlag from "@/assets/flags/pri.svg"
-import eskiFlag from "@/assets/flags/es-ki.svg"
-import gbEngFlag from "@/assets/flags/gb-eng.svg"
+import traFlag from "@/assets/flags/tra.png"
+import enbyFlag from "@/assets/flags/enby.png"
+import priFlag from "@/assets/flags/pri.png"
+import eskiFlag from "@/assets/flags/es-ki.png"
+import gbEngFlag from "@/assets/flags/gb-eng.png"
 import gbNirFlag from "@/assets/flags/gb-nir.png"
-import gbSctFlag from "@/assets/flags/gb-sct.svg"
-import gbWlsFlag from "@/assets/flags/gb-wls.svg"
+import gbSctFlag from "@/assets/flags/gb-sct.png"
+import gbWlsFlag from "@/assets/flags/gb-wls.png"
 import vhFlag from "@/assets/flags/vh.png"
 
 const customFlags: Record<string, string> = {
@@ -83,25 +82,26 @@ export const formatLongDate = (
     )
 }
 
-export const timeAgo = (dateStr: string): string => {
+export const timeAgo = (dateStr: string | null): string => {
     if (!dateStr) return ""
+    if (dateStr === null) return "Unknown"
+
     const now = new Date()
     const then = new Date(dateStr)
     const diffMs = now.getTime() - then.getTime()
     const days = Math.floor(
         diffMs / (1000 * 60 * 60 * 24),
     )
-
     if (days === 0) return "Today"
     if (days === 1) return "Yesterday"
     if (days < 30) return `${days} Days Ago`
 
-    // 30.44 = average days per month accounting for varying month lengths
-    const months = Math.floor(days / 30.44)
+    // Months vary by month, obviously, so just round to 30.
+    const months = Math.floor(days / 30)
     if (months === 1) return "1 Month Ago"
     if (months < 12) return `${months} Months Ago`
 
-    // 365.25 = average days per year accounting for leap years
+    // Accounts for leap years, in case someone wants to be "umm akshully"
     const years = Math.floor(days / 365.25)
     if (years === 1) return "1 Year Ago"
     return `${years} Years Ago`
@@ -125,10 +125,8 @@ export const SidebarSkeleton = () => (
     </div>
 )
 
-/**
- * Get variable groups applicable to a category.
- * Returns all non-archived variables.
- */
+// Get variable groups applicable to the category given.
+// If a category is archived, it is ignored.
 export const getApplicableVariables = (
     cat: GameCategory,
 ): CategoryVariable[] => {

@@ -14,7 +14,10 @@ import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table"
 import { WRHistoryChart } from "@/components/leaderboard/wr-history-chart"
 import { VariableToggles } from "@/components/leaderboard/variable-toggles"
 import { Button } from "@/components/ui/button"
-import { ChartLine } from "lucide-react"
+import { ChartLine, Send } from "lucide-react"
+
+import { useAuth } from "@/hooks/auth/useAuth"
+import { SubmitRunDialog } from "@/components/submissions/submit-run-dialog"
 
 import { cn } from "@/lib/utils"
 
@@ -41,7 +44,6 @@ interface ILDetailProps {
     lbError: Error | null | undefined
 }
 
-// Leaderboard data comes from ILOverview (shared with sidebar).
 export const ILDetail = ({
     gameSlug,
     gameDetail,
@@ -54,7 +56,6 @@ export const ILDetail = ({
 }: ILDetailProps) => {
     const navigate = useNavigate()
 
-    // Per-level categories from game detail
     const ilCategories = useMemo(
         () => (gameDetail?.categories ?? []).filter(
             (c) => c.type === "per-level",
@@ -62,10 +63,10 @@ export const ILDetail = ({
         [gameDetail],
     )
 
-    // All levels from game detail (for dropdown)
     const levels = gameDetail?.levels ?? []
 
-    // Active category
+    // Sets the active category (and variables) to show on the UI
+    // AND also update the URL.
     const activeCategory: GameCategory | undefined =
         useMemo(
             () => ilCategories.find(
@@ -74,7 +75,6 @@ export const ILDetail = ({
             [ilCategories, categorySlug],
         )
 
-    // Variables on active category
     const applicableVariables = useMemo(
         () => activeCategory
             ? getApplicableVariables(activeCategory)
@@ -82,7 +82,6 @@ export const ILDetail = ({
         [activeCategory],
     )
 
-    // Default redirect: no category or missing values
     useEffect(() => {
         if (ilCategories.length === 0) return
 
@@ -98,7 +97,6 @@ export const ILDetail = ({
             .map((v) => v.values[0]?.slug || "")
             .filter(Boolean)
 
-        // Already on correct category with enough variable values - no redirect needed
         if (
             categorySlug === targetCat.slug
             && (vars.length === 0
@@ -120,7 +118,6 @@ export const ILDetail = ({
         levelSlug, navigate,
     ])
 
-    // Navigation handlers
     const handleLevelChange = (
         newLevelSlug: string,
     ) => {
@@ -191,8 +188,14 @@ export const ILDetail = ({
 
     const runs = lbData?.runs ?? []
     const [showHistory, setShowHistory] = useState(false)
+    const [showSubmit, setShowSubmit] = useState(false)
+    const { isAuthenticated, player } = useAuth()
 
-    // Loading state before redirect
+    const activeLevel = useMemo(
+        () => levels.find((lvl) => lvl.slug === levelSlug) ?? null,
+        [levels, levelSlug],
+    )
+
     if (!categorySlug) {
         return (
             <div className={cn(
@@ -293,6 +296,26 @@ export const ILDetail = ({
                             />
                         )}
                     </div>
+                    {isAuthenticated && (
+                        <span
+                            title={
+                                !player?.has_src_key
+                                    ? "A valid SRC API Key is required to submit runs"
+                                    : undefined
+                            }
+                        >
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowSubmit(true)}
+                                disabled={!player?.has_src_key}
+                                className="shrink-0 text-xs"
+                            >
+                                <Send className="size-3.5" />
+                                Submit Run
+                            </Button>
+                        </span>
+                    )}
                     <Button
                         variant="outline"
                         size="sm"
@@ -337,16 +360,30 @@ export const ILDetail = ({
                         "border-red-500/20",
                         "rounded",
                     )}>
-                        Error loading leaderboard.
+                        Error Loading Leaderboard...
                     </div>
                 )}
                 {!lbLoading && !lbError
                     && categorySlug && (
                     <LeaderboardTable
                         runs={runs}
+                        expectedPlayers={
+                            activeCategory?.players
+                        }
                     />
                 )}
             </div>
+
+            {isAuthenticated && activeCategory && gameDetail && activeLevel && (
+                <SubmitRunDialog
+                    open={showSubmit}
+                    onOpenChange={setShowSubmit}
+                    gameDetail={gameDetail}
+                    activeCategory={activeCategory}
+                    valueSlugs={valueSlugs}
+                    activeLevel={activeLevel}
+                />
+            )}
         </div>
     )
 }

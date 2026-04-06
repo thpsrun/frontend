@@ -325,7 +325,6 @@ export function ProfileSettings() {
     return (
         <div className="flex justify-center pt-12">
             <div className="w-full max-w-150 flex flex-col gap-6">
-                {/* Profile */}
                 <section className={panelClass}>
                     <h2 className="text-xl font-semibold">
                         Profile
@@ -619,7 +618,6 @@ export function ProfileSettings() {
                     </form>
                 </section>
 
-                {/* Change Password */}
                 <section className={panelClass}>
                     <h2 className={cn(
                         "text-xl font-semibold mb-4",
@@ -776,7 +774,6 @@ export function ProfileSettings() {
                     </form>
                 </section>
 
-                {/* Connected Accounts */}
                 <section className={panelClass}>
                     <h2 className="text-xl font-semibold">
                         Connected Accounts
@@ -849,14 +846,12 @@ export function ProfileSettings() {
                     </div>
                 </section>
 
-                {/* SRC API Key (Moderation) */}
                 <ModerationSettings
                     player={player}
                     setSrcKey={setSrcKey}
                     deleteSrcKey={deleteSrcKey}
                 />
 
-                {/* Danger Zone */}
                 <section className={cn(
                     panelClass,
                     "border-destructive/50",
