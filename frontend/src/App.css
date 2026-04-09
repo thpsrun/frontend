@@ -1,11 +1,10 @@
-/* Clean slate background with local image */
 .hero-container {
     width: 100vw;
-    height: 100vh; /* Acts as viewport container */
+    height: 100vh;
     position: relative;
-    overflow-x: hidden; /* Prevent horizontal scroll due to blur scale */
-    overflow-y: auto; /* Allow vertical scrolling for tall pages */
-    -webkit-overflow-scrolling: touch; /* Smooth scroll on mobile */
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .background-image {

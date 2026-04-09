@@ -1,27 +1,28 @@
-import './App.css'
-import { ThemeProvider } from '@/components/ui/theme-provider'
-import { TopBar } from '@/components/top-bar'
-import { Outlet } from 'react-router'
+import "./App.css"
+import { TopBar } from "@/components/layout/top-bar"
+import { Footer } from "@/components/layout/footer"
+import { ErrorBoundary } from "@/components/layout/error-boundary"
+import { Outlet, useLocation } from "react-router"
+import { Toaster } from "sonner"
 
 function App() {
+    const { pathname } = useLocation()
+
     return (
-        <ThemeProvider defaultTheme="dark">
-            <div className="hero-container">
-                {/* Background Image with Blur */}
-                <div className="background-image" />
+        <div className="hero-container">
+            <div className="background-image" />
+            <div className="background-overlay" />
 
-                {/* Optional overlay for better contrast */}
-                <div className="background-overlay" />
-
-                {/* Main Content Container */}
-                <div className="w-full min-h-full max-w-[100rem] mx-auto p-12 flex flex-col gap-8">
-                    <TopBar/>
-                    <div>
-                        <Outlet/>
-                    </div>
-                </div>
+            <div className="w-full min-h-full max-w-400 mx-auto p-12 flex flex-col gap-8">
+                <TopBar />
+                <ErrorBoundary key={pathname}>
+                    <Outlet />
+                </ErrorBoundary>
+                <Footer />
             </div>
-        </ThemeProvider>
+
+            <Toaster richColors theme="dark" />
+        </div>
     )
 }
 
