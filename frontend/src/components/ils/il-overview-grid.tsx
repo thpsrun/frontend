@@ -230,6 +230,7 @@ const ILCardRow = (
                             player
                                 .country.id as CountryCode
                         }
+                        flagUrl={player.country.flag}
                         title={player.country.name}
                     />
                 )}

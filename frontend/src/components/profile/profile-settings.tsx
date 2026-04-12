@@ -91,18 +91,18 @@ export function ProfileSettings() {
     useEffect(() => {
         if (!player) return
         profileForm.reset({
-            name: player.name ?? "",
-            nickname: player.nickname ?? "",
-            pronouns: player.pronouns ?? "",
-            countrycode: player.countrycode ?? "",
-            twitch: player.twitch ?? "",
-            youtube: player.youtube ?? "",
-            twitter: player.twitter ?? "",
-            bluesky: player.bluesky ?? "",
-            discord: player.discord ?? "",
+            name: player.player.name ?? "",
+            nickname: player.player.nickname ?? "",
+            pronouns: player.player.pronouns ?? "",
+            countrycode: player.player.country?.id ?? "",
+            twitch: player.socials.twitch ?? "",
+            youtube: player.socials.youtube ?? "",
+            twitter: player.socials.twitter ?? "",
+            bluesky: player.socials.bluesky ?? "",
+            discord: player.socials.discord ?? "",
         })
-        setSelectedCountry(player.countrycode ?? "")
-        setExStream(player.ex_stream ?? false)
+        setSelectedCountry(player.player.country?.id ?? "")
+        setExStream(player.player.ex_stream ?? false)
         setCountryReady(true)
     }, [player, profileForm])
 
@@ -144,8 +144,8 @@ export function ProfileSettings() {
 
     if (!player) return null
 
-    const avatarUrl = player.pfp
-        ? `${BACKEND_URL}${player.pfp}?v=${pfpVersion}`
+    const avatarUrl = player.player.pfp
+        ? `${BACKEND_URL}${player.player.pfp}?v=${pfpVersion}`
         : null
 
     const handlePfpSelect = (
@@ -217,16 +217,19 @@ export function ProfileSettings() {
 
             try {
                 await updateProfile.mutateAsync({
-                    name: data.name || undefined,
-                    nickname: data.nickname || null,
-                    pronouns: data.pronouns || null,
-                    countrycode: selectedCountry || undefined,
-                    twitch: data.twitch || null,
-                    youtube: data.youtube || null,
-                    twitter: data.twitter || null,
-                    bluesky: data.bluesky || null,
-                    discord: data.discord || null,
-                    ex_stream: exStream,
+                    player: {
+                        name: data.name || undefined,
+                        nickname: data.nickname || null,
+                        pronouns: data.pronouns || null,
+                        country: selectedCountry || undefined,
+                        ex_stream: exStream,
+                    },
+                    socials: {
+                        twitch: data.twitch || null,
+                        youtube: data.youtube || null,
+                        twitter: data.twitter || null,
+                        bluesky: data.bluesky || null,
+                    },
                 })
 
                 if (pendingPfpFile) {
@@ -303,7 +306,7 @@ export function ProfileSettings() {
 
         if (
             deleteConfirmName.toLowerCase()
-            !== player.name.toLowerCase()
+            !== player.player.name.toLowerCase()
         ) {
             setDeleteMsg("Name does not match.")
             return
@@ -349,7 +352,7 @@ export function ProfileSettings() {
                                         pfpPreviewUrl
                                             ?? avatarUrl!
                                     }
-                                    alt={player.name}
+                                    alt={player.player.name}
                                     className={cn(
                                         "size-20 rounded-full",
                                         "object-cover",
@@ -465,6 +468,7 @@ export function ProfileSettings() {
                                                     countryCode={
                                                         c.id as CountryCode
                                                     }
+                                                    flagUrl={c.flag}
                                                     className={cn(
                                                         "size-4",
                                                         "object-contain",
@@ -886,7 +890,7 @@ export function ProfileSettings() {
                                 "text-muted-foreground",
                             )}>
                                 Type{" "}
-                                <strong>{player.name}</strong>
+                                <strong>{player.player.name}</strong>
                                 {" "}to confirm account
                                 deletion. This action cannot
                                 be undone.
@@ -907,7 +911,7 @@ export function ProfileSettings() {
                                             e.target.value,
                                         )
                                     }
-                                    placeholder={player.name}
+                                    placeholder={player.player.name}
                                 />
                             </div>
 

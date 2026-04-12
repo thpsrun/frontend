@@ -156,7 +156,7 @@ export function SubmitRunDialog({
             return [{
                 rel: "user",
                 id: player.player_id,
-                displayName: player.name,
+                displayName: player.player.name,
                 searchQuery: "",
             }]
         }

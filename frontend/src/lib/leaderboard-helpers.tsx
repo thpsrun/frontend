@@ -39,14 +39,25 @@ export const getRankBackground = (place: number) => {
 }
 
 export const CountryFlag = (
-    { countryCode, title, className }: {
+    { countryCode, flagUrl, title, className }: {
         countryCode: CountryCode;
+        flagUrl?: string | null;
         title?: string;
         className?: string;
     },
 ) => {
     const code = countryCode.toUpperCase()
     const classes = className ?? "w-7 pr-[5px] inline"
+    if (flagUrl) {
+        return (
+            <img
+                src={flagUrl}
+                alt={title ?? code}
+                title={title}
+                className={classes}
+            />
+        )
+    }
     const customSrc = customFlags[code]
     if (customSrc) {
         return (

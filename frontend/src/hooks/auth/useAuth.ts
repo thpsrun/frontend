@@ -152,9 +152,7 @@ async function registerFn(
 }
 
 async function fetchCountries(): Promise<Country[]> {
-    const res = await fetch(`${API_BASE_URL}/auth/countries`, {
-        credentials: "include",
-    })
+    const res = await fetch(`${API_BASE_URL}/countries`)
 
     if (!res.ok) await handleApiError(res, "Countries fetch failed")
     return res.json()
@@ -268,10 +266,9 @@ export function useAuth() {
 
     // Countries list (cached long-term, rarely changes)
     const countriesQuery = useQuery({
-        queryKey: ["auth", "countries"],
+        queryKey: ["countries"],
         queryFn: fetchCountries,
         staleTime: 60 * 60 * 1000,
-        enabled: sessionQuery.data?.isAuthenticated ?? false,
     })
 
     // Player profile (only when authenticated)

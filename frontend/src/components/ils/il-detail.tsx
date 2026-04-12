@@ -299,7 +299,7 @@ export const ILDetail = ({
                     {isAuthenticated && (
                         <span
                             title={
-                                !player?.has_src_key
+                                !player?.moderation.has_src_key
                                     ? "A valid SRC API Key is required to submit runs"
                                     : undefined
                             }
@@ -308,7 +308,7 @@ export const ILDetail = ({
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setShowSubmit(true)}
-                                disabled={!player?.has_src_key}
+                                disabled={!player?.moderation.has_src_key}
                                 className="shrink-0 text-xs"
                             >
                                 <Send className="size-3.5" />

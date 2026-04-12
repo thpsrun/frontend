@@ -181,12 +181,12 @@ export function AdminHub() {
 
     const { data, isLoading, error, retry } = useSyncLogs(
         filters,
-        { enabled: !!player?.is_superuser },
+        { enabled: !!player?.player.is_superuser },
     )
 
     // If the user is not a superuser within the Django admin panel,
     // then they are sent back to the main page.
-    if (!authLoading && !player?.is_superuser) {
+    if (!authLoading && !player?.player.is_superuser) {
         return <Navigate to="/" replace />
     }
 

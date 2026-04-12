@@ -127,6 +127,7 @@ const LeaderboardRow = (
                             firstPlayer
                                 .country.id as CountryCode
                         }
+                        flagUrl={firstPlayer.country.flag}
                         title={firstPlayer.country.name}
                     />
                 )}
@@ -320,6 +321,7 @@ export const RecentRunItem = ({
                         countryCode={
                             r.player_country.id as CountryCode
                         }
+                        flagUrl={r.player_country.flag}
                         title={r.player_country.name}
                     />
                 )}

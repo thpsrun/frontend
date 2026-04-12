@@ -59,10 +59,10 @@ export function AuthButton() {
     }
 
     const displayName =
-        player?.name ?? player?.username ?? "User"
+        player?.player.name ?? player?.player.username ?? "User"
     const playerProfile = `/player/${displayName}`
-    const avatarUrl = player?.pfp
-        ? `${BACKEND_URL}${player.pfp}`
+    const avatarUrl = player?.player.pfp
+        ? `${BACKEND_URL}${player.player.pfp}`
         : null
 
     const handleLogout = async () => {
@@ -118,7 +118,7 @@ export function AuthButton() {
                 {/* This should only be proc'd when the user is a Django super admin;
                 the root account would need to set this per user, and should only be
                 given to super moderators and trusted peeps.*/}
-                {player?.is_superuser && (
+                {player?.player.is_superuser && (
                     <DropdownMenuItem asChild>
                         <Link to="/admin" className="flex items-center gap-2">
                             Admin Hub

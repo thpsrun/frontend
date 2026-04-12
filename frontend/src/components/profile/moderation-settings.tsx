@@ -74,7 +74,7 @@ export function ModerationSettings({
         }
     }
 
-    const gamesDisplay = player.moderated_games
+    const gamesDisplay = player.moderation.moderated_games
         .map((g) => g.slug.toUpperCase())
         .join(", ")
 
@@ -108,7 +108,7 @@ export function ModerationSettings({
                     </p>
                 )}
 
-                {player.has_src_key && (
+                {player.moderation.has_src_key && (
                     <AlertBanner variant="success">
                         You already have an SRC API Key associated. <br />
                         You can replace your key or delete it with the options below.
@@ -117,7 +117,7 @@ export function ModerationSettings({
 
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="src-api-key">
-                        {player.has_src_key
+                        {player.moderation.has_src_key
                             ? "Replace API Key"
                             : "SRC API Key"}
                     </Label>
@@ -165,12 +165,12 @@ export function ModerationSettings({
                     >
                         {setSrcKey.isPending
                             ? "Saving..."
-                            : player.has_src_key
+                            : player.moderation.has_src_key
                                 ? "Replace Key"
                                 : "Save Key"}
                     </Button>
 
-                    {player.has_src_key && (
+                    {player.moderation.has_src_key && (
                         <Button
                             type="button"
                             variant="destructive"

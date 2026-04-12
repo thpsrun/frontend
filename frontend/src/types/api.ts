@@ -141,7 +141,7 @@ export interface GameLevel {
 export interface MainPlayer {
     name: string
     nickname: string | null
-    country: { id: string; name: string } | null
+    country: { id: string; name: string; flag: string | null } | null
 }
 
 // Utilized on /api/v1/website/main?embed=latest-wrs,latest-pbs
@@ -207,6 +207,7 @@ export interface PlayerRun {
 export interface PlayerCountry {
     id: string
     name: string
+    flag: string | null
 }
 
 // Utilized on /api/v1/players/{playerName}?embed=country,awards,profile,stats
@@ -268,7 +269,7 @@ export interface GameDetail extends Game {
 // Lightweight player shape used in leaderboard run entries.
 export interface LbsPlayer {
     name: string
-    country: { id: string; name: string } | null
+    country: { id: string; name: string; flag: string | null } | null
 }
 
 // Utilized on /api/v1/website/lbs/{gameSlug}/
@@ -295,7 +296,7 @@ export interface LbsRecentRun {
     p_time_secs: number
     place: number
     player_name: string
-    player_country: { id: string; name: string } | null
+    player_country: { id: string; name: string; flag: string | null } | null
     v_date: string
     url: string | null
     video: string | null

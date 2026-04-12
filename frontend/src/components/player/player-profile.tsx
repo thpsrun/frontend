@@ -581,6 +581,7 @@ export function PlayerProfile() {
                                     countryCode={
                                         profile.country.id as CountryCode
                                     }
+                                    flagUrl={profile.country.flag}
                                     title={profile.country.name}
                                 />
                             </span>

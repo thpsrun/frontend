@@ -74,6 +74,7 @@ export const PlayerCell = ({ players }: PlayerCellProps) => {
                                 player.country
                                     .id as CountryCode
                             }
+                            flagUrl={player.country.flag}
                             title={player.country.name}
                         />
                     )}

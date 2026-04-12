@@ -1,21 +1,45 @@
-export interface AuthPlayer {
-    player_id: string
+export interface AuthPlayerProfile {
+    username: string
     name: string
     nickname: string | null
     pronouns: string | null
-    countrycode: string
+    country: { id: string; name: string; flag: string | null } | null
+    pfp: string | null
+    is_superuser: boolean
+    ex_stream: boolean
+}
+
+export interface AuthPlayerSocials {
     twitch: string | null
     youtube: string | null
     twitter: string | null
     bluesky: string | null
     discord: string | null
-    ex_stream: boolean
-    pfp: string | null
-    is_claimed: boolean
-    username: string
+    therun_gg: string | null
+}
+
+export interface AuthPlayerCustomizations {
+    bio: string | null
+    short_bio: string | null
+    gradient_1: string | null
+    gradient_2: string | null
+    gradient_3: string | null
+    profile_bg: string | null
+}
+
+export interface AuthPlayerModeration {
     has_src_key: boolean
     moderated_games: ModeratedGame[]
-    is_superuser: boolean
+}
+
+export interface AuthPlayer {
+    player_id: string
+    claim_status: string
+    joined: string | null
+    player: AuthPlayerProfile
+    socials: AuthPlayerSocials
+    customizations: AuthPlayerCustomizations
+    moderation: AuthPlayerModeration
 }
 
 export interface VerifySrcRequest {
@@ -92,19 +116,31 @@ export interface AllauthErrorResponse {
 export interface Country {
     id: string
     name: string
+    flag: string | null
 }
 
 export interface UpdateProfileRequest {
-    name?: string
-    nickname?: string | null
-    pronouns?: string | null
-    countrycode?: string
-    twitch?: string | null
-    youtube?: string | null
-    twitter?: string | null
-    bluesky?: string | null
-    discord?: string | null
-    ex_stream?: boolean
+    player?: {
+        name?: string
+        nickname?: string | null
+        pronouns?: string | null
+        country?: string
+        ex_stream?: boolean
+    }
+    socials?: {
+        twitch?: string | null
+        youtube?: string | null
+        twitter?: string | null
+        bluesky?: string | null
+        therun_gg?: string | null
+    }
+    customizations?: {
+        bio?: string | null
+        short_bio?: string | null
+        gradient_1?: string | null
+        gradient_2?: string | null
+        gradient_3?: string | null
+    }
 }
 
 export interface ChangePasswordRequest {
