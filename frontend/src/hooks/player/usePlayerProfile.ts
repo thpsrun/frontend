@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query"
 import type { UseQueryOptions } from "@tanstack/react-query"
 
-import type { PlayerProfile } from "@/types/api"
+import type { PlayerResponse } from "@/types/api"
 import { API_BASE_URL } from "@/constants"
 
 
 type QueryOptions = Omit<
-    UseQueryOptions<PlayerProfile, Error>,
+    UseQueryOptions<PlayerResponse, Error>,
     "queryKey" | "queryFn"
 >
 
@@ -20,7 +20,7 @@ class PlayerNotFoundError extends Error {
 const fetchPlayerProfile = async (
     playerName: string,
     includeObsolete: boolean = false,
-): Promise<PlayerProfile> => {
+): Promise<PlayerResponse> => {
     const embed = includeObsolete
         ? "country,awards,profile-obsolete,stats"
         : "country,awards,profile,stats"
@@ -47,7 +47,7 @@ export const usePlayerProfile = (
     options?: QueryOptions & { includeObsolete?: boolean },
 ) => {
     const includeObsolete = options?.includeObsolete ?? false
-    return useQuery<PlayerProfile, Error>({
+    return useQuery<PlayerResponse, Error>({
         queryKey: ["player-profile", playerName, includeObsolete],
         queryFn: () => fetchPlayerProfile(playerName, includeObsolete),
         staleTime: 5 * 60 * 1000,

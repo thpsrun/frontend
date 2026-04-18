@@ -210,33 +210,85 @@ export interface PlayerCountry {
     flag: string | null
 }
 
-// Utilized on /api/v1/players/{playerName}?embed=country,awards,profile,stats
-export interface PlayerStats {
-    total_runs: number
-    fg_points: number
-    il_points: number
+// Shared gradients embed used across player-related endpoints
+export interface GradientsEmbed {
+    gradient_1: string | null
+    gradient_2: string | null
+    gradient_3: string | null
 }
 
-// Utilized on /api/v1/players/{playerName}?embed=country,awards,profile,stats
-export interface PlayerProfile {
-    id: string
+// Utilized on /api/v1/players/{playerName}
+export interface PlayerInfoEmbed {
     name: string
     nickname: string | null
-    url: string
-    pfp: string | null
     pronouns: string | null
-    joined: string | null
+    country: PlayerCountry | null
+    pfp: string | null
+    ex_stream: boolean
+}
+
+// Utilized on /api/v1/players/{playerName}
+export interface PlayerSocialsEmbed {
     twitch: string | null
     youtube: string | null
     twitter: string | null
     bluesky: string | null
     discord: string | null
-    ex_stream: boolean
-    country: PlayerCountry | null
-    stats: PlayerStats | null
-    awards: PlayerAward[]
-    fg: PlayerRun[]
-    il: PlayerRun[]
+    therun_gg: string | null
+}
+
+// Utilized on /api/v1/players/{playerName}
+export interface PlayerCustomizationsEmbed {
+    gradient_1: string | null
+    gradient_2: string | null
+    gradient_3: string | null
+    tagline: string | null
+    profile_bg: string | null
+}
+
+// Utilized on /api/v1/players/{playerName}
+export interface PlayerStatsEmbed {
+    total_runs: number | null
+    fg_points: number | null
+    il_points: number | null
+    awards: PlayerAward[] | null
+}
+
+// Utilized on /api/v1/players/{playerName}
+export interface PlayerRunsEmbed {
+    fg: PlayerRun[] | null
+    il: PlayerRun[] | null
+}
+
+// Utilized on /api/v1/players/{playerName}
+export interface PlayerModerationEmbed {
+    moderated_games: { id: string; name: string; slug: string }[] | null
+}
+
+// Utilized on /api/v1/players/{playerName}
+export interface PlayerResponse {
+    id: string
+    url: string
+    joined: string | null
+    player: PlayerInfoEmbed
+    socials: PlayerSocialsEmbed
+    customizations: PlayerCustomizationsEmbed
+    stats: PlayerStatsEmbed
+    runs: PlayerRunsEmbed
+    moderation: PlayerModerationEmbed
+}
+
+// Utilized on point leaderboard endpoints
+export interface PointLeaderboardEntry {
+    rank: number
+    player_id: string
+    player_name: string
+    player_url: string
+    player_pfp: string | null
+    total_points: number
+    fg_points: number
+    il_points: number
+    gradients: GradientsEmbed | null
 }
 
 // Utilized on /api/v1/website/main
@@ -270,6 +322,7 @@ export interface GameDetail extends Game {
 export interface LbsPlayer {
     name: string
     country: { id: string; name: string; flag: string | null } | null
+    gradients?: GradientsEmbed | null
 }
 
 // Utilized on /api/v1/website/lbs/{gameSlug}/

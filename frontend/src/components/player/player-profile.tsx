@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react"
+import { Fragment, useEffect, useMemo, useState } from "react"
 import { Link, useParams } from "react-router"
 import {
     FaTrophy,
@@ -34,6 +34,7 @@ import {
 
 import { usePlayerProfile, PlayerNotFoundError } from "@/hooks/player/usePlayerProfile"
 import { useGames } from "@/hooks/game/useGames"
+import { GradientUsername } from "@/components/profile/gradient-username"
 import { BACKEND_URL } from "@/constants"
 import { cn } from "@/lib/utils"
 import {
@@ -44,6 +45,7 @@ import {
     formatLongDate,
 } from "@/lib/leaderboard-helpers"
 
+import therunGgIcon from "@/assets/icons/therun-gg.png"
 import type { PlayerRun, Game } from "@/types/api"
 
 
@@ -486,12 +488,48 @@ export function PlayerProfile() {
 
     const placements = useMemo(() => {
         if (!profile) return { first: 0, second: 0, third: 0, total: 0 }
-        const allRuns = [...profile.fg, ...profile.il]
+        const allRuns = [
+            ...(profile.runs?.fg ?? []),
+            ...(profile.runs?.il ?? []),
+        ]
         const first = allRuns.filter((r) => r.place === 1).length
         const second = allRuns.filter((r) => r.place === 2).length
         const third = allRuns.filter((r) => r.place === 3).length
         return { first, second, third, total: first + second + third }
     }, [profile])
+
+    const profileBgUrl = profile?.customizations?.profile_bg
+        ? `${BACKEND_URL}${profile.customizations.profile_bg}`
+        : null
+
+    useEffect(() => {
+        if (!profileBgUrl) return
+
+        const bgEl = document.querySelector<HTMLElement>(
+            ".background-image",
+        )
+        const overlayEl = document.querySelector<HTMLElement>(
+            ".background-overlay",
+        )
+        if (!bgEl || !overlayEl) return
+
+        const origBg = bgEl.style.backgroundImage
+        const origFilter = bgEl.style.filter
+        const origTransform = bgEl.style.transform
+        const origOverlay = overlayEl.style.backgroundColor
+
+        bgEl.style.backgroundImage = `url(${profileBgUrl})`
+        bgEl.style.filter = "none"
+        bgEl.style.transform = "none"
+        overlayEl.style.backgroundColor = "rgba(0, 0, 0, 0.4)"
+
+        return () => {
+            bgEl.style.backgroundImage = origBg
+            bgEl.style.filter = origFilter
+            bgEl.style.transform = origTransform
+            overlayEl.style.backgroundColor = origOverlay
+        }
+    }, [profileBgUrl])
 
     if (isLoading) return <ProfileSkeleton />
 
@@ -528,18 +566,22 @@ export function PlayerProfile() {
 
     if (!profile) return null
 
-    const displayName = profile.nickname || profile.name
+    const displayName = profile.player.nickname || profile.player.name
     const totalPoints =
         (profile.stats?.fg_points ?? 0) + (profile.stats?.il_points ?? 0)
     const fgRuns = fgSort === "all" && obsoleteProfile
-        ? obsoleteProfile.fg : profile.fg
+        ? (obsoleteProfile.runs?.fg ?? []) : (profile.runs?.fg ?? [])
     const ilRuns = ilSort === "all" && obsoleteProfile
-        ? obsoleteProfile.il : profile.il
-    const hasFG = fgRuns.length > 0
-    const hasIL = ilRuns.length > 0
+        ? (obsoleteProfile.runs?.il ?? []) : (profile.runs?.il ?? [])
+    const hasFG = (fgRuns?.length ?? 0) > 0
+    const hasIL = (ilRuns?.length ?? 0) > 0
 
     return (
-        <div className="w-full flex flex-col lg:flex-row gap-6">
+        <>
+            <div className={cn(
+                "relative w-full flex flex-col",
+                "lg:flex-row gap-6",
+            )}>
             <div className="order-first lg:order-last lg:w-80
                 shrink-0 flex flex-col gap-4
                 lg:sticky lg:top-6 lg:self-start"
@@ -549,9 +591,9 @@ export function PlayerProfile() {
                     p-4 text-center"
                 >
                     <div className="flex justify-center mb-3">
-                        {profile.pfp ? (
+                        {profile.player.pfp ? (
                             <img
-                                src={`${BACKEND_URL}${profile.pfp}`}
+                                src={`${BACKEND_URL}${profile.player.pfp}`}
                                 alt={displayName}
                                 className="w-20 h-20 md:w-24 md:h-24
                                     rounded-full object-cover
@@ -573,31 +615,51 @@ export function PlayerProfile() {
                     <div className="flex items-center justify-center
                         gap-2 flex-wrap"
                     >
-                        {profile.country && (
+                        {profile.player.country && (
                             <span className="flex items-center gap-1
                                 text-sm text-muted-foreground"
                             >
                                 <CountryFlag
                                     countryCode={
-                                        profile.country.id as CountryCode
+                                        profile.player.country
+                                            .id as CountryCode
                                     }
-                                    flagUrl={profile.country.flag}
-                                    title={profile.country.name}
+                                    flagUrl={
+                                        profile.player.country.flag
+                                    }
+                                    title={
+                                        profile.player.country.name
+                                    }
                                 />
                             </span>
                         )}
-                        <h1
-                            className="text-xl font-bold"
-                            title={profile.nickname
-                                ? profile.name : undefined}
-                        >
-                            {displayName}
-                        </h1>
+                        <span title={
+                            profile.player.nickname
+                                ? profile.player.name
+                                : undefined
+                        }>
+                            <GradientUsername
+                                name={displayName}
+                                gradients={
+                                    profile.customizations
+                                }
+                                className="text-xl font-bold"
+                            />
+                        </span>
                     </div>
 
-                    {profile.pronouns && (
+                    {profile.player.pronouns && (
                         <p className="text-sm text-muted-foreground mt-0.5">
-                            ({profile.pronouns})
+                            ({profile.player.pronouns})
+                        </p>
+                    )}
+
+                    {profile.customizations?.tagline && (
+                        <p className={cn(
+                            "text-sm text-muted-foreground mt-1",
+                            "italic",
+                        )}>
+                            {profile.customizations.tagline}
                         </p>
                     )}
 
@@ -618,41 +680,77 @@ export function PlayerProfile() {
                     <div className="flex items-center justify-center
                         gap-3 mt-3"
                     >
-                        {profile.twitch && (
-                            <a href={profile.twitch} target="_blank"
+                        {profile.socials?.twitch && (
+                            <a href={profile.socials.twitch}
+                                target="_blank"
                                 rel="noopener noreferrer">
-                                <FaTwitch className={socialIconClass} />
+                                <FaTwitch
+                                    className={socialIconClass}
+                                />
                             </a>
                         )}
-                        {profile.youtube && (
-                            <a href={profile.youtube} target="_blank"
+                        {profile.socials?.youtube && (
+                            <a href={profile.socials.youtube}
+                                target="_blank"
                                 rel="noopener noreferrer">
-                                <FaYoutube className={socialIconClass} />
+                                <FaYoutube
+                                    className={socialIconClass}
+                                />
                             </a>
                         )}
-                        {profile.twitter && (
-                            <a href={profile.twitter} target="_blank"
+                        {profile.socials?.twitter && (
+                            <a href={profile.socials.twitter}
+                                target="_blank"
                                 rel="noopener noreferrer">
-                                <FaXTwitter className={socialIconClass} />
+                                <FaXTwitter
+                                    className={socialIconClass}
+                                />
                             </a>
                         )}
-                        {profile.bluesky && (
-                            <a href={profile.bluesky} target="_blank"
+                        {profile.socials?.bluesky && (
+                            <a href={profile.socials.bluesky}
+                                target="_blank"
                                 rel="noopener noreferrer">
-                                <FaBluesky className={socialIconClass} />
+                                <FaBluesky
+                                    className={socialIconClass}
+                                />
                             </a>
                         )}
                         {profile.url && (
                             <a href={profile.url} target="_blank"
                                 rel="noopener noreferrer">
-                                <FaTrophy className={socialIconClass} />
+                                <FaTrophy
+                                    className={socialIconClass}
+                                />
                             </a>
                         )}
-                        {profile.discord && (
+                        {profile.socials?.discord && (
                             <span className="cursor-default"
-                                title={profile.discord}>
-                                <FaDiscord className={socialIconClass} />
+                                title={profile.socials.discord}>
+                                <FaDiscord
+                                    className={socialIconClass}
+                                />
                             </span>
+                        )}
+                        {profile.socials?.therun_gg && (
+                            <a
+                                href={
+                                    `https://therun.gg/`
+                                    + `${profile.socials.therun_gg}`
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <img
+                                    src={therunGgIcon}
+                                    alt="therun.gg"
+                                    className={cn(
+                                        "w-5 h-5 opacity-60",
+                                        "hover:opacity-100",
+                                        "transition-opacity",
+                                    )}
+                                />
+                            </a>
                         )}
                     </div>
 
@@ -674,7 +772,8 @@ export function PlayerProfile() {
                                     Total Runs{" "}
                                 </span>
                                 <span className="font-semibold">
-                                    {profile.stats.total_runs.toLocaleString()}
+                                    {profile.stats?.total_runs
+                                        ?.toLocaleString() ?? "0"}
                                 </span>
                                 <span
                                     className="text-muted-foreground/50 mx-1"
@@ -685,8 +784,9 @@ export function PlayerProfile() {
                                     Current{" "}
                                 </span>
                                 <span className="font-semibold">
-                                    {(profile.fg.length
-                                        + profile.il.length).toLocaleString()}
+                                    {((profile.runs?.fg?.length ?? 0)
+                                        + (profile.runs?.il?.length ?? 0)
+                                    ).toLocaleString()}
                                 </span>
                                 <span
                                     className="text-muted-foreground/50 mx-1"
@@ -697,9 +797,10 @@ export function PlayerProfile() {
                                     Obsoleted{" "}
                                 </span>
                                 <span className="font-semibold">
-                                    {(profile.stats.total_runs
-                                        - profile.fg.length
-                                        - profile.il.length).toLocaleString()}
+                                    {((profile.stats?.total_runs ?? 0)
+                                        - (profile.runs?.fg?.length ?? 0)
+                                        - (profile.runs?.il?.length ?? 0)
+                                    ).toLocaleString()}
                                 </span>
                             </div>
 
@@ -760,7 +861,7 @@ export function PlayerProfile() {
                     )}
                 </div>
 
-                {profile.awards.length > 0 && (
+                {(profile.stats?.awards?.length ?? 0) > 0 && (
                     <div className="rounded-lg border border-border/40
                         bg-background/70 backdrop-blur-sm shadow-sm p-4"
                     >
@@ -773,7 +874,7 @@ export function PlayerProfile() {
                         <div className="flex flex-wrap justify-center
                             gap-1 lg:flex-col lg:items-center"
                         >
-                            {profile.awards.map((award, i) => (
+                            {profile.stats!.awards!.map((award, i) => (
                                 <span
                                     key={i}
                                     className="text-sm"
@@ -818,7 +919,7 @@ export function PlayerProfile() {
                                     >
                                         <span className="hidden sm:inline">
                                             Full Game
-                                            {profile.stats
+                                            {profile.stats?.fg_points != null
                                                 ? ` \u2010 ${profile.stats.fg_points.toLocaleString()} pts`
                                                 : ""}
                                         </span>
@@ -837,7 +938,7 @@ export function PlayerProfile() {
                                     >
                                         <span className="hidden sm:inline">
                                             IL
-                                            {profile.stats
+                                            {profile.stats?.il_points != null
                                                 ? ` \u2010 ${profile.stats.il_points.toLocaleString()} pts`
                                                 : ""}
                                         </span>
@@ -932,6 +1033,7 @@ export function PlayerProfile() {
                     </div>
                 )}
             </div>
-        </div>
+            </div>
+        </>
     )
 }

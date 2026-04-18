@@ -1,6 +1,7 @@
 import { Link } from "react-router"
 
 import { cn } from "@/lib/utils"
+import { GradientUsername } from "@/components/profile/gradient-username"
 
 import {
     type CountryCode,
@@ -234,7 +235,15 @@ const ILCardRow = (
                         title={player.country.name}
                     />
                 )}
-                {player?.name ?? "Unknown"}
+                {player?.name ? (
+                    <GradientUsername
+                        name={player.name}
+                        gradients={
+                            player.gradients
+                                ?? null
+                        }
+                    />
+                ) : "Unknown"}
 
             </td>
             <td className={cn(

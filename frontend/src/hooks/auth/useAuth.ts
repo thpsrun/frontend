@@ -6,7 +6,7 @@ import {
     handleApiError,
 } from "@/lib/api"
 import type {
-    AuthPlayer,
+    AuthMe,
     LoginRequest,
     RegisterRequest,
     VerifySrcRequest,
@@ -16,6 +16,7 @@ import type {
     UpdateProfileRequest,
     ChangePasswordRequest,
     PfpResponse,
+    ProfileBgResponse,
     Country,
     SRCKeyStatusResponse,
 } from "@/types/auth"
@@ -42,7 +43,7 @@ async function checkSession(): Promise<SessionState> {
 }
 
 // Fetches the player's profile and information from the authentication endpoint.
-async function fetchProfile(): Promise<AuthPlayer> {
+async function fetchProfile(): Promise<AuthMe> {
     const res = await fetch(`${API_BASE_URL}/auth/me`, {
         credentials: "include",
     })
@@ -160,7 +161,7 @@ async function fetchCountries(): Promise<Country[]> {
 
 async function updateProfileFn(
     data: UpdateProfileRequest,
-): Promise<AuthPlayer> {
+): Promise<AuthMe> {
     const res = await fetch(`${API_BASE_URL}/auth/me`, {
         method: "PATCH",
         credentials: "include",
@@ -189,6 +190,34 @@ async function uploadPfpFn(file: File): Promise<PfpResponse> {
     return res.json()
 }
 
+async function uploadProfileBgFn(file: File): Promise<ProfileBgResponse> {
+    const formData = new FormData()
+    formData.append("file", file)
+
+    const res = await fetch(`${API_BASE_URL}/auth/me/profile-bg`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+            "X-CSRFToken": getCsrfToken(),
+        },
+        body: formData,
+    })
+
+    if (!res.ok) await handleApiError(res, "Upload failed")
+    return res.json()
+}
+
+async function deleteProfileBgFn(): Promise<ProfileBgResponse> {
+    const res = await fetch(`${API_BASE_URL}/auth/me/profile-bg`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: mutationHeaders(),
+    })
+
+    if (!res.ok) await handleApiError(res, "Failed to remove background")
+    return res.json()
+}
+
 async function deleteAccountFn(): Promise<void> {
     const res = await fetch(`${API_BASE_URL}/auth/me`, {
         method: "DELETE",
@@ -210,9 +239,6 @@ async function setSrcKeyFn(
     })
 
     if (!res.ok) {
-        if (res.status === 403) {
-            throw new Error("You are no longer a moderator.")
-        }
         await handleApiError(res, "Failed to store API key")
     }
 
@@ -227,9 +253,6 @@ async function deleteSrcKeyFn(): Promise<void> {
     })
 
     if (!res.ok) {
-        if (res.status === 403) {
-            throw new Error("You are no longer a moderator.")
-        }
         await handleApiError(res, "Failed to remove API key")
     }
 }
@@ -318,6 +341,20 @@ export function useAuth() {
         },
     })
 
+    const uploadProfileBg = useMutation({
+        mutationFn: uploadProfileBgFn,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
+        },
+    })
+
+    const deleteProfileBg = useMutation({
+        mutationFn: deleteProfileBgFn,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
+        },
+    })
+
     const deleteAccount = useMutation({
         mutationFn: deleteAccountFn,
         onSuccess: () => invalidateAuth(),
@@ -362,6 +399,8 @@ export function useAuth() {
         register,
         updateProfile,
         uploadPfp,
+        uploadProfileBg,
+        deleteProfileBg,
         deleteAccount,
         changePassword,
         setSrcKey,

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table"
 
 import { cn } from "@/lib/utils"
+import { GradientUsername } from "@/components/profile/gradient-username"
 
 import {
     type CountryCode,
@@ -143,7 +144,15 @@ const LeaderboardRow = (
                                         "hover:underline",
                                     )}
                                 >
-                                    {p.name || "Anonymous"}
+                                    {p.name ? (
+                                        <GradientUsername
+                                            name={p.name}
+                                            gradients={
+                                                p.gradients
+                                                    ?? null
+                                            }
+                                        />
+                                    ) : "Anonymous"}
                                 </Link>
                             </span>
                         ))}

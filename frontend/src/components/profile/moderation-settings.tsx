@@ -1,7 +1,7 @@
 import { useState } from "react"
 import type { UseMutationResult } from "@tanstack/react-query"
 import type {
-    AuthPlayer, VerifySrcRequest, SRCKeyStatusResponse,
+    AuthMe, VerifySrcRequest, SRCKeyStatusResponse,
 } from "@/types/auth"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 
 interface ModerationSettingsProps {
-    player: AuthPlayer
+    player: AuthMe
     setSrcKey: UseMutationResult<
         SRCKeyStatusResponse, Error, VerifySrcRequest
     >

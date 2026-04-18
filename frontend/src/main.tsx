@@ -14,7 +14,7 @@ import { LoginPage } from "./components/auth/login-page.tsx"
 import { RegisterPage } from "./components/auth/register-page.tsx"
 import { OAuthCancelledPage } from "./components/auth/oauth-cancelled-page.tsx"
 import { OAuthErrorPage } from "./components/auth/oauth-error-page.tsx"
-import { ProfileSettings } from "./components/profile/profile-settings.tsx"
+import { ProfileSettingsLayout } from "./components/profile/profile-settings-layout.tsx"
 import { PlayerProfile } from "./components/player/player-profile.tsx"
 import { ProtectedRoute } from "./components/auth/protected-route.tsx"
 import { SubmissionsHub } from "./components/submissions/submissions-hub.tsx"
@@ -23,6 +23,11 @@ import { PrivacyPage } from "./components/legal/privacy-page.tsx"
 import { FAQPage } from "./components/legal/faq-page.tsx"
 import { ChangelogRedirect } from "./components/legal/changelog-redirect.tsx"
 import { SocialRedirect } from "./components/layout/social-redirect.tsx"
+import { GeneralSection } from "./components/profile/sections/general-section.tsx"
+import { SocialSection } from "./components/profile/sections/social-section.tsx"
+import { CustomizationSection } from "./components/profile/sections/customization-section.tsx"
+import { SecuritySection } from "./components/profile/sections/security-section.tsx"
+import { DangerSection } from "./components/profile/sections/danger-section.tsx"
 
 const queryClient = new QueryClient()
 
@@ -40,7 +45,18 @@ const router = createBrowserRouter([
             {
                 Component: ProtectedRoute,
                 children: [
-                    { path: "profile/settings", Component: ProfileSettings },
+                    {
+                        path: "profile/settings",
+                        Component: ProfileSettingsLayout,
+                        children: [
+                            { index: true, element: null },
+                            { path: "general", Component: GeneralSection },
+                            { path: "customization", Component: CustomizationSection },
+                            { path: "social", Component: SocialSection },
+                            { path: "security", Component: SecuritySection },
+                            { path: "danger", Component: DangerSection },
+                        ],
+                    },
                     { path: "submissions", Component: SubmissionsHub },
                     { path: "admin", Component: AdminHub },
                 ],

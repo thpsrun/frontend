@@ -1,15 +1,21 @@
-export interface AuthPlayerProfile {
+export interface CountryEmbed {
+    id: string
+    name: string
+    flag: string | null
+}
+
+export interface PlayerEmbed {
     username: string
     name: string
     nickname: string | null
     pronouns: string | null
-    country: { id: string; name: string; flag: string | null } | null
+    country: CountryEmbed | null
     pfp: string | null
     is_superuser: boolean
     ex_stream: boolean
 }
 
-export interface AuthPlayerSocials {
+export interface SocialsEmbed {
     twitch: string | null
     youtube: string | null
     twitter: string | null
@@ -18,28 +24,27 @@ export interface AuthPlayerSocials {
     therun_gg: string | null
 }
 
-export interface AuthPlayerCustomizations {
-    bio: string | null
-    short_bio: string | null
+export interface CustomizationsEmbed {
+    tagline: string | null
     gradient_1: string | null
     gradient_2: string | null
     gradient_3: string | null
     profile_bg: string | null
 }
 
-export interface AuthPlayerModeration {
+export interface ModerationEmbed {
     has_src_key: boolean
     moderated_games: ModeratedGame[]
 }
 
-export interface AuthPlayer {
+export interface AuthMe {
     player_id: string
     claim_status: string
     joined: string | null
-    player: AuthPlayerProfile
-    socials: AuthPlayerSocials
-    customizations: AuthPlayerCustomizations
-    moderation: AuthPlayerModeration
+    player: PlayerEmbed
+    socials: SocialsEmbed
+    customizations: CustomizationsEmbed
+    moderation: ModerationEmbed
 }
 
 export interface VerifySrcRequest {
@@ -119,28 +124,37 @@ export interface Country {
     flag: string | null
 }
 
+export interface PlayerUpdateEmbed {
+    name?: string | null
+    nickname?: string | null
+    pronouns?: string | null
+    country?: string | null
+    ex_stream?: boolean | null
+}
+
+export interface SocialsUpdateEmbed {
+    twitch?: string | null
+    youtube?: string | null
+    twitter?: string | null
+    bluesky?: string | null
+    therun_gg?: string | null
+}
+
+export interface CustomizationsUpdateEmbed {
+    tagline?: string | null
+    gradient_1?: string | null
+    gradient_2?: string | null
+    gradient_3?: string | null
+}
+
 export interface UpdateProfileRequest {
-    player?: {
-        name?: string
-        nickname?: string | null
-        pronouns?: string | null
-        country?: string
-        ex_stream?: boolean
-    }
-    socials?: {
-        twitch?: string | null
-        youtube?: string | null
-        twitter?: string | null
-        bluesky?: string | null
-        therun_gg?: string | null
-    }
-    customizations?: {
-        bio?: string | null
-        short_bio?: string | null
-        gradient_1?: string | null
-        gradient_2?: string | null
-        gradient_3?: string | null
-    }
+    player?: PlayerUpdateEmbed
+    socials?: SocialsUpdateEmbed
+    customizations?: CustomizationsUpdateEmbed
+}
+
+export interface ProfileBgResponse {
+    profile_bg: string | null
 }
 
 export interface ChangePasswordRequest {
