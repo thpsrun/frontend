@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Navigate } from "react-router"
-import { useAuth } from "@/hooks/auth/useAuth"
+import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useSyncLogs } from "@/hooks/admin/useSyncLogs"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Badge } from "@/components/ui/badge"
@@ -173,7 +173,7 @@ function LogRow({
 }
 
 export function AdminHub() {
-    const { player, isLoading: authLoading } = useAuth()
+    const { player, isLoading: authLoading } = useCurrentPlayer()
     const [filters, setFilters] = useState<SyncLogsParams>({
         limit: PAGE_SIZE,
         offset: 0,

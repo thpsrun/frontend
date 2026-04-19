@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useNavigate, Navigate, Link } from "react-router"
-import { useAuth } from "@/hooks/auth/useAuth"
+import { useSession } from "@/hooks/auth/useSession"
+import { useRegister } from "@/hooks/auth/useRegister"
 import {
     Card,
     CardContent,
@@ -16,7 +17,8 @@ import { validateUsername, validatePassword } from "@/lib/validation"
 
 export function RegisterPage() {
     const navigate = useNavigate()
-    const { register, isAuthenticated } = useAuth()
+    const { isAuthenticated } = useSession()
+    const register = useRegister()
 
     const [srcApiKey, setSrcApiKey] = useState("")
     const [saveKey, setSaveKey] = useState(false)

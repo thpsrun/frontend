@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react"
 import { Link, useNavigate, useLocation } from "react-router"
-import { useAuth } from "@/hooks/auth/useAuth"
+import { useSession } from "@/hooks/auth/useSession"
+import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
+import { useLogout } from "@/hooks/auth/useLogout"
 import { BACKEND_URL } from "@/constants"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -14,9 +16,9 @@ import {
 import { UserIcon } from "lucide-react"
 
 export function AuthButton() {
-    const {
-        player, isAuthenticated, isLoading, logout,
-    } = useAuth()
+    const { isAuthenticated, isLoading } = useSession()
+    const { player } = useCurrentPlayer()
+    const logout = useLogout()
     const navigate = useNavigate()
     const location = useLocation()
     const [showLogoutMsg, setShowLogoutMsg] = useState(false)

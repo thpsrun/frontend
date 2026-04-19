@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useForm } from "react-hook-form"
-import { useAuth } from "@/hooks/auth/useAuth"
+import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
+import { useUpdateProfile } from "@/hooks/auth/useUpdateProfile"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -34,7 +35,8 @@ const panelClass = cn(
 )
 
 export function SocialSection() {
-    const { player, updateProfile } = useAuth()
+    const { player } = useCurrentPlayer()
+    const updateProfile = useUpdateProfile()
 
     const [statusMsg, setStatusMsg] = useState<StatusMsg>(null)
 

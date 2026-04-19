@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query"
 import type { UseQueryOptions } from "@tanstack/react-query"
 
 import type { LbsResponse } from "@/types/api"
-import { API_BASE_URL } from "@/constants"
+import { apiFetch } from "@/lib/api-client"
+import { queryKeys } from "@/lib/query-keys"
 
 export interface UseILLeaderboardParams {
     gameSlug: string
@@ -16,21 +17,18 @@ type QueryOptions = Omit<
     "queryKey" | "queryFn"
 >
 
-const fetchILLeaderboard = async ({
-    gameSlug,
-    levelSlug,
-    categorySlug,
-    valueSlugs,
-}: UseILLeaderboardParams): Promise<LbsResponse> => {
-    if (!gameSlug) {
-        throw new Error("gameSlug required")
-    }
-    if (!levelSlug) {
-        throw new Error("levelSlug required")
-    }
-    if (!categorySlug) {
-        throw new Error("categorySlug required")
-    }
+const fetchILLeaderboard = (
+    {
+        gameSlug,
+        levelSlug,
+        categorySlug,
+        valueSlugs,
+    }: UseILLeaderboardParams,
+    signal?: AbortSignal,
+): Promise<LbsResponse> => {
+    if (!gameSlug) throw new Error("gameSlug required")
+    if (!levelSlug) throw new Error("levelSlug required")
+    if (!categorySlug) throw new Error("categorySlug required")
 
     const qs = new URLSearchParams()
     if (valueSlugs.length > 0) {
@@ -38,23 +36,13 @@ const fetchILLeaderboard = async ({
     }
     qs.set("embed", "stats,recent")
 
-    const url = `${API_BASE_URL}/website/lbs`
+    const path = `/website/lbs`
         + `/${encodeURIComponent(gameSlug)}`
         + `/level/${encodeURIComponent(levelSlug)}`
         + `/${encodeURIComponent(categorySlug)}`
         + `?${qs.toString()}`
 
-    const res = await fetch(url, {
-        headers: { "Accept": "application/json" },
-    })
-
-    if (!res.ok) {
-        throw new Error(
-            `Failed IL leaderboard (${res.status})`,
-        )
-    }
-
-    return res.json()
+    return apiFetch<LbsResponse>(path, { signal })
 }
 
 export const useILLeaderboard = (
@@ -67,17 +55,14 @@ export const useILLeaderboard = (
         && (options?.enabled ?? true)
 
     return useQuery<LbsResponse, Error>({
-        queryKey: [
-            "il-leaderboard",
-            params.gameSlug,
-            params.levelSlug,
-            params.categorySlug,
-            ...params.valueSlugs,
-        ],
-        queryFn: () => fetchILLeaderboard(params),
-        staleTime: 60 * 1000,
+        queryKey: queryKeys.leaderboard.il({
+            gameSlug: params.gameSlug,
+            levelSlug: params.levelSlug,
+            categorySlug: params.categorySlug,
+            valueSlugs: params.valueSlugs,
+        }),
+        queryFn: ({ signal }) => fetchILLeaderboard(params, signal),
         refetchInterval: 120 * 1000,
-        retry: 2,
         ...options,
         enabled,
     })

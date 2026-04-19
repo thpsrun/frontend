@@ -16,7 +16,8 @@ import { VariableToggles } from "@/components/leaderboard/variable-toggles"
 import { Button } from "@/components/ui/button"
 import { ChartLine, Send } from "lucide-react"
 
-import { useAuth } from "@/hooks/auth/useAuth"
+import { useSession } from "@/hooks/auth/useSession"
+import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { SubmitRunDialog } from "@/components/submissions/submit-run-dialog"
 
 import { cn } from "@/lib/utils"
@@ -189,7 +190,8 @@ export const ILDetail = ({
     const runs = lbData?.runs ?? []
     const [showHistory, setShowHistory] = useState(false)
     const [showSubmit, setShowSubmit] = useState(false)
-    const { isAuthenticated, player } = useAuth()
+    const { isAuthenticated } = useSession()
+    const { player } = useCurrentPlayer()
 
     const activeLevel = useMemo(
         () => levels.find((lvl) => lvl.slug === levelSlug) ?? null,

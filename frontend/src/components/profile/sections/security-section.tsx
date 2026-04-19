@@ -1,6 +1,8 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { useAuth } from "@/hooks/auth/useAuth"
+import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
+import { useChangePassword } from "@/hooks/auth/useChangePassword"
+import { useSetSrcKey, useDeleteSrcKey } from "@/hooks/auth/useSrcKey"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -30,12 +32,10 @@ const panelClass = cn(
 )
 
 export function SecuritySection() {
-    const {
-        player,
-        changePassword,
-        setSrcKey,
-        deleteSrcKey,
-    } = useAuth()
+    const { player } = useCurrentPlayer()
+    const changePassword = useChangePassword()
+    const setSrcKey = useSetSrcKey()
+    const deleteSrcKey = useDeleteSrcKey()
 
     const passwordForm = useForm<PasswordFormValues>({
         defaultValues: {

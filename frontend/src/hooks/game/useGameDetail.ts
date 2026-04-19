@@ -2,29 +2,22 @@ import { useQuery } from "@tanstack/react-query"
 import type { UseQueryOptions } from "@tanstack/react-query"
 
 import type { GameDetail } from "@/types/api"
-import { API_BASE_URL } from "@/constants"
+import { apiFetch } from "@/lib/api-client"
+import { queryKeys } from "@/lib/query-keys"
 
 type QueryOptions = Omit<
     UseQueryOptions<GameDetail, Error>,
     "queryKey" | "queryFn"
 >
 
-const fetchGameDetail = async (
+const fetchGameDetail = (
     gameSlug: string,
+    signal?: AbortSignal,
 ): Promise<GameDetail> => {
     if (!gameSlug) throw new Error("gameSlug required")
-
-    const res = await fetch(
-        `${API_BASE_URL}/games/${encodeURIComponent(gameSlug)}`
-            + `?embed=categories,levels,platforms`,
-        { headers: { "Accept": "application/json" } },
-    )
-
-    if (!res.ok) {
-        throw new Error(`Failed game detail (${res.status})`)
-    }
-
-    return res.json()
+    const path = `/games/${encodeURIComponent(gameSlug)}`
+        + `?embed=categories,levels,platforms`
+    return apiFetch<GameDetail>(path, { signal })
 }
 
 export const useGameDetail = (
@@ -34,8 +27,8 @@ export const useGameDetail = (
     const enabled = !!gameSlug && (options?.enabled ?? true)
 
     return useQuery<GameDetail, Error>({
-        queryKey: ["game-detail", gameSlug],
-        queryFn: () => fetchGameDetail(gameSlug),
+        queryKey: queryKeys.games.detail(gameSlug),
+        queryFn: ({ signal }) => fetchGameDetail(gameSlug, signal),
         staleTime: 5 * 60 * 1000,
         ...options,
         enabled,

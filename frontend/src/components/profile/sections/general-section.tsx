@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import { useForm } from "react-hook-form"
-import { useAuth } from "@/hooks/auth/useAuth"
+import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
+import { useCountries } from "@/hooks/auth/useCountries"
+import { useUpdateProfile } from "@/hooks/auth/useUpdateProfile"
+import { useUploadPfp } from "@/hooks/auth/useUploadPfp"
 import { BACKEND_URL } from "@/constants"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
@@ -46,12 +49,10 @@ const panelClass = cn(
 )
 
 export function GeneralSection() {
-    const {
-        player,
-        countries,
-        updateProfile,
-        uploadPfp,
-    } = useAuth()
+    const { player } = useCurrentPlayer()
+    const { countries } = useCountries()
+    const updateProfile = useUpdateProfile()
+    const uploadPfp = useUploadPfp()
 
     // Country managed outside React Hook Form to avoid
     // Controller/reset race condition

@@ -1,19 +1,13 @@
 import { useQuery } from "@tanstack/react-query"
-import { API_BASE_URL } from "@/constants"
 import type { NavbarResponse } from "@/types/api"
-
-const fetchNavbar = async (): Promise<NavbarResponse> => {
-    const response = await fetch(`${API_BASE_URL}/website/navbar`)
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-    }
-    return response.json()
-}
+import { apiFetch } from "@/lib/api-client"
+import { queryKeys } from "@/lib/query-keys"
 
 export const useNavbar = () => {
     return useQuery({
-        queryKey: ["navbar"],
-        queryFn: fetchNavbar,
+        queryKey: queryKeys.home.navbar(),
+        queryFn: ({ signal }) =>
+            apiFetch<NavbarResponse>("/website/navbar", { signal }),
         staleTime: 15 * 60 * 1000,
     })
 }

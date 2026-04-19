@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useNavigate, Navigate, Link } from "react-router"
-import { useAuth } from "@/hooks/auth/useAuth"
+import { useSession } from "@/hooks/auth/useSession"
+import { useLogin, useSubmitTotp } from "@/hooks/auth/useLogin"
 import { OAUTH_BASE_URL } from "@/constants"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertBanner } from "@/components/ui/alert-banner"
@@ -12,7 +13,9 @@ type LoginStep = "login" | "totp" | "email-verification"
 
 export function LoginPage() {
     const navigate = useNavigate()
-    const { login, submitTotp, isAuthenticated } = useAuth()
+    const { isAuthenticated } = useSession()
+    const login = useLogin()
+    const submitTotp = useSubmitTotp()
 
     const [loginValue, setLoginValue] = useState("")
     const [password, setPassword] = useState("")

@@ -17,7 +17,8 @@ import { WRHistoryChart } from "@/components/leaderboard/wr-history-chart"
 import { useGameDetail } from "@/hooks/game/useGameDetail"
 import { useLeaderboard } from "@/hooks/leaderboard/useLeaderboard"
 
-import { useAuth } from "@/hooks/auth/useAuth"
+import { useSession } from "@/hooks/auth/useSession"
+import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { SubmitRunDialog } from "@/components/submissions/submit-run-dialog"
 
 import { cn } from "@/lib/utils"
@@ -114,7 +115,8 @@ export const GameOverview = () => {
 
     const hasLevels = (gameDetail?.levels?.length ?? 0) > 0
     const [showHistory, setShowHistory] = useState(false)
-    const { isAuthenticated, player } = useAuth()
+    const { isAuthenticated } = useSession()
+    const { player } = useCurrentPlayer()
     const [showSubmit, setShowSubmit] = useState(false)
 
     // Redirects /:gameSlug:/ils back to /:gameSlug: when the game has

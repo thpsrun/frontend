@@ -1,8 +1,8 @@
 import { Navigate, Outlet } from "react-router"
-import { useAuth } from "@/hooks/auth/useAuth"
+import { useSession } from "@/hooks/auth/useSession"
 
 export function ProtectedRoute() {
-    const { isAuthenticated, isLoading } = useAuth()
+    const { isAuthenticated, isLoading } = useSession()
 
     if (isLoading) return null
 

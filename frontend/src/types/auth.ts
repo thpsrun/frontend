@@ -1,35 +1,21 @@
-export interface CountryEmbed {
-    id: string
-    name: string
-    flag: string | null
-}
+import type {
+    Country,
+    Customizations,
+    ModeratedGame,
+    Socials,
+} from "./shared"
+
+export type { Country, ModeratedGame } from "./shared"
 
 export interface PlayerEmbed {
     username: string
     name: string
     nickname: string | null
     pronouns: string | null
-    country: CountryEmbed | null
+    country: Country | null
     pfp: string | null
     is_superuser: boolean
     ex_stream: boolean
-}
-
-export interface SocialsEmbed {
-    twitch: string | null
-    youtube: string | null
-    twitter: string | null
-    bluesky: string | null
-    discord: string | null
-    therun_gg: string | null
-}
-
-export interface CustomizationsEmbed {
-    tagline: string | null
-    gradient_1: string | null
-    gradient_2: string | null
-    gradient_3: string | null
-    profile_bg: string | null
 }
 
 export interface ModerationEmbed {
@@ -42,19 +28,13 @@ export interface AuthMe {
     claim_status: string
     joined: string | null
     player: PlayerEmbed
-    socials: SocialsEmbed
-    customizations: CustomizationsEmbed
+    socials: Socials
+    customizations: Customizations
     moderation: ModerationEmbed
 }
 
 export interface VerifySrcRequest {
     src_api_key: string
-}
-
-export interface ModeratedGame {
-    id: string
-    name: string
-    slug: string
 }
 
 export interface SRCKeyStatusResponse {
@@ -82,11 +62,6 @@ export interface LoginRequest {
     password: string
 }
 
-export interface AuthError {
-    error: string
-    details: Record<string, string> | null
-}
-
 export interface AllauthUser {
     id: number
     username: string
@@ -105,23 +80,6 @@ export interface AllauthSessionResponse {
         user?: AllauthUser
         flows?: AllauthFlow[]
     }
-}
-
-export interface AllauthError {
-    message: string
-    code: string
-    param?: string
-}
-
-export interface AllauthErrorResponse {
-    status: number
-    errors: AllauthError[]
-}
-
-export interface Country {
-    id: string
-    name: string
-    flag: string | null
 }
 
 export interface PlayerUpdateEmbed {

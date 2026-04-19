@@ -1,34 +1,28 @@
 import { useQuery } from "@tanstack/react-query"
 import { useState, useEffect } from "react"
-import { API_BASE_URL } from "@/constants"
-import { handleApiError } from "@/lib/api"
+import { apiFetch } from "@/lib/api-client"
+import { queryKeys } from "@/lib/query-keys"
 import type { PlayerSearchResult } from "@/types/submissions"
 
-async function searchPlayers(
+const searchPlayers = (
     query: string,
-): Promise<PlayerSearchResult[]> {
-    const res = await fetch(
-        `${API_BASE_URL}/players/search?q=${encodeURIComponent(query)}&limit=10`,
-        { credentials: "include" },
-    )
-    if (!res.ok) await handleApiError(res, "Player search failed")
-    return res.json()
+    signal?: AbortSignal,
+): Promise<PlayerSearchResult[]> => {
+    const path = `/players/search?q=${encodeURIComponent(query)}&limit=10`
+    return apiFetch<PlayerSearchResult[]>(path, { signal })
 }
 
 export function usePlayerSearch(query: string) {
     const [debounced, setDebounced] = useState(query)
 
     useEffect(() => {
-        const timer = setTimeout(
-            () => setDebounced(query),
-            300,
-        )
+        const timer = setTimeout(() => setDebounced(query), 300)
         return () => clearTimeout(timer)
     }, [query])
 
     return useQuery({
-        queryKey: ["playerSearch", debounced],
-        queryFn: () => searchPlayers(debounced),
+        queryKey: queryKeys.player.search(debounced),
+        queryFn: ({ signal }) => searchPlayers(debounced, signal),
         enabled: debounced.length >= 2,
         staleTime: 30 * 1000,
     })

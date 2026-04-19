@@ -1,6 +1,8 @@
 import { useState } from "react"
 import { useNavigate } from "react-router"
-import { useAuth } from "@/hooks/auth/useAuth"
+import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
+import { useDeleteAccount } from "@/hooks/auth/useDeleteAccount"
+import { useLogout } from "@/hooks/auth/useLogout"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,7 +17,9 @@ const panelClass = cn(
 
 export function DangerSection() {
     const navigate = useNavigate()
-    const { player, deleteAccount, logout } = useAuth()
+    const { player } = useCurrentPlayer()
+    const deleteAccount = useDeleteAccount()
+    const logout = useLogout()
 
     const [showDeleteConfirm, setShowDeleteConfirm] =
         useState(false)

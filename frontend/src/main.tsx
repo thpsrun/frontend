@@ -1,6 +1,7 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { ApiError } from "@/lib/api-client"
 import { Provider as JotaiProvider } from "jotai"
 import "./index.css"
 import App from "./App.tsx"
@@ -29,7 +30,27 @@ import { CustomizationSection } from "./components/profile/sections/customizatio
 import { SecuritySection } from "./components/profile/sections/security-section.tsx"
 import { DangerSection } from "./components/profile/sections/danger-section.tsx"
 
-const queryClient = new QueryClient()
+// Defaults for how the application should handle web requests.
+// 4xx errors will not retry, since there is an issue that may not be resolvable.
+// Otherwise, for other errors (e.g. 500) there will be some re-attempts before erroring out.
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: 60_000,
+            gcTime: 5 * 60_000,
+            refetchOnWindowFocus: false,
+            retry: (failureCount, error) => {
+                if (error instanceof ApiError && error.status >= 400 && error.status < 500) {
+                    return false
+                }
+                return failureCount < 5
+            },
+        },
+        mutations: {
+            retry: false,
+        },
+    },
+})
 
 const router = createBrowserRouter([
     {

@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback } from "react"
 import { useForm } from "react-hook-form"
-import { useAuth } from "@/hooks/auth/useAuth"
+import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
+import { useUpdateProfile } from "@/hooks/auth/useUpdateProfile"
+import {
+    useUploadProfileBg,
+    useDeleteProfileBg,
+} from "@/hooks/auth/useProfileBg"
 import { normalizeGradients } from "@/lib/gradients"
 import {
     GradientUsername,
@@ -37,12 +42,10 @@ const panelClass = cn(
 )
 
 export function CustomizationSection() {
-    const {
-        player,
-        updateProfile,
-        uploadProfileBg,
-        deleteProfileBg,
-    } = useAuth()
+    const { player } = useCurrentPlayer()
+    const updateProfile = useUpdateProfile()
+    const uploadProfileBg = useUploadProfileBg()
+    const deleteProfileBg = useDeleteProfileBg()
 
     const [msg, setMsg] = useState<StatusMsg>(null)
 

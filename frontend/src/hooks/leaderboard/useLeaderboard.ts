@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query"
 import type { UseQueryOptions } from "@tanstack/react-query"
 
 import type { LbsResponse } from "@/types/api"
-import { API_BASE_URL } from "@/constants"
+import { apiFetch } from "@/lib/api-client"
+import { queryKeys } from "@/lib/query-keys"
 
 export interface UseLeaderboardParams {
     gameSlug: string
@@ -15,11 +16,10 @@ type QueryOptions = Omit<
     "queryKey" | "queryFn"
 >
 
-const fetchLeaderboard = async ({
-    gameSlug,
-    categorySlug,
-    valueSlugs,
-}: UseLeaderboardParams): Promise<LbsResponse> => {
+const fetchLeaderboard = (
+    { gameSlug, categorySlug, valueSlugs }: UseLeaderboardParams,
+    signal?: AbortSignal,
+): Promise<LbsResponse> => {
     if (!gameSlug) throw new Error("gameSlug required")
     if (!categorySlug) throw new Error("categorySlug required")
 
@@ -29,20 +29,12 @@ const fetchLeaderboard = async ({
     }
     qs.set("embed", "stats,recent")
 
-    const url = `${API_BASE_URL}/website/lbs`
+    const path = `/website/lbs`
         + `/${encodeURIComponent(gameSlug)}`
         + `/category/${encodeURIComponent(categorySlug)}`
         + `?${qs.toString()}`
 
-    const res = await fetch(url, {
-        headers: { "Accept": "application/json" },
-    })
-
-    if (!res.ok) {
-        throw new Error(`Failed leaderboard (${res.status})`)
-    }
-
-    return res.json()
+    return apiFetch<LbsResponse>(path, { signal })
 }
 
 export const useLeaderboard = (
@@ -54,16 +46,13 @@ export const useLeaderboard = (
         && (options?.enabled ?? true)
 
     return useQuery<LbsResponse, Error>({
-        queryKey: [
-            "leaderboard",
-            params.gameSlug,
-            params.categorySlug,
-            ...params.valueSlugs,
-        ],
-        queryFn: () => fetchLeaderboard(params),
-        staleTime: 60 * 1000,
+        queryKey: queryKeys.leaderboard.full({
+            gameSlug: params.gameSlug,
+            categorySlug: params.categorySlug,
+            valueSlugs: params.valueSlugs,
+        }),
+        queryFn: ({ signal }) => fetchLeaderboard(params, signal),
         refetchInterval: 120 * 1000,
-        retry: 2,
         ...options,
         enabled,
     })

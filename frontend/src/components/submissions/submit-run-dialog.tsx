@@ -12,7 +12,7 @@ import {
     SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import { AlertBanner } from "@/components/ui/alert-banner"
-import { useAuth } from "@/hooks/auth/useAuth"
+import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useSubmitRun } from "@/hooks/submissions/useSubmitRun"
 import { usePlayerSearch } from "@/hooks/players/usePlayerSearch"
 import { Loader2, Plus, Trash2 } from "lucide-react"
@@ -148,7 +148,7 @@ export function SubmitRunDialog({
     valueSlugs,
     activeLevel,
 }: SubmitRunDialogProps) {
-    const { player } = useAuth()
+    const { player } = useCurrentPlayer()
     const submitRun = useSubmitRun()
 
     const makeInitialPlayers = (): PlayerRow[] => {
