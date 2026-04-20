@@ -1,4 +1,5 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Panel } from "@/components/ui/panel"
 
 import { cn } from "@/lib/utils"
 
@@ -28,13 +29,7 @@ export const ILFilterPanel = ({
     onValueChange,
 }: ILFilterPanelProps) => {
     return (
-        <div className={cn(
-            "rounded-lg border border-border/40",
-            "bg-background/70 backdrop-blur-sm",
-            "shadow-sm",
-            "px-4 py-3",
-            "flex flex-col gap-3",
-        )}>
+        <Panel className="px-4 py-3 flex flex-col gap-3">
             {ilCategories.length > 1 && (
                 <Tabs
                     value={activeCatSlug}
@@ -69,6 +64,6 @@ export const ILFilterPanel = ({
                 valueSlugs={valueSlugs}
                 onValueChange={onValueChange}
             />
-        </div>
+        </Panel>
     )
 }

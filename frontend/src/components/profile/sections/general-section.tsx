@@ -17,6 +17,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Panel } from "@/components/ui/panel"
 import { AvatarCropDialog } from "@/components/profile/avatar-crop-dialog"
 import {
     useUnsavedChangesGuard,
@@ -41,12 +42,6 @@ type StatusMsg = {
     type: "success" | "error"
     text: string
 } | null
-
-const panelClass = cn(
-    "rounded-lg border border-border/40",
-    "bg-background/70 backdrop-blur-sm",
-    "shadow-sm p-5",
-)
 
 export function GeneralSection() {
     const { player } = useCurrentPlayer()
@@ -274,7 +269,7 @@ export function GeneralSection() {
 
     return (
         <div className="flex flex-col gap-6">
-            <section className={panelClass}>
+            <Panel className="p-5">
                 <h2 className="text-xl font-semibold">
                     General
                 </h2>
@@ -514,7 +509,7 @@ export function GeneralSection() {
                             : "Save Changes"}
                     </Button>
                 </form>
-            </section>
+            </Panel>
 
             <AvatarCropDialog
                 imageUrl={rawImageUrl}

@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { AlertBanner } from "@/components/ui/alert-banner"
+import { Panel } from "@/components/ui/panel"
 import { ImageIcon, X } from "lucide-react"
 import { BACKEND_URL } from "@/constants"
 import { cn } from "@/lib/utils"
@@ -138,11 +139,7 @@ export function BgUpload({
             )}
 
             {showPreview && (
-                <div className={cn(
-                    "rounded-lg border border-border/40",
-                    "bg-background/70 p-3",
-                    "flex items-center gap-3",
-                )}>
+                <Panel className="p-3 flex items-center gap-3">
                     <img
                         src={previewUrl
                             ?? `${BACKEND_URL}${currentBg}`}
@@ -199,7 +196,7 @@ export function BgUpload({
                             <X className="size-4" />
                         </Button>
                     </div>
-                </div>
+                </Panel>
             )}
 
             <input

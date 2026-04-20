@@ -3,6 +3,7 @@ import { useSubmissions } from "@/hooks/submissions/useSubmissions"
 import { ModerationQueue } from "@/components/submissions/moderation-queue"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Badge } from "@/components/ui/badge"
+import { Panel } from "@/components/ui/panel"
 import {
     Table, TableBody, TableCell, TableHead,
     TableHeader, TableRow,
@@ -135,14 +136,7 @@ export function SubmissionsHub() {
             "mx-auto max-w-5xl px-4 py-8",
             "space-y-6",
         )}>
-            <div className={cn(
-                "flex items-start gap-2.5 rounded-lg",
-                "border border-border/40",
-                "bg-background/70 backdrop-blur-sm",
-                "shadow-sm",
-                "px-4 py-3 text-sm",
-                "text-muted-foreground",
-            )}>
+            <Panel className="flex items-start gap-2.5 px-4 py-3 text-sm text-muted-foreground">
                 <Info className={cn(
                     "size-4 mt-0.5 shrink-0",
                     "text-link",
@@ -163,13 +157,9 @@ export function SubmissionsHub() {
                     </a>
                     {" "}directly.
                 </span>
-            </div>
+            </Panel>
 
-            <section className={cn(
-                "rounded-lg border border-border/40",
-                "bg-background/70 backdrop-blur-sm",
-                "shadow-sm p-5",
-            )}>
+            <Panel className="p-5">
                 <div className="flex items-center gap-3 mb-4">
                     <h2 className="text-xl font-semibold">
                         My Pending Runs
@@ -246,7 +236,7 @@ export function SubmissionsHub() {
                         </Table>
                     </div>
                 )}
-            </section>
+            </Panel>
 
             {data?.moderation_queue && (
                 <ModerationQueue

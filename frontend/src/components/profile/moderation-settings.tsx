@@ -7,6 +7,7 @@ import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Panel } from "@/components/ui/panel"
 import { cn } from "@/lib/utils"
 
 interface ModerationSettingsProps {
@@ -82,11 +83,7 @@ export function ModerationSettings({
         || deleteSrcKey.isPending
 
     return (
-        <section className={cn(
-            "rounded-lg border border-border/40",
-            "bg-background/70 backdrop-blur-sm",
-            "shadow-sm p-5",
-        )}>
+        <Panel className="p-5">
             <h2 className="text-xl font-semibold">
                 SRC API Key
             </h2>
@@ -184,6 +181,6 @@ export function ModerationSettings({
                     )}
                 </div>
             </form>
-        </section>
+        </Panel>
     )
 }

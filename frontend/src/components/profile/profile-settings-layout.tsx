@@ -1,4 +1,5 @@
 import { NavLink, Outlet, Navigate, useLocation } from "react-router"
+import { Panel } from "@/components/ui/panel"
 import { cn } from "@/lib/utils"
 
 const NAV_ITEMS = [
@@ -12,12 +13,6 @@ const DANGER_ITEM = {
     label: "Danger Zone",
     to: "/profile/settings/danger",
 } as const
-
-const sidebarPanel = cn(
-    "rounded-lg border border-border/40",
-    "bg-background/70 backdrop-blur-sm",
-    "shadow-sm",
-)
 
 const linkBase = cn(
     "rounded-md px-3 py-2 text-sm transition-colors",
@@ -43,12 +38,8 @@ export function ProfileSettingsLayout() {
                 "w-full max-w-200",
                 "flex flex-col lg:flex-row gap-6",
             )}>
-                <nav className={cn(
-                    "lg:hidden flex gap-1.5 overflow-x-auto",
-                    "pb-1 -mb-1",
-                    sidebarPanel,
-                    "p-2",
-                )}>
+                <nav className="lg:hidden">
+                    <Panel className="flex gap-1.5 overflow-x-auto pb-1 -mb-1 p-2">
                     {NAV_ITEMS.map((item) => (
                         <NavLink
                             key={item.to}
@@ -74,15 +65,11 @@ export function ProfileSettingsLayout() {
                     >
                         {DANGER_ITEM.label}
                     </NavLink>
+                    </Panel>
                 </nav>
 
-                <nav className={cn(
-                    "hidden lg:flex lg:flex-col",
-                    "lg:w-55 lg:sticky lg:top-6 lg:self-start",
-                    "shrink-0",
-                    sidebarPanel,
-                    "p-2 gap-0.5",
-                )}>
+                <nav className="hidden lg:flex lg:flex-col lg:w-55 lg:sticky lg:top-6 lg:self-start shrink-0">
+                    <Panel className="flex flex-col p-2 gap-0.5">
                     {NAV_ITEMS.map((item) => (
                         <NavLink
                             key={item.to}
@@ -109,6 +96,7 @@ export function ProfileSettingsLayout() {
                     >
                         {DANGER_ITEM.label}
                     </NavLink>
+                    </Panel>
                 </nav>
 
                 <div className="flex-1 min-w-0">

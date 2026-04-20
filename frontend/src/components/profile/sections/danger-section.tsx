@@ -7,13 +7,8 @@ import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Panel } from "@/components/ui/panel"
 import { cn } from "@/lib/utils"
-
-const panelClass = cn(
-    "rounded-lg border border-border/40",
-    "bg-background/70 backdrop-blur-sm",
-    "shadow-sm p-5",
-)
 
 export function DangerSection() {
     const navigate = useNavigate()
@@ -55,10 +50,7 @@ export function DangerSection() {
     }
 
     return (
-        <section className={cn(
-            panelClass,
-            "border-destructive/50",
-        )}>
+        <Panel className="p-5 border-destructive/50">
             <h2 className={cn(
                 "text-xl font-semibold",
                 "text-destructive",
@@ -156,6 +148,6 @@ export function DangerSection() {
                     </div>
                 </div>
             )}
-        </section>
+        </Panel>
     )
 }

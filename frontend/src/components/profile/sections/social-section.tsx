@@ -6,6 +6,7 @@ import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Panel } from "@/components/ui/panel"
 import {
     useUnsavedChangesGuard,
 } from "@/hooks/useUnsavedChangesGuard"
@@ -27,12 +28,6 @@ type StatusMsg = {
     type: "success" | "error"
     text: string
 } | null
-
-const panelClass = cn(
-    "rounded-lg border border-border/40",
-    "bg-background/70 backdrop-blur-sm",
-    "shadow-sm p-5",
-)
 
 export function SocialSection() {
     const { player } = useCurrentPlayer()
@@ -123,7 +118,7 @@ export function SocialSection() {
 
     return (
         <div className="flex flex-col gap-6">
-            <section className={panelClass}>
+            <Panel className="p-5">
                 <h2 className="text-xl font-semibold">
                     Social Media
                 </h2>
@@ -254,7 +249,7 @@ export function SocialSection() {
                             : "Save Changes"}
                     </Button>
                 </form>
-            </section>
+            </Panel>
 
             <UnsavedChangesDialog
                 open={isBlocked}

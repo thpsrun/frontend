@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router"
 
 import { Badge } from "@/components/ui/badge"
+import { Panel } from "@/components/ui/panel"
 
 import { RecentRunItem } from "@/components/leaderboard/leaderboard-table"
 
@@ -86,13 +87,7 @@ export const GameSidebar = ({
             {gameLoading ? (
                 <SidebarSkeleton />
             ) : gameDetail ? (
-                <div className={cn(
-                    "rounded-lg border",
-                    "border-border/40",
-                    "bg-background/70",
-                    "backdrop-blur-sm",
-                    "shadow-sm overflow-hidden",
-                )}>
+                <Panel className="overflow-hidden p-0">
                     {gameDetail.boxart && (
                         <img
                             src={gameDetail.boxart}
@@ -181,16 +176,10 @@ export const GameSidebar = ({
                             </div>
                         )}
                     </div>
-                </div>
+                </Panel>
             ) : null}
 
-            <div className={cn(
-                "rounded-lg border",
-                "border-border/40",
-                "bg-background/70",
-                "backdrop-blur-sm",
-                "shadow-sm p-4 space-y-2",
-            )}>
+            <Panel className="p-4 space-y-2">
                 <h3 className={cn(
                     "text-sm font-semibold",
                     "text-muted-foreground",
@@ -251,15 +240,9 @@ export const GameSidebar = ({
                         )}
                     </div>
                 )}
-            </div>
+            </Panel>
 
-            <div className={cn(
-                "rounded-lg border",
-                "border-border/40",
-                "bg-background/70",
-                "backdrop-blur-sm",
-                "shadow-sm p-4 space-y-3",
-            )}>
+            <Panel className="p-4 space-y-3">
                 <h3 className={cn(
                     "text-sm font-semibold",
                     "text-muted-foreground",
@@ -304,7 +287,7 @@ export const GameSidebar = ({
                         No Recent Speedruns
                     </div>
                 )}
-            </div>
+            </Panel>
         </div>
     )
 }

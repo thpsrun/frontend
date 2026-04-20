@@ -9,6 +9,7 @@ import {
     SelectItem,
 } from "@/components/ui/select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Panel } from "@/components/ui/panel"
 
 import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table"
 import { WRHistoryChart } from "@/components/leaderboard/wr-history-chart"
@@ -212,11 +213,7 @@ export const ILDetail = ({
     }
 
     return (
-        <div className={cn(
-            "rounded-lg border border-border/40",
-            "bg-background/70 backdrop-blur-sm",
-            "shadow-sm",
-        )}>
+        <Panel className="p-0">
             <div className={cn(
                 "border-b border-border/40",
                 "px-4 pt-4 pb-2",
@@ -386,6 +383,6 @@ export const ILDetail = ({
                     activeLevel={activeLevel}
                 />
             )}
-        </div>
+        </Panel>
     )
 }

@@ -7,6 +7,7 @@ import {
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
+import { Panel } from "@/components/ui/panel"
 
 import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table"
 import { VariableToggles } from "@/components/leaderboard/variable-toggles"
@@ -248,11 +249,7 @@ export const GameOverview = () => {
             ) : (
             <>
             <div className="flex-1 flex flex-col gap-6">
-                <div className={cn(
-                    "rounded-lg border border-border/40",
-                    "bg-background/70 backdrop-blur-sm",
-                    "shadow-sm",
-                )}>
+                <Panel className="p-0">
                     <div className={cn(
                         "border-b border-border/40",
                         "px-4 pt-4 pb-2",
@@ -388,7 +385,7 @@ export const GameOverview = () => {
                             />
                         )}
                     </div>
-                </div>
+                </Panel>
             </div>
 
             <GameSidebar

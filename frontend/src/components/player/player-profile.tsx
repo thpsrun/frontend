@@ -31,6 +31,7 @@ import {
     TabsTrigger,
     TabsContent,
 } from "@/components/ui/tabs"
+import { Panel } from "@/components/ui/panel"
 
 import { usePlayerProfile, PlayerNotFoundError } from "@/hooks/player/usePlayerProfile"
 import { useGames } from "@/hooks/game/useGames"
@@ -95,10 +96,7 @@ function ProfileSkeleton() {
             <div className="order-first lg:order-last lg:w-80 shrink-0
                 flex flex-col gap-4"
             >
-                <div className="rounded-lg border border-border/40
-                    bg-background/70 backdrop-blur-sm shadow-sm p-4
-                    flex flex-col items-center gap-3"
-                >
+                <Panel className="flex flex-col items-center gap-3">
                     <div className="w-20 h-20 md:w-24 md:h-24
                         rounded-full bg-muted/30"
                     />
@@ -127,13 +125,10 @@ function ProfileSkeleton() {
                             mx-auto"
                         />
                     </div>
-                </div>
+                </Panel>
             </div>
 
-            <div className="flex-1 min-w-0 rounded-lg border
-                border-border/40 bg-background/70 backdrop-blur-sm
-                shadow-sm overflow-hidden"
-            >
+            <Panel className="flex-1 min-w-0 overflow-hidden p-0">
                 <div className="flex gap-4 px-4 py-3 border-b
                     border-border/40"
                 >
@@ -153,7 +148,7 @@ function ProfileSkeleton() {
                         </div>
                     ))}
                 </div>
-            </div>
+            </Panel>
         </div>
     )
 }
@@ -535,10 +530,7 @@ export function PlayerProfile() {
 
     if (error instanceof PlayerNotFoundError) {
         return (
-            <div
-                className="rounded-lg border border-border/40 bg-background/70
-                    backdrop-blur-sm shadow-sm p-8 text-center"
-            >
+            <Panel className="p-8 text-center">
                 <h2 className="text-xl font-semibold mb-2">
                     Player not found
                 </h2>
@@ -548,7 +540,7 @@ export function PlayerProfile() {
                 <Link to="/" className="text-sm text-link hover:underline">
                     Back to home
                 </Link>
-            </div>
+            </Panel>
         )
     }
 
@@ -586,10 +578,7 @@ export function PlayerProfile() {
                 shrink-0 flex flex-col gap-4
                 lg:sticky lg:top-6 lg:self-start"
             >
-                <div className="rounded-lg border border-border/40
-                    bg-background/70 backdrop-blur-sm shadow-sm
-                    p-4 text-center"
-                >
+                <Panel className="p-4 text-center">
                     <div className="flex justify-center mb-3">
                         {profile.player.pfp ? (
                             <img
@@ -859,12 +848,10 @@ export function PlayerProfile() {
                             )}
                         </div>
                     )}
-                </div>
+                </Panel>
 
                 {(profile.stats?.awards?.length ?? 0) > 0 && (
-                    <div className="rounded-lg border border-border/40
-                        bg-background/70 backdrop-blur-sm shadow-sm p-4"
-                    >
+                    <Panel className="p-4">
                         <h3 className="text-xs font-medium
                             text-muted-foreground uppercase
                             tracking-wide mb-2 text-center"
@@ -886,16 +873,13 @@ export function PlayerProfile() {
                                 </span>
                             ))}
                         </div>
-                    </div>
+                    </Panel>
                 )}
             </div>
 
             <div className="flex-1 min-w-0">
                 {(hasFG || hasIL) ? (
-                    <div className="rounded-lg border border-border/40
-                        bg-background/70 backdrop-blur-sm shadow-sm
-                        overflow-hidden"
-                    >
+                    <Panel className="overflow-hidden p-0">
                         <Tabs
                             defaultValue="fg"
                             className="gap-0"
@@ -1022,7 +1006,7 @@ export function PlayerProfile() {
                                 </TabsContent>
                             </div>
                         </Tabs>
-                    </div>
+                    </Panel>
                 ) : (
                     <div className="text-sm text-muted-foreground p-4
                         border border-dashed border-border/40

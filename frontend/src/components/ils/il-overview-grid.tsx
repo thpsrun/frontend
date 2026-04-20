@@ -1,5 +1,6 @@
 import { Link } from "react-router"
 
+import { Panel } from "@/components/ui/panel"
 import { cn } from "@/lib/utils"
 import { GradientUsername } from "@/components/profile/gradient-username"
 
@@ -42,15 +43,9 @@ export const ILOverviewGrid = ({
                 "gap-4",
             )}>
                 {[...Array(6)].map((_, i) => (
-                    <div
+                    <Panel
                         key={i}
-                        className={cn(
-                            "rounded-lg border",
-                            "border-border/40",
-                            "bg-background/70",
-                            "p-4 space-y-3",
-                            "animate-pulse",
-                        )}
+                        className="space-y-3 animate-pulse shadow-none backdrop-blur-none"
                     >
                         <div className="h-5 rounded bg-muted/30 w-2/3" />
                         <div className="space-y-2">
@@ -62,7 +57,7 @@ export const ILOverviewGrid = ({
                                 ),
                             )}
                         </div>
-                    </div>
+                    </Panel>
                 ))}
             </div>
         )

@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Link } from "react-router"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Panel } from "@/components/ui/panel"
 import {
     Table, TableBody, TableCell, TableHead,
     TableHeader, TableRow,
@@ -281,11 +282,7 @@ export function ModerationQueue({
     if (groups.length === 0) return null
 
     return (
-        <section className={cn(
-            "rounded-lg border border-border/40",
-            "bg-background/70 backdrop-blur-sm",
-            "shadow-sm p-5",
-        )}>
+        <Panel className="p-5">
             <h2 className="text-xl font-semibold mb-4">
                 Moderation Queue
             </h2>
@@ -298,6 +295,6 @@ export function ModerationQueue({
                     />
                 ))}
             </div>
-        </section>
+        </Panel>
     )
 }

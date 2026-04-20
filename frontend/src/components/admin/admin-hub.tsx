@@ -5,6 +5,7 @@ import { useSyncLogs } from "@/hooks/admin/useSyncLogs"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Panel } from "@/components/ui/panel"
 import {
     Select, SelectContent, SelectItem,
     SelectTrigger, SelectValue,
@@ -237,11 +238,7 @@ export function AdminHub() {
             )}
 
             {data && (
-                <div className={cn(
-                    "rounded-lg border border-border/40",
-                    "bg-background/70 backdrop-blur-sm",
-                    "shadow-sm p-5 w-full",
-                )}>
+                <Panel className="p-5 w-full">
                     <h2 className={cn(
                         "text-xl font-semibold mb-4",
                     )}>
@@ -462,7 +459,7 @@ export function AdminHub() {
                             </div>
                         </div>
                     )}
-                </div>
+                </Panel>
             )}
         </div>
     )
