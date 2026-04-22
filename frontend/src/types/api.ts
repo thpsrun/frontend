@@ -85,6 +85,7 @@ export interface MainPlayer {
     name: string
     nickname: string | null
     country: Country | null
+    gradients?: Gradients | null
 }
 
 // Utilized on /api/v1/website/main?embed=latest-wrs,latest-pbs
@@ -222,6 +223,7 @@ export interface LbsRecentRun {
     place: number
     player_name: string
     player_country: Country | null
+    gradients?: Gradients | null
     v_date: string
     url: string | null
     video: string | null

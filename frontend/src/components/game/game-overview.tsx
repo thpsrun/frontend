@@ -398,7 +398,7 @@ export const GameOverview = () => {
                 statsError={!!lbError}
                 isILView={false}
             />
-            {isAuthenticated && activeCategory && gameDetail && (
+            {isAuthenticated && player && activeCategory && gameDetail && (
                 <SubmitRunDialog
                     open={showSubmit}
                     onOpenChange={setShowSubmit}

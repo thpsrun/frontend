@@ -11,6 +11,7 @@ import {
     Select, SelectContent, SelectItem,
     SelectTrigger, SelectValue,
 } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useSubmitRun } from "@/hooks/submissions/useSubmitRun"
@@ -211,6 +212,8 @@ export function SubmitRunDialog({
         Record<string, string>
     >(() => buildInitialVarValues(activeCategory, valueSlugs))
 
+    const [selectedPlatformId, setSelectedPlatformId] = useState("")
+    const [emulated, setEmulated] = useState(false)
     const [players, setPlayers] = useState<PlayerRow[]>(makeInitialPlayers)
     const [rtaTime, setRtaTime] = useState<TimeFields>(EMPTY_TIME)
     const [nlTime, setNlTime] = useState<TimeFields>(EMPTY_TIME)
@@ -270,6 +273,8 @@ export function SubmitRunDialog({
             setSelectedVarValues(
                 buildInitialVarValues(activeCategory, valueSlugs),
             )
+            setSelectedPlatformId("")
+            setEmulated(false)
             setPlayers(makeInitialPlayers())
             setRtaTime(EMPTY_TIME)
             setNlTime(EMPTY_TIME)
@@ -307,6 +312,11 @@ export function SubmitRunDialog({
     const handleSubmit = () => {
         setError(null)
 
+        if (!selectedPlatformId) {
+            setError("Please select a platform.")
+            return
+        }
+
         if (!isValidYouTubeUrl(video)) {
             setError("Please enter a valid YouTube URL.")
             return
@@ -327,6 +337,8 @@ export function SubmitRunDialog({
             game_id: gameDetail.id,
             category_id: selectedCategory.id,
             level_id: activeLevel?.id ?? null,
+            platform_id: selectedPlatformId,
+            emulated,
             players: players.map((p) => ({
                 rel: p.rel,
                 id: p.rel === "user" ? p.id : null,
@@ -397,6 +409,38 @@ export function SubmitRunDialog({
                                 </SelectContent>
                             </Select>
                         </div>
+                    </div>
+                    <div className="flex items-end gap-3">
+                        <div className="flex-1 space-y-1">
+                            <p className="text-xs text-muted-foreground">
+                                Platform
+                            </p>
+                            <Select
+                                value={selectedPlatformId}
+                                onValueChange={setSelectedPlatformId}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select platform..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {gameDetail.platforms.map((platform) => (
+                                        <SelectItem
+                                            key={platform.id}
+                                            value={platform.id}
+                                        >
+                                            {platform.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <label className="flex items-center gap-2 h-9 shrink-0 cursor-pointer">
+                            <Checkbox
+                                checked={emulated}
+                                onCheckedChange={(v) => setEmulated(v === true)}
+                            />
+                            <span className="text-sm">Emulated?</span>
+                        </label>
                     </div>
                     {activeLevel && (
                         <ReadOnlyField

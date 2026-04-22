@@ -373,7 +373,7 @@ export const ILDetail = ({
                 )}
             </div>
 
-            {isAuthenticated && activeCategory && gameDetail && activeLevel && (
+            {isAuthenticated && player && activeCategory && gameDetail && activeLevel && (
                 <SubmitRunDialog
                     open={showSubmit}
                     onOpenChange={setShowSubmit}

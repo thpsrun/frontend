@@ -13,6 +13,10 @@ import {
 import {
     ColorSlotPicker,
 } from "@/components/profile/color-slot-picker"
+import {
+    GradientPresetPicker,
+} from "@/components/profile/gradient-preset-picker"
+import type { GradientColors } from "@/lib/gradient-presets"
 import { BgUpload } from "@/components/profile/bg-upload"
 import {
     useUnsavedChangesGuard,
@@ -102,6 +106,13 @@ export function CustomizationSection() {
         ] = [g1, g2, g3]
         raw[slot - 1] = value
         const [n1, n2, n3] = normalizeGradients(...raw)
+        setG1(n1)
+        setG2(n2)
+        setG3(n3)
+    }
+
+    const applyGradientColors = (colors: GradientColors) => {
+        const [n1, n2, n3] = normalizeGradients(...colors)
         setG1(n1)
         setG2(n2)
         setG3(n3)
@@ -311,6 +322,10 @@ export function CustomizationSection() {
                                 }
                             />
                         </div>
+                        <GradientPresetPicker
+                            username={player.player.name}
+                            onApply={applyGradientColors}
+                        />
                         <p className={cn(
                             "text-xs text-muted-foreground",
                             "text-center",

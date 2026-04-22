@@ -154,6 +154,8 @@ export interface SubmitRunPayload {
     game_id: string
     category_id: string
     level_id: string | null
+    platform_id: string
+    emulated: boolean
     players: SubmitPlayerEntry[]
     time: string | null
     timenl: string | null

@@ -342,7 +342,10 @@ export const RecentRunItem = ({
                         "hover:underline",
                     )}
                 >
-                    {r.player_name}
+                    <GradientUsername
+                        name={r.player_name}
+                        gradients={r.gradients ?? null}
+                    />
                 </Link>
             </div>
             <div className={cn(

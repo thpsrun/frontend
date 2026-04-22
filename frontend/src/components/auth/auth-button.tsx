@@ -6,6 +6,7 @@ import { useLogout } from "@/hooks/auth/useLogout"
 import { BACKEND_URL } from "@/constants"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { GradientUsername } from "@/components/profile/gradient-username"
 import {
     DropdownMenu,
     DropdownMenuTrigger,
@@ -93,9 +94,11 @@ export function AuthButton() {
                     ) : (
                         <UserIcon className="size-6 text-muted-foreground" />
                     )}
-                    <span className="text-sm font-medium">
-                        {displayName}
-                    </span>
+                    <GradientUsername
+                        name={displayName}
+                        gradients={player?.customizations ?? null}
+                        className="text-sm font-medium"
+                    />
                 </button>
             </DropdownMenuTrigger>
 
