@@ -5,10 +5,10 @@ import { useDeleteAccount } from "@/hooks/auth/useDeleteAccount"
 import { useLogout } from "@/hooks/auth/useLogout"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Panel } from "@/components/ui/panel"
-import { cn } from "@/lib/utils"
+import { FormField } from "@/components/profile/form-field"
+import { SaveButton } from "@/components/profile/save-button"
+import { SectionPanel } from "@/components/profile/section-panel"
+import { getErrorMessage } from "@/lib/utils"
 
 export function DangerSection() {
     const navigate = useNavigate()
@@ -42,29 +42,27 @@ export function DangerSection() {
             navigate("/")
         } catch (err) {
             setDeleteMsg(
-                err instanceof Error
-                    ? err.message
-                    : "Account deletion failed.",
+                getErrorMessage(
+                    err,
+                    "Account deletion failed.",
+                ),
             )
         }
     }
 
     return (
-        <Panel className="p-5 border-destructive/50">
-            <h2 className={cn(
-                "text-xl font-semibold",
-                "text-destructive",
-            )}>
-                Danger Zone
-            </h2>
-            <p className={cn(
-                "text-sm text-muted-foreground",
-                "mb-4",
-            )}>
-                Permanently delete your account. Your
-                runs will be preserved under
-                "Anonymous".
-            </p>
+        <SectionPanel
+            title="Danger Zone"
+            description={
+                <>
+                    Permanently delete your account. Your
+                    runs will be preserved under
+                    "Anonymous".
+                </>
+            }
+            className="border-destructive/50"
+            titleClassName="text-destructive"
+        >
             {!showDeleteConfirm ? (
                 <Button
                     variant="destructive"
@@ -76,10 +74,7 @@ export function DangerSection() {
                 </Button>
             ) : (
                 <div className="flex flex-col gap-4">
-                    <p className={cn(
-                        "text-sm",
-                        "text-muted-foreground",
-                    )}>
+                    <p className="text-sm text-muted-foreground">
                         Type{" "}
                         <strong>
                             {player.player.name}
@@ -88,27 +83,17 @@ export function DangerSection() {
                         deletion. This action cannot
                         be undone.
                     </p>
-                    <div className={cn(
-                        "flex flex-col gap-2",
-                    )}>
-                        <Label
-                            htmlFor="delete-confirm"
-                        >
-                            Display Name
-                        </Label>
-                        <Input
-                            id="delete-confirm"
-                            value={deleteConfirmName}
-                            onChange={(e) =>
-                                setDeleteConfirmName(
-                                    e.target.value,
-                                )
-                            }
-                            placeholder={
-                                player.player.name
-                            }
-                        />
-                    </div>
+                    <FormField
+                        label="Display Name"
+                        id="delete-confirm"
+                        value={deleteConfirmName}
+                        onChange={(e) =>
+                            setDeleteConfirmName(
+                                e.target.value,
+                            )
+                        }
+                        placeholder={player.player.name}
+                    />
 
                     {deleteMsg && (
                         <AlertBanner variant="error">
@@ -117,20 +102,16 @@ export function DangerSection() {
                     )}
 
                     <div className="flex gap-2">
-                        <Button
+                        <SaveButton
+                            type="button"
                             variant="destructive"
-                            onClick={
-                                handleDeleteAccount
+                            onClick={handleDeleteAccount}
+                            isPending={
+                                deleteAccount.isPending
                             }
-                            disabled={
-                                deleteAccount
-                                    .isPending
-                            }
-                        >
-                            {deleteAccount.isPending
-                                ? "Deleting..."
-                                : "Permanently Delete"}
-                        </Button>
+                            idleLabel="Permanently Delete"
+                            pendingLabel="Deleting..."
+                        />
                         <Button
                             variant="outline"
                             onClick={() => {
@@ -148,6 +129,6 @@ export function DangerSection() {
                     </div>
                 </div>
             )}
-        </Panel>
+        </SectionPanel>
     )
 }

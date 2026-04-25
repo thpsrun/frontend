@@ -6,24 +6,21 @@ import { useSetSrcKey, useDeleteSrcKey } from "@/hooks/auth/useSrcKey"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Panel } from "@/components/ui/panel"
 import { PasswordInput } from "@/components/ui/password-input"
+import { SaveButton } from "@/components/profile/save-button"
+import { SectionPanel } from "@/components/profile/section-panel"
 import { validatePassword } from "@/lib/validation"
 import {
     ModerationSettings,
 } from "@/components/profile/moderation-settings"
-import { cn } from "@/lib/utils"
+import type { StatusMsg } from "@/types/shared"
+import { cn, getErrorMessage } from "@/lib/utils"
 
 interface PasswordFormValues {
     currentPassword: string
     newPassword: string
     confirmNewPassword: string
 }
-
-type StatusMsg = {
-    type: "success" | "error"
-    text: string
-} | null
 
 export function SecuritySection() {
     const { player } = useCurrentPlayer()
@@ -80,9 +77,10 @@ export function SecuritySection() {
             } catch (err) {
                 setPasswordMsg({
                     type: "error",
-                    text: err instanceof Error
-                        ? err.message
-                        : "Password change failed.",
+                    text: getErrorMessage(
+                        err,
+                        "Password change failed.",
+                    ),
                 })
             }
         },
@@ -90,12 +88,7 @@ export function SecuritySection() {
 
     return (
         <div className="flex flex-col gap-6">
-            <Panel className="p-5">
-                <h2 className={cn(
-                    "text-xl font-semibold mb-4",
-                )}>
-                    Change Password
-                </h2>
+            <SectionPanel title="Change Password">
                 <form
                     onSubmit={handleChangePassword}
                     className="flex flex-col gap-4"
@@ -150,18 +143,13 @@ export function SecuritySection() {
                         </AlertBanner>
                     )}
 
-                    <Button
-                        type="submit"
-                        disabled={
-                            changePassword.isPending
-                        }
-                    >
-                        {changePassword.isPending
-                            ? "Changing..."
-                            : "Change Password"}
-                    </Button>
+                    <SaveButton
+                        isPending={changePassword.isPending}
+                        idleLabel="Change Password"
+                        pendingLabel="Changing..."
+                    />
                 </form>
-            </Panel>
+            </SectionPanel>
 
             <ModerationSettings
                 player={player}
@@ -169,17 +157,10 @@ export function SecuritySection() {
                 deleteSrcKey={deleteSrcKey}
             />
 
-            <Panel className="p-5">
-                <h2 className="text-xl font-semibold">
-                    Connected Accounts
-                </h2>
-                <p className={cn(
-                    "text-sm text-muted-foreground",
-                    "mb-4",
-                )}>
-                    Manage linked accounts and
-                    authentication methods.
-                </p>
+            <SectionPanel
+                title="Connected Accounts"
+                description="Manage linked accounts and authentication methods."
+            >
                 <div className="flex flex-col gap-3">
                     {["Discord", "Twitch", "Passkeys"].map(
                         (name) => (
@@ -209,7 +190,7 @@ export function SecuritySection() {
                         ),
                     )}
                 </div>
-            </Panel>
+            </SectionPanel>
         </div>
     )
 }

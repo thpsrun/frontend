@@ -31,7 +31,7 @@ export function useUnsavedChangesGuard({
                 blocker.proceed()
             }
         } catch {
-            // Save failed — stay on page, error shown by the form
+            // Save failed - stay on page, error shown by the form
         }
     }, [onSave, blocker])
 

@@ -4,11 +4,12 @@ import type {
     AuthMe, VerifySrcRequest, SRCKeyStatusResponse,
 } from "@/types/auth"
 import { AlertBanner } from "@/components/ui/alert-banner"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Panel } from "@/components/ui/panel"
-import { cn } from "@/lib/utils"
+import { PasswordInput } from "@/components/ui/password-input"
+import { SaveButton } from "@/components/profile/save-button"
+import { SectionPanel } from "@/components/profile/section-panel"
+import type { StatusMsg } from "@/types/shared"
+import { cn, getErrorMessage } from "@/lib/utils"
 
 interface ModerationSettingsProps {
     player: AuthMe
@@ -24,10 +25,7 @@ export function ModerationSettings({
     deleteSrcKey,
 }: ModerationSettingsProps) {
     const [srcApiKey, setSrcApiKey] = useState("")
-    const [message, setMessage] = useState<{
-        type: "success" | "error"
-        text: string
-    } | null>(null)
+    const [message, setMessage] = useState<StatusMsg>(null)
 
     const handleSaveKey = async (
         e: React.SyntheticEvent,
@@ -49,9 +47,10 @@ export function ModerationSettings({
         } catch (err) {
             setMessage({
                 type: "error",
-                text: err instanceof Error
-                    ? err.message
-                    : "Failed to Store API Key",
+                text: getErrorMessage(
+                    err,
+                    "Failed to Store API Key",
+                ),
             })
         }
     }
@@ -68,9 +67,10 @@ export function ModerationSettings({
         } catch (err) {
             setMessage({
                 type: "error",
-                text: err instanceof Error
-                    ? err.message
-                    : "Failed to Remove API Key",
+                text: getErrorMessage(
+                    err,
+                    "Failed to Remove API Key",
+                ),
             })
         }
     }
@@ -83,15 +83,10 @@ export function ModerationSettings({
         || deleteSrcKey.isPending
 
     return (
-        <Panel className="p-5">
-            <h2 className="text-xl font-semibold">
-                SRC API Key
-            </h2>
-            <p className={cn(
-                "text-sm text-muted-foreground mb-4",
-            )}>
-                Manage your Speedrun.com API key for run approvals.
-            </p>
+        <SectionPanel
+            title="SRC API Key"
+            description="Manage your Speedrun.com API key for run approvals."
+        >
             <form
                 onSubmit={handleSaveKey}
                 className="flex flex-col gap-4"
@@ -118,9 +113,8 @@ export function ModerationSettings({
                             ? "Replace API Key"
                             : "SRC API Key"}
                     </Label>
-                    <Input
+                    <PasswordInput
                         id="src-api-key"
-                        type="password"
                         value={srcApiKey}
                         onChange={(e) => {
                             setSrcApiKey(e.target.value)
@@ -153,34 +147,32 @@ export function ModerationSettings({
                 )}
 
                 <div className="flex gap-2">
-                    <Button
-                        type="submit"
+                    <SaveButton
+                        isPending={setSrcKey.isPending}
                         disabled={
                             isPending
                             || !srcApiKey.trim()
                         }
-                    >
-                        {setSrcKey.isPending
-                            ? "Saving..."
-                            : player.moderation.has_src_key
+                        idleLabel={
+                            player.moderation.has_src_key
                                 ? "Replace Key"
-                                : "Save Key"}
-                    </Button>
+                                : "Save Key"
+                        }
+                    />
 
                     {player.moderation.has_src_key && (
-                        <Button
+                        <SaveButton
                             type="button"
                             variant="destructive"
+                            isPending={deleteSrcKey.isPending}
                             disabled={isPending}
                             onClick={handleRemoveKey}
-                        >
-                            {deleteSrcKey.isPending
-                                ? "Removing..."
-                                : "Remove Key"}
-                        </Button>
+                            idleLabel="Remove Key"
+                            pendingLabel="Removing..."
+                        />
                     )}
                 </div>
             </form>
-        </Panel>
+        </SectionPanel>
     )
 }

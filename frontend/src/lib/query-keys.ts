@@ -35,6 +35,8 @@ export const queryKeys = {
         session: () => [...queryKeys.auth.all, "session"] as const,
         me: () => [...queryKeys.auth.all, "me"] as const,
         countries: () => ["countries"] as const,
+        apiKeys: () => [...queryKeys.auth.all, "api-keys"] as const,
+        capabilities: () => [...queryKeys.auth.all, "capabilities"] as const,
     },
 
     submissions: {

@@ -7,7 +7,6 @@ import { useUploadPfp } from "@/hooks/auth/useUploadPfp"
 import { BACKEND_URL } from "@/constants"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
     Select,
@@ -17,31 +16,26 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Panel } from "@/components/ui/panel"
 import { AvatarCropDialog } from "@/components/profile/avatar-crop-dialog"
+import { FormField } from "@/components/profile/form-field"
+import { SaveButton } from "@/components/profile/save-button"
+import { SectionPanel } from "@/components/profile/section-panel"
 import {
-    useUnsavedChangesGuard,
-} from "@/hooks/useUnsavedChangesGuard"
-import {
-    UnsavedChangesDialog,
-} from "@/components/profile/unsaved-changes-dialog"
+    UnsavedChangesGuard,
+} from "@/components/profile/unsaved-changes-guard"
 import { UserIcon, Info } from "lucide-react"
 import {
     CountryFlag,
     type CountryCode,
 } from "@/lib/leaderboard-helpers"
-import { cn } from "@/lib/utils"
+import type { StatusMsg } from "@/types/shared"
+import { cn, getErrorMessage } from "@/lib/utils"
 
 interface GeneralFormValues {
     name: string
     nickname: string
     pronouns: string
 }
-
-type StatusMsg = {
-    type: "success" | "error"
-    text: string
-} | null
 
 export function GeneralSection() {
     const { player } = useCurrentPlayer()
@@ -146,9 +140,7 @@ export function GeneralSection() {
         } catch (err) {
             setStatusMsg({
                 type: "error",
-                text: err instanceof Error
-                    ? err.message
-                    : "Update failed.",
+                text: getErrorMessage(err, "Update failed."),
             })
             throw err
         }
@@ -182,17 +174,6 @@ export function GeneralSection() {
         }
         setStatusMsg(null)
     }, [player, profileForm, pfpPreviewUrl])
-
-    const {
-        isBlocked,
-        handleSave: guardSave,
-        handleDiscard: guardDiscard,
-        handleCancel: guardCancel,
-    } = useUnsavedChangesGuard({
-        isDirty,
-        onSave: handleSaveProfile,
-        onDiscard: handleDiscard,
-    })
 
     if (!player) return null
 
@@ -267,18 +248,15 @@ export function GeneralSection() {
         await handleSaveProfile()
     })
 
+    const isPending =
+        updateProfile.isPending || uploadPfp.isPending
+
     return (
         <div className="flex flex-col gap-6">
-            <Panel className="p-5">
-                <h2 className="text-xl font-semibold">
-                    General
-                </h2>
-                <p className={cn(
-                    "text-sm text-muted-foreground",
-                    "mb-4",
-                )}>
-                    Manage your profile information
-                </p>
+            <SectionPanel
+                title="General"
+                description="Manage your profile information"
+            >
                 <form
                     onSubmit={onSubmit}
                     className="flex flex-col gap-4"
@@ -342,44 +320,26 @@ export function GeneralSection() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="name">
-                                Display Name
-                            </Label>
-                            <Input
-                                id="name"
-                                {...profileForm.register(
-                                    "name",
-                                )}
-                            />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="nickname">
-                                Nickname
-                            </Label>
-                            <Input
-                                id="nickname"
-                                placeholder="Optional"
-                                {...profileForm.register(
-                                    "nickname",
-                                )}
-                            />
-                        </div>
+                        <FormField
+                            label="Display Name"
+                            id="name"
+                            {...profileForm.register("name")}
+                        />
+                        <FormField
+                            label="Nickname"
+                            id="nickname"
+                            placeholder="Optional"
+                            {...profileForm.register("nickname")}
+                        />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="pronouns">
-                                Pronouns
-                            </Label>
-                            <Input
-                                id="pronouns"
-                                placeholder="Optional"
-                                {...profileForm.register(
-                                    "pronouns",
-                                )}
-                            />
-                        </div>
+                        <FormField
+                            label="Pronouns"
+                            id="pronouns"
+                            placeholder="Optional"
+                            {...profileForm.register("pronouns")}
+                        />
                         <div className="flex flex-col gap-2">
                             <Label htmlFor="countrycode">
                                 Country
@@ -467,25 +427,14 @@ export function GeneralSection() {
                         "border-t border-border/40",
                         "pt-4 mt-2",
                     )}>
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="username">
-                                Username
-                            </Label>
-                            <Input
-                                id="username"
-                                value={
-                                    player.player.username
-                                }
-                                disabled
-                                className="opacity-60"
-                            />
-                            <p className={cn(
-                                "text-xs",
-                                "text-muted-foreground",
-                            )}>
-                                This username cannot be changed by normal means. If you wanna change it, contact Anastasia.
-                            </p>
-                        </div>
+                        <FormField
+                            label="Username"
+                            id="username"
+                            value={player.player.username}
+                            disabled
+                            className="opacity-60"
+                            description="This username cannot be changed by normal means. If you wanna change it, contact Anastasia."
+                        />
                     </div>
 
                     {statusMsg && (
@@ -496,20 +445,9 @@ export function GeneralSection() {
                         </AlertBanner>
                     )}
 
-                    <Button
-                        type="submit"
-                        disabled={
-                            updateProfile.isPending
-                            || uploadPfp.isPending
-                        }
-                    >
-                        {(updateProfile.isPending
-                            || uploadPfp.isPending)
-                            ? "Saving..."
-                            : "Save Changes"}
-                    </Button>
+                    <SaveButton isPending={isPending} />
                 </form>
-            </Panel>
+            </SectionPanel>
 
             <AvatarCropDialog
                 imageUrl={rawImageUrl}
@@ -518,15 +456,11 @@ export function GeneralSection() {
                 onCancel={handleCropCancel}
             />
 
-            <UnsavedChangesDialog
-                open={isBlocked}
-                onSave={guardSave}
-                onDiscard={guardDiscard}
-                onCancel={guardCancel}
-                isSaving={
-                    updateProfile.isPending
-                    || uploadPfp.isPending
-                }
+            <UnsavedChangesGuard
+                isDirty={isDirty}
+                onSave={handleSaveProfile}
+                onDiscard={handleDiscard}
+                isSaving={isPending}
             />
         </div>
     )

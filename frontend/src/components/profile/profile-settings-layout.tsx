@@ -2,11 +2,22 @@ import { NavLink, Outlet, Navigate, useLocation } from "react-router"
 import { Panel } from "@/components/ui/panel"
 import { cn } from "@/lib/utils"
 
-const NAV_ITEMS = [
-    { label: "General", to: "/profile/settings/general" },
-    { label: "Customization", to: "/profile/settings/customization" },
-    { label: "Social Media", to: "/profile/settings/social" },
-    { label: "Security", to: "/profile/settings/security" },
+const NAV_GROUPS = [
+    {
+        heading: "Account",
+        items: [
+            { label: "General", to: "/profile/settings/general" },
+            { label: "Customization", to: "/profile/settings/customization" },
+            { label: "Social Media", to: "/profile/settings/social" },
+            { label: "Security", to: "/profile/settings/security" },
+        ],
+    },
+    {
+        heading: "Developer",
+        items: [
+            { label: "API Keys", to: "/profile/settings/api-keys" },
+        ],
+    },
 ] as const
 
 const DANGER_ITEM = {
@@ -40,19 +51,26 @@ export function ProfileSettingsLayout() {
             )}>
                 <nav className="lg:hidden">
                     <Panel className="flex gap-1.5 overflow-x-auto pb-1 -mb-1 p-2">
-                    {NAV_ITEMS.map((item) => (
-                        <NavLink
-                            key={item.to}
-                            to={item.to}
-                            className={({ isActive }) => cn(
-                                linkBase,
-                                isActive
-                                    ? activeClass
-                                    : inactiveClass,
-                            )}
-                        >
-                            {item.label}
-                        </NavLink>
+                    {NAV_GROUPS.map((group) => (
+                        <div key={group.heading} className="flex flex-col gap-1 min-w-max">
+                            <div className="px-3 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                                {group.heading}
+                            </div>
+                            <div className="flex gap-1.5">
+                                {group.items.map((item) => (
+                                    <NavLink
+                                        key={item.to}
+                                        to={item.to}
+                                        className={({ isActive }) => cn(
+                                            linkBase,
+                                            isActive ? activeClass : inactiveClass,
+                                        )}
+                                    >
+                                        {item.label}
+                                    </NavLink>
+                                ))}
+                            </div>
+                        </div>
                     ))}
                     <NavLink
                         to={DANGER_ITEM.to}
@@ -70,19 +88,26 @@ export function ProfileSettingsLayout() {
 
                 <nav className="hidden lg:flex lg:flex-col lg:w-55 lg:sticky lg:top-6 lg:self-start shrink-0">
                     <Panel className="flex flex-col p-2 gap-0.5">
-                    {NAV_ITEMS.map((item) => (
-                        <NavLink
-                            key={item.to}
-                            to={item.to}
-                            className={({ isActive }) => cn(
-                                linkBase,
-                                isActive
-                                    ? activeClass
-                                    : inactiveClass,
-                            )}
-                        >
-                            {item.label}
-                        </NavLink>
+                    {NAV_GROUPS.map((group) => (
+                        <div key={group.heading} className="flex flex-col gap-0.5 mb-1">
+                            <div className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                                {group.heading}
+                            </div>
+                            {group.items.map((item) => (
+                                <NavLink
+                                    key={item.to}
+                                    to={item.to}
+                                    className={({ isActive }) => cn(
+                                        linkBase,
+                                        isActive
+                                            ? activeClass
+                                            : inactiveClass,
+                                    )}
+                                >
+                                    {item.label}
+                                </NavLink>
+                            ))}
+                        </div>
                     ))}
                     <div className="my-2 border-t border-border/40" />
                     <NavLink

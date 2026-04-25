@@ -19,3 +19,14 @@ export function validatePassword(value: string): string | null {
     }
     return null
 }
+
+export function validateApiKeyLabel(value: string): string | null {
+    const trimmed = value.trim()
+    if (trimmed.length === 0) {
+        return "Label is required."
+    }
+    if (trimmed.length > 100) {
+        return "Label must be 100 characters or fewer."
+    }
+    return null
+}

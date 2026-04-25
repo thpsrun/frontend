@@ -3,18 +3,15 @@ import { useForm } from "react-hook-form"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useUpdateProfile } from "@/hooks/auth/useUpdateProfile"
 import { AlertBanner } from "@/components/ui/alert-banner"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Panel } from "@/components/ui/panel"
+import { FormField } from "@/components/profile/form-field"
+import { SaveButton } from "@/components/profile/save-button"
+import { SectionPanel } from "@/components/profile/section-panel"
 import {
-    useUnsavedChangesGuard,
-} from "@/hooks/useUnsavedChangesGuard"
-import {
-    UnsavedChangesDialog,
-} from "@/components/profile/unsaved-changes-dialog"
+    UnsavedChangesGuard,
+} from "@/components/profile/unsaved-changes-guard"
 import { Info } from "lucide-react"
-import { cn } from "@/lib/utils"
+import type { StatusMsg } from "@/types/shared"
+import { cn, getErrorMessage } from "@/lib/utils"
 
 interface SocialFormValues {
     twitch: string
@@ -23,11 +20,6 @@ interface SocialFormValues {
     bluesky: string
     therun_gg: string
 }
-
-type StatusMsg = {
-    type: "success" | "error"
-    text: string
-} | null
 
 export function SocialSection() {
     const { player } = useCurrentPlayer()
@@ -79,9 +71,7 @@ export function SocialSection() {
         } catch (err) {
             setStatusMsg({
                 type: "error",
-                text: err instanceof Error
-                    ? err.message
-                    : "Update failed.",
+                text: getErrorMessage(err, "Update failed."),
             })
             throw err
         }
@@ -99,17 +89,6 @@ export function SocialSection() {
         setStatusMsg(null)
     }, [player, socialForm])
 
-    const {
-        isBlocked,
-        handleSave: guardSave,
-        handleDiscard: guardDiscard,
-        handleCancel: guardCancel,
-    } = useUnsavedChangesGuard({
-        isDirty: socialForm.formState.isDirty,
-        onSave: handleSaveSocials,
-        onDiscard: handleDiscard,
-    })
-
     if (!player) return null
 
     const onSubmit = socialForm.handleSubmit(async () => {
@@ -118,116 +97,76 @@ export function SocialSection() {
 
     return (
         <div className="flex flex-col gap-6">
-            <Panel className="p-5">
-                <h2 className="text-xl font-semibold">
-                    Social Media
-                </h2>
-                <p className={cn(
-                    "text-sm text-muted-foreground",
-                    "mb-4",
-                )}>
-                    Link your social media profiles
-                </p>
+            <SectionPanel
+                title="Social Media"
+                description="Link your social media profiles"
+            >
                 <form
                     onSubmit={onSubmit}
                     className="flex flex-col gap-4"
                 >
                     <div className="flex flex-col gap-3">
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="twitch">
-                                Twitch
-                            </Label>
-                            <Input
-                                id="twitch"
-                                type="url"
-                                placeholder="https://twitch.tv/..."
-                                {...socialForm.register(
-                                    "twitch",
-                                )}
-                            />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="youtube">
-                                YouTube
-                            </Label>
-                            <Input
-                                id="youtube"
-                                type="url"
-                                placeholder="https://youtube.com/..."
-                                {...socialForm.register(
-                                    "youtube",
-                                )}
-                            />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="twitter">
-                                Twitter
-                            </Label>
-                            <Input
-                                id="twitter"
-                                type="url"
-                                placeholder="https://twitter.com/..."
-                                {...socialForm.register(
-                                    "twitter",
-                                )}
-                            />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="bluesky">
-                                Bluesky
-                            </Label>
-                            <Input
-                                id="bluesky"
-                                type="url"
-                                placeholder="https://bsky.app/profile/..."
-                                {...socialForm.register(
-                                    "bluesky",
-                                )}
-                            />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="therun_gg">
-                                therun.gg
-                            </Label>
-                            <Input
-                                id="therun_gg"
-                                type="text"
-                                placeholder="username"
-                                {...socialForm.register(
-                                    "therun_gg",
-                                )}
-                            />
-                        </div>
+                        <FormField
+                            label="Twitch"
+                            id="twitch"
+                            type="url"
+                            placeholder="https://twitch.tv/..."
+                            {...socialForm.register("twitch")}
+                        />
+                        <FormField
+                            label="YouTube"
+                            id="youtube"
+                            type="url"
+                            placeholder="https://youtube.com/..."
+                            {...socialForm.register("youtube")}
+                        />
+                        <FormField
+                            label="Twitter"
+                            id="twitter"
+                            type="url"
+                            placeholder="https://twitter.com/..."
+                            {...socialForm.register("twitter")}
+                        />
+                        <FormField
+                            label="Bluesky"
+                            id="bluesky"
+                            type="url"
+                            placeholder="https://bsky.app/profile/..."
+                            {...socialForm.register("bluesky")}
+                        />
+                        <FormField
+                            label="therun.gg"
+                            id="therun_gg"
+                            type="text"
+                            placeholder="username"
+                            {...socialForm.register("therun_gg")}
+                        />
                     </div>
 
                     <div className={cn(
                         "border-t border-border/40",
                         "pt-4 mt-2",
                     )}>
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="discord">
-                                Discord
-                            </Label>
-                            <Input
-                                id="discord"
-                                value={
-                                    player.socials.discord
-                                        ?? "Not linked"
-                                }
-                                disabled
-                                className="opacity-60"
-                            />
-                            <p className={cn(
-                                "text-xs",
-                                "text-muted-foreground",
-                                "flex items-center gap-1",
-                            )}>
-                                <Info className="size-3" />
-                                Discord will be linked via
-                                account connection in the
-                                future.
-                            </p>
-                        </div>
+                        <FormField
+                            label="Discord"
+                            id="discord"
+                            value={
+                                player.socials.discord
+                                    ?? "Not linked"
+                            }
+                            disabled
+                            className="opacity-60"
+                            description={
+                                <span className={cn(
+                                    "flex items-center gap-1",
+                                )}>
+                                    <Info className="size-3" />
+                                    Discord will be linked
+                                    via account connection
+                                    in the future.
+                                </span>
+                            }
+                        />
                     </div>
 
                     {statusMsg && (
@@ -238,24 +177,16 @@ export function SocialSection() {
                         </AlertBanner>
                     )}
 
-                    <Button
-                        type="submit"
-                        disabled={
-                            updateProfile.isPending
-                        }
-                    >
-                        {updateProfile.isPending
-                            ? "Saving..."
-                            : "Save Changes"}
-                    </Button>
+                    <SaveButton
+                        isPending={updateProfile.isPending}
+                    />
                 </form>
-            </Panel>
+            </SectionPanel>
 
-            <UnsavedChangesDialog
-                open={isBlocked}
-                onSave={guardSave}
-                onDiscard={guardDiscard}
-                onCancel={guardCancel}
+            <UnsavedChangesGuard
+                isDirty={socialForm.formState.isDirty}
+                onSave={handleSaveSocials}
+                onDiscard={handleDiscard}
                 isSaving={updateProfile.isPending}
             />
         </div>

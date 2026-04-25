@@ -28,6 +28,7 @@ import { GeneralSection } from "./components/profile/sections/general-section.ts
 import { SocialSection } from "./components/profile/sections/social-section.tsx"
 import { CustomizationSection } from "./components/profile/sections/customization-section.tsx"
 import { SecuritySection } from "./components/profile/sections/security-section.tsx"
+import { ApiKeysSection } from "./components/profile/sections/api-keys-section.tsx"
 import { DangerSection } from "./components/profile/sections/danger-section.tsx"
 
 // Defaults for how the application should handle web requests.
@@ -75,6 +76,7 @@ const router = createBrowserRouter([
                             { path: "customization", Component: CustomizationSection },
                             { path: "social", Component: SocialSection },
                             { path: "security", Component: SecuritySection },
+                            { path: "api-keys", Component: ApiKeysSection },
                             { path: "danger", Component: DangerSection },
                         ],
                     },

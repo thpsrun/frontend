@@ -18,27 +18,19 @@ import {
 } from "@/components/profile/gradient-preset-picker"
 import type { GradientColors } from "@/lib/gradient-presets"
 import { BgUpload } from "@/components/profile/bg-upload"
+import { FormField } from "@/components/profile/form-field"
+import { SaveButton } from "@/components/profile/save-button"
+import { SectionPanel } from "@/components/profile/section-panel"
 import {
-    useUnsavedChangesGuard,
-} from "@/hooks/useUnsavedChangesGuard"
-import {
-    UnsavedChangesDialog,
-} from "@/components/profile/unsaved-changes-dialog"
+    UnsavedChangesGuard,
+} from "@/components/profile/unsaved-changes-guard"
 import { AlertBanner } from "@/components/ui/alert-banner"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Panel } from "@/components/ui/panel"
-import { cn } from "@/lib/utils"
+import type { StatusMsg } from "@/types/shared"
+import { cn, getErrorMessage } from "@/lib/utils"
 
 interface CustomizationFormValues {
     tagline: string
 }
-
-type StatusMsg = {
-    type: "success" | "error"
-    text: string
-} | null
 
 export function CustomizationSection() {
     const { player } = useCurrentPlayer()
@@ -160,9 +152,7 @@ export function CustomizationSection() {
         } catch (err) {
             setMsg({
                 type: "error",
-                text: err instanceof Error
-                    ? err.message
-                    : "Update failed.",
+                text: getErrorMessage(err, "Update failed."),
             })
             throw err
         }
@@ -204,23 +194,13 @@ export function CustomizationSection() {
             } catch (err) {
                 setMsg({
                     type: "error",
-                    text: err instanceof Error
-                        ? err.message
-                        : "Failed to remove background.",
+                    text: getErrorMessage(
+                        err,
+                        "Failed to remove background.",
+                    ),
                 })
             }
         }, [deleteProfileBg])
-
-    const {
-        isBlocked,
-        handleSave: guardSave,
-        handleDiscard: guardDiscard,
-        handleCancel: guardCancel,
-    } = useUnsavedChangesGuard({
-        isDirty,
-        onSave: handleSave,
-        onDiscard: handleDiscard,
-    })
 
     if (!player) return null
 
@@ -228,39 +208,27 @@ export function CustomizationSection() {
         await handleSave()
     })
 
+    const isPending =
+        updateProfile.isPending || uploadProfileBg.isPending
+
     return (
         <div className="flex flex-col gap-6">
-            <Panel className="p-5">
-                <h2 className="text-xl font-semibold">
-                    Customization
-                </h2>
-                <p className={cn(
-                    "text-sm text-muted-foreground",
-                    "mb-4",
-                )}>
-                    Personalize your profile appearance
-                </p>
-
+            <SectionPanel
+                title="Customization"
+                description="Personalize your profile appearance"
+            >
                 <form
                     onSubmit={onSubmit}
                     className="flex flex-col gap-6"
                 >
                     <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="tagline">
-                                Tagline
-                            </Label>
-                            <Input
-                                id="tagline"
-                                placeholder={
-                                    "A short tagline..."
-                                }
-                                maxLength={100}
-                                {...bioForm.register(
-                                    "tagline",
-                                )}
-                            />
-                        </div>
+                        <FormField
+                            label="Tagline"
+                            id="tagline"
+                            placeholder="A short tagline..."
+                            maxLength={100}
+                            {...bioForm.register("tagline")}
+                        />
                     </div>
 
                     <div className={cn(
@@ -376,30 +344,15 @@ export function CustomizationSection() {
                         </AlertBanner>
                     )}
 
-                    <Button
-                        type="submit"
-                        disabled={
-                            updateProfile.isPending
-                            || uploadProfileBg.isPending
-                        }
-                    >
-                        {(updateProfile.isPending
-                            || uploadProfileBg.isPending)
-                            ? "Saving..."
-                            : "Save Changes"}
-                    </Button>
+                    <SaveButton isPending={isPending} />
                 </form>
-            </Panel>
+            </SectionPanel>
 
-            <UnsavedChangesDialog
-                open={isBlocked}
-                onSave={guardSave}
-                onDiscard={guardDiscard}
-                onCancel={guardCancel}
-                isSaving={
-                    updateProfile.isPending
-                    || uploadProfileBg.isPending
-                }
+            <UnsavedChangesGuard
+                isDirty={isDirty}
+                onSave={handleSave}
+                onDiscard={handleDiscard}
+                isSaving={isPending}
             />
         </div>
     )

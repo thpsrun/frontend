@@ -29,3 +29,8 @@ export interface ModeratedGame {
     name: string
     slug: string
 }
+
+export type StatusMsg = {
+    type: "success" | "error"
+    text: string
+} | null

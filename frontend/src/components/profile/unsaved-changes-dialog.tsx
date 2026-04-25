@@ -28,7 +28,9 @@ export function UnsavedChangesDialog({
         <AlertDialog open={open} onOpenChange={(o) => {
             if (!o) onCancel()
         }}>
-            <AlertDialogContent>
+            <AlertDialogContent
+                className="duration-0 data-[state=open]:animate-none data-[state=closed]:animate-none"
+            >
                 <AlertDialogHeader>
                     <AlertDialogTitle>
                         Unsaved Changes

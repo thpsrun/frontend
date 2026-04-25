@@ -77,9 +77,11 @@ async function parseError(res: Response): Promise<ApiError> {
     const code = typeof body?.code === "string" ? body.code : null
     const message = typeof body?.error === "string"
         ? body.error
-        : typeof body?.errors?.[0]?.message === "string"
-            ? body.errors[0].message
-            : `Request failed: ${res.status}`
+        : typeof body?.detail === "string"
+            ? body.detail
+            : typeof body?.errors?.[0]?.message === "string"
+                ? body.errors[0].message
+                : `Request failed: ${res.status}`
     return new ApiError(res.status, message, code, body)
 }
 
