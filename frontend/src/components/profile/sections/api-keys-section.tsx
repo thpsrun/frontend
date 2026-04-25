@@ -3,6 +3,7 @@ import { Plus } from "lucide-react"
 import { Panel } from "@/components/ui/panel"
 import { Button } from "@/components/ui/button"
 import { AlertBanner } from "@/components/ui/alert-banner"
+import { Link } from "react-router"
 import { cn } from "@/lib/utils"
 import { useApiKeys } from "@/hooks/auth/useApiKeys"
 import { ApiKeysTable } from "@/components/profile/api-keys/api-keys-table"
@@ -40,12 +41,26 @@ export function ApiKeysSection() {
                             They can be used to create bots or programs or scripts. Up to 10 active
                             keys can be created per account, with a maximum time of 365 days.
                         </p>
+                        <p className="text-sm text-muted-forgeground max-w-xl mt-1 text-red-500">
+                            WARNING!! Anyone with these API keys can act on your behalf, INCLUDING bad actors.
+                            Always make sure your keys are secured, never give them to anyone, and definitely
+                            never release them onto the public Internet and/or chat!!
+                        </p>
+                        <p className="text-sm text-muted-forgeground max-w-xl mt-1">
+                            <Link
+                                to="http://localhost:8001/api/v1/docs" // TODO: FIX BEFORE PROD
+                                target="_blank"
+                                className="text-foreground underline underline-offset-4 hover:text-primary"
+                                >
+                                    thps.run API Documentation
+                            </Link>
+                        </p>
                     </div>
-                    <Button onClick={() => setCreateOpen(true)}>
-                        <Plus className="h-4 w-4 mr-1" />
-                        Create new key
-                    </Button>
                 </div>
+                <Button onClick={() => setCreateOpen(true)}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Create new key
+                </Button>
 
                 {keysQuery.isLoading && (
                     <div className="text-sm text-muted-foreground py-4">
@@ -64,10 +79,6 @@ export function ApiKeysSection() {
                         <p className="text-sm text-muted-foreground">
                             You don't have any API keys yet.
                         </p>
-                        <Button onClick={() => setCreateOpen(true)}>
-                            <Plus className="h-4 w-4 mr-1" />
-                            Create your first key
-                        </Button>
                     </div>
                 )}
 
