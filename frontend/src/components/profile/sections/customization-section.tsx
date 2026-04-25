@@ -16,7 +16,7 @@ import {
 import {
     GradientPresetPicker,
 } from "@/components/profile/gradient-preset-picker"
-import type { GradientColors } from "@/lib/gradient-presets"
+import type { Gradients } from "@/types/shared"
 import { BgUpload } from "@/components/profile/bg-upload"
 import { FormField } from "@/components/profile/form-field"
 import { SaveButton } from "@/components/profile/save-button"
@@ -103,8 +103,12 @@ export function CustomizationSection() {
         setG3(n3)
     }
 
-    const applyGradientColors = (colors: GradientColors) => {
-        const [n1, n2, n3] = normalizeGradients(...colors)
+    const applyGradientColors = (colors: Gradients) => {
+        const [n1, n2, n3] = normalizeGradients(
+            colors.gradient_1,
+            colors.gradient_2,
+            colors.gradient_3,
+        )
         setG1(n1)
         setG2(n2)
         setG3(n3)

@@ -12,6 +12,7 @@ import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { validateUsername, validatePassword } from "@/lib/validation"
 
@@ -231,9 +232,8 @@ export function RegisterPage() {
                         </div>
                         <div className="flex flex-col gap-2">
                             <Label htmlFor="password1">Password</Label>
-                            <Input
+                            <PasswordInput
                                 id="password1"
-                                type="password"
                                 autoComplete="new-password"
                                 placeholder="Password"
                                 value={password1}
@@ -253,9 +253,8 @@ export function RegisterPage() {
                             <Label htmlFor="password2">
                                 Confirm Password
                             </Label>
-                            <Input
+                            <PasswordInput
                                 id="password2"
-                                type="password"
                                 autoComplete="new-password"
                                 placeholder="Confirm password"
                                 value={password2}

@@ -170,10 +170,7 @@ export function CreateApiKeyDialog({
                 {stage === "form" ? (
                     <>
                         <DialogHeader>
-                            <DialogTitle>Create API key</DialogTitle>
-                            <DialogDescription>
-                                Keys authenticate programmatic access on your behalf.
-                            </DialogDescription>
+                            <DialogTitle>Create thps.run API Key</DialogTitle>
                         </DialogHeader>
 
                         <form onSubmit={onSubmit} className="flex flex-col gap-4">
@@ -184,7 +181,7 @@ export function CreateApiKeyDialog({
                             />
 
                             <div className="flex flex-col gap-2">
-                                <Label>Expires in</Label>
+                                <Label>Expires In</Label>
                                 <ToggleGroup
                                     type="single"
                                     variant="outline"
@@ -200,7 +197,7 @@ export function CreateApiKeyDialog({
                                             value={String(days)}
                                             aria-label={`${days} days`}
                                         >
-                                            {days} days
+                                            {days} Days
                                         </ToggleGroupItem>
                                     ))}
                                 </ToggleGroup>

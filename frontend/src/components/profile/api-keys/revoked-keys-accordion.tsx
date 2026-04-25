@@ -45,9 +45,6 @@ export function RevokedKeysAccordion({ keys }: RevokedKeysAccordionProps) {
                         {keys.length}
                     </span>
                 </span>
-                <span className="text-xs text-muted-foreground">
-                    History only · no actions
-                </span>
             </button>
 
             {open && (

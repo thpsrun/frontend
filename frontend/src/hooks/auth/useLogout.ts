@@ -1,11 +1,9 @@
-import { useMutation } from "@tanstack/react-query"
 import { logoutFn } from "./auth-api"
 import { useInvalidateAuth } from "./useSession"
+import {
+    useInvalidatingMutation,
+} from "@/hooks/use-invalidating-mutation"
 
 export function useLogout() {
-    const invalidateAuth = useInvalidateAuth()
-    return useMutation({
-        mutationFn: logoutFn,
-        onSuccess: () => invalidateAuth(),
-    })
+    return useInvalidatingMutation(logoutFn, useInvalidateAuth())
 }

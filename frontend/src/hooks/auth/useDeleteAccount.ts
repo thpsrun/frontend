@@ -1,11 +1,9 @@
-import { useMutation } from "@tanstack/react-query"
 import { deleteAccountFn } from "./auth-api"
 import { useInvalidateAuth } from "./useSession"
+import {
+    useInvalidatingMutation,
+} from "@/hooks/use-invalidating-mutation"
 
 export function useDeleteAccount() {
-    const invalidateAuth = useInvalidateAuth()
-    return useMutation({
-        mutationFn: deleteAccountFn,
-        onSuccess: () => invalidateAuth(),
-    })
+    return useInvalidatingMutation(deleteAccountFn, useInvalidateAuth())
 }

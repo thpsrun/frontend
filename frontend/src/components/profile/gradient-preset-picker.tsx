@@ -1,15 +1,15 @@
 import { useState } from "react"
 import {
     GRADIENT_PRESETS,
-    type GradientColors,
     type GradientPreset,
 } from "@/lib/gradient-presets"
 import { GradientUsername } from "@/components/profile/gradient-username"
+import type { Gradients } from "@/types/shared"
 import { cn } from "@/lib/utils"
 
 interface GradientPresetPickerProps {
     username: string
-    onApply: (colors: GradientColors) => void
+    onApply: (colors: Gradients) => void
 }
 
 export function GradientPresetPicker({
@@ -66,7 +66,7 @@ export function GradientPresetPicker({
 interface PresetTileProps {
     preset: GradientPreset
     username: string
-    onApply: (colors: GradientColors) => void
+    onApply: (colors: Gradients) => void
 }
 
 function PresetTile({
@@ -119,15 +119,10 @@ function StaticPreview({
     preset: GradientPreset
     username: string
 }) {
-    const [g1, g2, g3] = preset.getColors()
     return (
         <GradientUsername
             name={username}
-            gradients={{
-                gradient_1: g1,
-                gradient_2: g2,
-                gradient_3: g3,
-            }}
+            gradients={preset.getColors()}
             className="text-base font-bold truncate"
         />
     )

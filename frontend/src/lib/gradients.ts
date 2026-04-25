@@ -1,15 +1,8 @@
 import type { CSSProperties } from "react"
+import type { Gradients } from "@/types/shared"
 
-export interface Gradients {
-    gradient_1: string | null
-    gradient_2: string | null
-    gradient_3: string | null
-}
+export type { Gradients }
 
-/**
- * Left-pack gradient slots so there are never gaps.
- * Returns a new tuple [g1, g2, g3].
- */
 export function normalizeGradients(
     g1: string | null,
     g2: string | null,
@@ -25,10 +18,6 @@ export function normalizeGradients(
     ]
 }
 
-/**
- * Compute CSS properties for a gradient-styled username.
- * Returns empty object when no gradients are set.
- */
 export function getGradientStyle(
     gradients: Gradients | null | undefined,
 ): CSSProperties {

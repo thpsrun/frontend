@@ -1,15 +1,18 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/lib/query-keys"
 import { patchApiKeyFn } from "./api-keys-api"
 import type { ApiKeyPatchRequest } from "@/types/api-keys"
+import {
+    useInvalidatingMutation,
+} from "@/hooks/use-invalidating-mutation"
 
 export function usePatchApiKey() {
     const qc = useQueryClient()
-    return useMutation({
-        mutationFn: ({ id, data }: { id: string; data: ApiKeyPatchRequest }) =>
+    return useInvalidatingMutation(
+        ({ id, data }: { id: string; data: ApiKeyPatchRequest }) =>
             patchApiKeyFn(id, data),
-        onSuccess: () => {
-            qc.invalidateQueries({ queryKey: queryKeys.auth.apiKeys() })
-        },
-    })
+        () => qc.invalidateQueries({
+            queryKey: queryKeys.auth.apiKeys(),
+        }),
+    )
 }

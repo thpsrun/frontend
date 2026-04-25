@@ -1,4 +1,8 @@
-import { type UseFormRegister, type FieldError } from "react-hook-form"
+import {
+    type UseFormRegister,
+    type FieldError,
+    type Path,
+} from "react-hook-form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
@@ -7,17 +11,19 @@ export type LabelDescriptionFormValues = {
     description: string
 }
 
-type LabelDescriptionFieldsProps = {
-    register: UseFormRegister<LabelDescriptionFormValues>
+type LabelDescriptionFieldsProps<T extends LabelDescriptionFormValues> = {
+    register: UseFormRegister<T>
     labelError?: FieldError
     idPrefix?: string
 }
 
-export function LabelDescriptionFields({
+export function LabelDescriptionFields<
+    T extends LabelDescriptionFormValues = LabelDescriptionFormValues,
+>({
     register,
     labelError,
     idPrefix = "api-key",
-}: LabelDescriptionFieldsProps) {
+}: LabelDescriptionFieldsProps<T>) {
     const labelId = `${idPrefix}-label`
     const descriptionId = `${idPrefix}-description`
 
@@ -29,7 +35,7 @@ export function LabelDescriptionFields({
                     id={labelId}
                     maxLength={100}
                     aria-invalid={labelError ? "true" : "false"}
-                    {...register("label")}
+                    {...register("label" as Path<T>)}
                 />
                 {labelError && (
                     <span className="text-xs text-destructive">
@@ -46,7 +52,7 @@ export function LabelDescriptionFields({
                 </Label>
                 <textarea
                     id={descriptionId}
-                    {...register("description")}
+                    {...register("description" as Path<T>)}
                     className="min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
                 />
             </div>

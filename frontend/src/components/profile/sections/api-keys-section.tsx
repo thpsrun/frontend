@@ -36,9 +36,9 @@ export function ApiKeysSection() {
                     <div>
                         <h2 className="text-xl font-semibold">API Keys</h2>
                         <p className="text-sm text-muted-foreground max-w-xl mt-1">
-                            Keys authenticate programmatic access on your behalf.
-                            Treat them like passwords. Up to 10 active keys per
-                            account.
+                            thps.run keys allow you to access the website's API on your behalf.
+                            They can be used to create bots or programs or scripts. Up to 10 active
+                            keys can be created per account, with a maximum time of 365 days.
                         </p>
                     </div>
                     <Button onClick={() => setCreateOpen(true)}>

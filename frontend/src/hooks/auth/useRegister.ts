@@ -1,11 +1,9 @@
-import { useMutation } from "@tanstack/react-query"
 import { registerFn } from "./auth-api"
 import { useInvalidateAuth } from "./useSession"
+import {
+    useInvalidatingMutation,
+} from "@/hooks/use-invalidating-mutation"
 
 export function useRegister() {
-    const invalidateAuth = useInvalidateAuth()
-    return useMutation({
-        mutationFn: registerFn,
-        onSuccess: () => invalidateAuth(),
-    })
+    return useInvalidatingMutation(registerFn, useInvalidateAuth())
 }
