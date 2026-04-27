@@ -7,6 +7,7 @@ import "./index.css"
 import App from "./App.tsx"
 import {
     createBrowserRouter,
+    Navigate,
     RouterProvider,
 } from "react-router";
 import { MainPage } from "./components/home/main-page.tsx"
@@ -30,6 +31,8 @@ import { CustomizationSection } from "./components/profile/sections/customizatio
 import { SecuritySection } from "./components/profile/sections/security-section.tsx"
 import { ApiKeysSection } from "./components/profile/sections/api-keys-section.tsx"
 import { DangerSection } from "./components/profile/sections/danger-section.tsx"
+import { OverallRankingsPage } from "./components/rankings/overall-rankings-page.tsx"
+import { GameRankingsPage } from "./components/rankings/game-rankings-page.tsx"
 
 // Defaults for how the application should handle web requests.
 // 4xx errors will not retry, since there is an issue that may not be resolvable.
@@ -59,6 +62,8 @@ const router = createBrowserRouter([
         Component: App,
         children: [
             { index: true, Component: MainPage },
+            { path: "rankings", Component: OverallRankingsPage },
+            { path: "rankings/:gameSlug", Component: GameRankingsPage },
             { path: ":gameSlug/*", Component: GameOverview },
             { path: "login", Component: LoginPage },
             { path: "register", Component: RegisterPage },
@@ -93,6 +98,7 @@ const router = createBrowserRouter([
             { path: "bluesky", element: <SocialRedirect platform="Bluesky" /> },
             { path: "youtube", element: <SocialRedirect platform="YouTube" /> },
             { path: "twitch", element: <SocialRedirect platform="Twitch" /> },
+            { path: "*", element: <Navigate to="/" replace /> },
         ]
     },
 ]);

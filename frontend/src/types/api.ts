@@ -267,6 +267,49 @@ export interface ILOverviewResponse {
     recent: LbsRecentRun[]
 }
 
+// Player summary embedded in points-leaderboard rows and oldest-runs entries.
+export interface RankingsPlayer {
+    name: string
+    country: Country | null
+    gradients?: Gradients | null
+}
+
+// Utilized on /api/v1/website/pointslb and /api/v1/website/pointslb/{gameSlug}
+// One row of a points-based leaderboard (series-wide or per-game).
+export interface RankingsEntry {
+    rank: number
+    player: RankingsPlayer
+    total_points: number
+    fg_points: number
+    il_points: number
+}
+
+// Utilized on /api/v1/website/pointslb
+// The series-wide endpoint returns a bare array of entries.
+export type OverallRankingsResponse = RankingsEntry[]
+
+// Utilized on /api/v1/website/pointslb/{gameSlug}?embed=oldest-runs
+// One entry from the oldest-runs embed: an IL world record sorted by submission age.
+// The backend filters to ILs only and caps the list (10 for THPS4, 5 for THPS12/34).
+export interface OldestRun {
+    player: RankingsPlayer
+    game_name: string
+    game_slug: string
+    category_name: string
+    level_name: string | null
+    place: number
+    time: string
+    date: string | null
+    days_held: number
+}
+
+// Utilized on /api/v1/website/pointslb/{gameSlug}
+// The per-game endpoint wraps the entries and may include the oldest-runs embed.
+export interface GameRankingsResponse {
+    leaderboard: RankingsEntry[]
+    oldest_runs?: OldestRun[]
+}
+
 // Utilized on /api/v1/website/navbar
 export interface NavItem {
     name: string

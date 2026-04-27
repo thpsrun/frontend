@@ -10,9 +10,9 @@ type QueryOptions = Omit<
     "queryKey" | "queryFn"
 >
 
-class PlayerNotFoundError extends Error {
-    constructor() {
-        super("PLAYER_NOT_FOUND")
+class PlayerNotFoundError extends ApiError {
+    constructor(source: ApiError) {
+        super(source.status, "PLAYER_NOT_FOUND", source.code, source.body)
         this.name = "PlayerNotFoundError"
     }
 }
@@ -30,7 +30,7 @@ const fetchPlayerProfile = async (
         return await apiFetch<PlayerResponse>(path, { signal })
     } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
-            throw new PlayerNotFoundError()
+            throw new PlayerNotFoundError(err)
         }
         throw err
     }

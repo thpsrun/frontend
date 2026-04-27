@@ -17,6 +17,7 @@ import { WRHistoryChart } from "@/components/leaderboard/wr-history-chart"
 
 import { useGameDetail } from "@/hooks/game/useGameDetail"
 import { useLeaderboard } from "@/hooks/leaderboard/useLeaderboard"
+import { ApiError } from "@/lib/api-client"
 
 import { useSession } from "@/hooks/auth/useSession"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
@@ -69,6 +70,7 @@ export const GameOverview = () => {
     const {
         data: gameDetail,
         isLoading: gameLoading,
+        error: gameError,
     } = useGameDetail(safeGameSlug)
 
     const {
@@ -226,6 +228,10 @@ export const GameOverview = () => {
     }
 
     if (!gameSlug) return <Navigate to="/" replace />
+
+    if (gameError instanceof ApiError && gameError.status === 404) {
+        return <Navigate to="/" replace />
+    }
 
     if (!categorySlug && !isILView) {
         return (

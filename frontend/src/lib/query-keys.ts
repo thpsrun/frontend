@@ -23,6 +23,13 @@ export const queryKeys = {
             [...queryKeys.leaderboard.all, "wr-history", params] as const,
     },
 
+    rankings: {
+        all: ["rankings"] as const,
+        overall: () => [...queryKeys.rankings.all, "overall"] as const,
+        game: (gameSlug: string, withOldest: boolean) =>
+            [...queryKeys.rankings.all, "game", gameSlug, withOldest] as const,
+    },
+
     player: {
         all: ["player"] as const,
         profile: (playerName: string, includeObsolete: boolean) =>

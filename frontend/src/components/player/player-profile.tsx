@@ -535,7 +535,7 @@ export function PlayerProfile() {
                     Player not found
                 </h2>
                 <p className="text-muted-foreground mb-4">
-                    No player exists with that name.
+                    No player exists with that name or nickname. If this is an error, let Anastasia know!
                 </p>
                 <Link to="/" className="text-sm text-link hover:underline">
                     Back to home
