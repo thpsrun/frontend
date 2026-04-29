@@ -25,9 +25,10 @@ export const queryKeys = {
 
     rankings: {
         all: ["rankings"] as const,
-        overall: () => [...queryKeys.rankings.all, "overall"] as const,
-        game: (gameSlug: string, withOldest: boolean) =>
-            [...queryKeys.rankings.all, "game", gameSlug, withOldest] as const,
+        historical: (params: Record<string, unknown>) =>
+            [...queryKeys.rankings.all, "historical", params] as const,
+        oldestRuns: (gameSlug: string) =>
+            [...queryKeys.rankings.all, "oldest-runs", gameSlug] as const,
     },
 
     player: {

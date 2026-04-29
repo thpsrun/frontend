@@ -31,8 +31,8 @@ import { CustomizationSection } from "./components/profile/sections/customizatio
 import { SecuritySection } from "./components/profile/sections/security-section.tsx"
 import { ApiKeysSection } from "./components/profile/sections/api-keys-section.tsx"
 import { DangerSection } from "./components/profile/sections/danger-section.tsx"
-import { OverallRankingsPage } from "./components/rankings/overall-rankings-page.tsx"
-import { GameRankingsPage } from "./components/rankings/game-rankings-page.tsx"
+import { HistoricalRankingsPage } from "./components/rankings/historical-rankings-page.tsx"
+import { RankingsRedirect } from "./components/rankings/rankings-redirect.tsx"
 
 // Defaults for how the application should handle web requests.
 // 4xx errors will not retry, since there is an issue that may not be resolvable.
@@ -62,8 +62,12 @@ const router = createBrowserRouter([
         Component: App,
         children: [
             { index: true, Component: MainPage },
-            { path: "rankings", Component: OverallRankingsPage },
-            { path: "rankings/:gameSlug", Component: GameRankingsPage },
+            { path: "rankings", Component: RankingsRedirect },
+            { path: "rankings/:gameSlug", Component: RankingsRedirect },
+            {
+                path: "rankings/history/:mode/:year/:month/:gameSlug?",
+                Component: HistoricalRankingsPage,
+            },
             { path: ":gameSlug/*", Component: GameOverview },
             { path: "login", Component: LoginPage },
             { path: "register", Component: RegisterPage },

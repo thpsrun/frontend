@@ -267,9 +267,15 @@ export interface ILOverviewResponse {
     recent: LbsRecentRun[]
 }
 
-// Player summary embedded in points-leaderboard rows and oldest-runs entries.
+// Player summary embedded in points-leaderboard rows.
+// Matches the backend LeaderboardPlayerEmbed shape returned by both
+// /website/pointslb and /pointslb/history/...
 export interface RankingsPlayer {
+    id: string
     name: string
+    nickname: string | null
+    url: string
+    pfp: string | null
     country: Country | null
     gradients?: Gradients | null
 }
@@ -308,6 +314,30 @@ export interface OldestRun {
 export interface GameRankingsResponse {
     leaderboard: RankingsEntry[]
     oldest_runs?: OldestRun[]
+}
+
+// Mode used by the URL/UI for historical leaderboard mode.
+export type HistoryMode = "overall" | "monthly" | "yearly"
+
+// Scope discriminator returned by /api/v1/pointslb/history
+export type HistoryScope = "all" | "game"
+
+// Utilized on /api/v1/pointslb/history
+export interface HistoricalRankingsMeta {
+    mode: "cumulative" | "monthly" | "yearly"
+    year: number
+    month: number
+    scope: HistoryScope
+    scope_game_id: string | null
+    period_start: string
+    period_end_exclusive: string
+    earliest_possible: string | null
+}
+
+// Utilized on /api/v1/pointslb/history
+export interface HistoricalRankingsResponse {
+    rankings: RankingsEntry[]
+    meta: HistoricalRankingsMeta
 }
 
 // Utilized on /api/v1/website/navbar
