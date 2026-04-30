@@ -40,6 +40,12 @@ export const formatPeriod = (
     return `Points earned in ${year} (through ${m}).`
 }
 
+export const datePickerLabel = (mode: HistoryMode): string => {
+    if (mode === "overall") return "As of"
+    if (mode === "monthly") return "Month"
+    return "Through"
+}
+
 export const parseYearMonth = (
     s: string | null | undefined,
 ): { year: number; month: number } | undefined => {

@@ -10,11 +10,14 @@ import {
 } from "@/components/ui/card"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { PasswordInput } from "@/components/ui/password-input"
 import { Checkbox } from "@/components/ui/checkbox"
-import { validateUsername, validatePassword } from "@/lib/validation"
+import { FormField } from "@/components/profile/form-field"
+import {
+    validateUsername,
+    validatePassword,
+    validateEmail,
+} from "@/lib/validation"
 
 export function RegisterPage() {
     const navigate = useNavigate()
@@ -35,7 +38,7 @@ export function RegisterPage() {
         return <Navigate to="/" replace />
     }
 
-    const handleRegister = async (e: React.SubmitEvent) => {
+    const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setError(null)
         setFieldErrors({})
@@ -51,9 +54,8 @@ export function RegisterPage() {
             errors.password2 = "Passwords do not match, please verify."
         }
 
-        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            errors.email = "Please enter a valid email address."
-        }
+        const emailErr = validateEmail(email)
+        if (emailErr) errors.email = emailErr
 
         if (!srcApiKey.trim()) {
             errors.srcApiKey = "SRC API key is required."
@@ -142,39 +144,31 @@ export function RegisterPage() {
                         onSubmit={handleRegister}
                         className="flex flex-col gap-4"
                     >
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="src-api-key">
-                                SRC API Key
-                            </Label>
-                            <p className="text-sm text-muted-foreground">
-                                {" "}
-                                <a
-                                    href="https://www.speedrun.com/settings/api"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-foreground underline underline-offset-4 hover:text-primary"
-                                >
-                                    speedrun.com/settings/api
-                                </a>
-                                {" "} - "Show API Key"
-                            </p>
-                            <Input
-                                id="src-api-key"
-                                type="text"
-                                placeholder="3928ydsajhd018..."
-                                value={srcApiKey}
-                                onChange={(e) =>
-                                    setSrcApiKey(e.target.value)
-                                }
-                                aria-invalid={!!fieldErrors.srcApiKey}
-                                required
-                            />
-                            {fieldErrors.srcApiKey && (
-                                <p className="text-xs text-destructive">
-                                    {fieldErrors.srcApiKey}
-                                </p>
+                        <FormField
+                            label="SRC API Key"
+                            id="src-api-key"
+                            type="text"
+                            placeholder="3928ydsajhd018..."
+                            value={srcApiKey}
+                            onChange={(e) =>
+                                setSrcApiKey(e.target.value)
+                            }
+                            description={(
+                                <>
+                                    <a
+                                        href="https://www.speedrun.com/settings/api"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-foreground underline underline-offset-4 hover:text-primary"
+                                    >
+                                        speedrun.com/settings/api
+                                    </a>
+                                    {" "}- "Show API Key"
+                                </>
                             )}
-                        </div>
+                            error={fieldErrors.srcApiKey}
+                            required
+                        />
                         <div className="flex items-center gap-2">
                             <Checkbox
                                 id="save-key"
@@ -190,86 +184,58 @@ export function RegisterPage() {
                                 Save SRC API Key (encrypted)
                             </Label>
                         </div>
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="username">Username</Label>
-                            <Input
-                                id="username"
-                                type="text"
-                                autoComplete="username"
-                                placeholder="Choose a Username"
-                                value={username}
-                                onChange={(e) =>
-                                    setUsername(e.target.value)
-                                }
-                                aria-invalid={!!fieldErrors.username}
-                                required
-                            />
-                            {fieldErrors.username && (
-                                <p className="text-xs text-destructive">
-                                    {fieldErrors.username}
-                                </p>
-                            )}
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                autoComplete="email"
-                                placeholder="you@example.com"
-                                value={email}
-                                onChange={(e) =>
-                                    setEmail(e.target.value)
-                                }
-                                aria-invalid={!!fieldErrors.email}
-                                required
-                            />
-                            {fieldErrors.email && (
-                                <p className="text-xs text-destructive">
-                                    {fieldErrors.email}
-                                </p>
-                            )}
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="password1">Password</Label>
-                            <PasswordInput
-                                id="password1"
-                                autoComplete="new-password"
-                                placeholder="Password"
-                                value={password1}
-                                onChange={(e) =>
-                                    setPassword1(e.target.value)
-                                }
-                                aria-invalid={!!fieldErrors.password1}
-                                required
-                            />
-                            {fieldErrors.password1 && (
-                                <p className="text-xs text-destructive">
-                                    {fieldErrors.password1}
-                                </p>
-                            )}
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="password2">
-                                Confirm Password
-                            </Label>
-                            <PasswordInput
-                                id="password2"
-                                autoComplete="new-password"
-                                placeholder="Confirm password"
-                                value={password2}
-                                onChange={(e) =>
-                                    setPassword2(e.target.value)
-                                }
-                                aria-invalid={!!fieldErrors.password2}
-                                required
-                            />
-                            {fieldErrors.password2 && (
-                                <p className="text-xs text-destructive">
-                                    {fieldErrors.password2}
-                                </p>
-                            )}
-                        </div>
+                        <FormField
+                            label="Username"
+                            id="username"
+                            type="text"
+                            autoComplete="username"
+                            placeholder="Choose a Username"
+                            value={username}
+                            onChange={(e) =>
+                                setUsername(e.target.value)
+                            }
+                            error={fieldErrors.username}
+                            required
+                        />
+                        <FormField
+                            label="Email"
+                            id="email"
+                            type="email"
+                            autoComplete="email"
+                            placeholder="you@example.com"
+                            value={email}
+                            onChange={(e) =>
+                                setEmail(e.target.value)
+                            }
+                            error={fieldErrors.email}
+                            required
+                        />
+                        <FormField
+                            label="Password"
+                            id="password1"
+                            type="password"
+                            autoComplete="new-password"
+                            placeholder="Password"
+                            value={password1}
+                            onChange={(e) =>
+                                setPassword1(e.target.value)
+                            }
+                            error={fieldErrors.password1}
+                            required
+                        />
+                        <FormField
+                            label="Confirm Password"
+                            id="password2"
+                            type="password"
+                            autoComplete="new-password"
+                            placeholder="Confirm password"
+                            value={password2}
+                            onChange={(e) =>
+                                setPassword2(e.target.value)
+                            }
+                            error={fieldErrors.password2}
+                            required
+                        />
                         <Button
                             type="submit"
                             disabled={register.isPending}

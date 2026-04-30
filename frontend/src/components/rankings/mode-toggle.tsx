@@ -21,13 +21,13 @@ export const ModeToggle = ({ value, onChange }: ModeToggleProps) => {
                 if (v && v !== value) onChange(v as HistoryMode)
             }}
             variant="outline"
-            size="sm"
         >
             {OPTIONS.map((opt) => (
                 <ToggleGroupItem
                     key={opt.value}
                     value={opt.value}
                     aria-label={opt.label}
+                    className="px-4"
                 >
                     {opt.label}
                 </ToggleGroupItem>

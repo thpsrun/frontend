@@ -16,6 +16,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
+import { SectionDivider } from "@/components/ui/section-divider"
 import { AvatarCropDialog } from "@/components/profile/avatar-crop-dialog"
 import { FormField } from "@/components/profile/form-field"
 import { SaveButton } from "@/components/profile/save-button"
@@ -43,8 +44,6 @@ export function GeneralSection() {
     const updateProfile = useUpdateProfile()
     const uploadPfp = useUploadPfp()
 
-    // Country managed outside React Hook Form to avoid
-    // Controller/reset race condition
     const [selectedCountry, setSelectedCountry] = useState("")
     const [initialCountry, setInitialCountry] = useState("")
     const [countryReady, setCountryReady] = useState(false)
@@ -53,7 +52,6 @@ export function GeneralSection() {
 
     const [statusMsg, setStatusMsg] = useState<StatusMsg>(null)
 
-    // PFP state
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [pendingPfpFile, setPendingPfpFile] =
         useState<File | null>(null)
@@ -72,7 +70,6 @@ export function GeneralSection() {
         },
     })
 
-    // Sync form + country with player data when it arrives
     useEffect(() => {
         if (!player) return
         profileForm.reset({
@@ -89,7 +86,6 @@ export function GeneralSection() {
         setCountryReady(true)
     }, [player, profileForm])
 
-    // Revoke object URLs on unmount
     useEffect(() => {
         return () => {
             if (rawImageUrl) URL.revokeObjectURL(rawImageUrl)
@@ -385,10 +381,7 @@ export function GeneralSection() {
                         </div>
                     </div>
 
-                    <div className={cn(
-                        "border-t border-border/40",
-                        "pt-4 mt-2",
-                    )}>
+                    <SectionDivider>
                         <p className={cn(
                             "text-sm font-medium mb-3",
                         )}>
@@ -421,12 +414,9 @@ export function GeneralSection() {
                                 )} />
                             </span>
                         </div>
-                    </div>
+                    </SectionDivider>
 
-                    <div className={cn(
-                        "border-t border-border/40",
-                        "pt-4 mt-2",
-                    )}>
+                    <SectionDivider>
                         <FormField
                             label="Username"
                             id="username"
@@ -435,7 +425,7 @@ export function GeneralSection() {
                             className="opacity-60"
                             description="This username cannot be changed by normal means. If you wanna change it, contact Anastasia."
                         />
-                    </div>
+                    </SectionDivider>
 
                     {statusMsg && (
                         <AlertBanner

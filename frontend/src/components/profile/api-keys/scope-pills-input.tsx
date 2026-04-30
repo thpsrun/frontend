@@ -119,6 +119,7 @@ export function ScopePillsInput({
                         value={filter}
                         onChange={(e) => setFilter(e.target.value)}
                         placeholder="Filter..."
+                        aria-label="Filter Scopes"
                         className={cn(
                             "w-full rounded border border-input bg-transparent",
                             "px-2 py-1 text-xs mb-2",

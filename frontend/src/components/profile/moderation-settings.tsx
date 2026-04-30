@@ -4,8 +4,7 @@ import type {
     AuthMe, VerifySrcRequest, SRCKeyStatusResponse,
 } from "@/types/auth"
 import { AlertBanner } from "@/components/ui/alert-banner"
-import { Label } from "@/components/ui/label"
-import { PasswordInput } from "@/components/ui/password-input"
+import { FormField } from "@/components/profile/form-field"
 import { SaveButton } from "@/components/profile/save-button"
 import { SectionPanel } from "@/components/profile/section-panel"
 import type { StatusMsg } from "@/types/shared"
@@ -107,38 +106,35 @@ export function ModerationSettings({
                     </AlertBanner>
                 )}
 
-                <div className="flex flex-col gap-2">
-                    <Label htmlFor="src-api-key">
-                        {player.moderation.has_src_key
-                            ? "Replace API Key"
-                            : "SRC API Key"}
-                    </Label>
-                    <PasswordInput
-                        id="src-api-key"
-                        value={srcApiKey}
-                        onChange={(e) => {
-                            setSrcApiKey(e.target.value)
-                            setMessage(null)
-                        }}
-                        placeholder="Paste your API key"
-                    />
-                    <p className={cn(
-                        "text-xs text-muted-foreground",
-                    )}>
-                        Get your API key from{" "}
-                        <a
-                            href="https://www.speedrun.com/settings/api"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={cn(
-                                "underline",
-                                "hover:text-foreground",
-                            )}
-                        >
-                            speedrun.com/settings/api
-                        </a>
-                    </p>
-                </div>
+                <FormField
+                    label={player.moderation.has_src_key
+                        ? "Replace API Key"
+                        : "SRC API Key"}
+                    id="src-api-key"
+                    type="password"
+                    value={srcApiKey}
+                    onChange={(e) => {
+                        setSrcApiKey(e.target.value)
+                        setMessage(null)
+                    }}
+                    placeholder="Paste your API key"
+                    description={(
+                        <>
+                            Get your API key from{" "}
+                            <a
+                                href="https://www.speedrun.com/settings/api"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={cn(
+                                    "underline",
+                                    "hover:text-foreground",
+                                )}
+                            >
+                                speedrun.com/settings/api
+                            </a>
+                        </>
+                    )}
+                />
 
                 {message && (
                     <AlertBanner variant={message.type}>

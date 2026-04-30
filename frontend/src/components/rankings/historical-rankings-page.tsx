@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Panel } from "@/components/ui/panel"
+import { AlertBanner } from "@/components/ui/alert-banner"
 import { SkeletonRow } from "@/lib/leaderboard-helpers"
 import { ApiError } from "@/lib/api-client"
 import { useGames } from "@/hooks/game/useGames"
@@ -17,6 +18,7 @@ import {
 } from "@/components/rankings/month-year-picker"
 import { ModeToggle } from "@/components/rankings/mode-toggle"
 import {
+    datePickerLabel,
     formatPeriod,
     isHistoryMode,
     parseYearMonth,
@@ -159,7 +161,7 @@ export const HistoricalRankingsPage = () => {
 
     return (
         <div className="w-full flex flex-col gap-4">
-            <Panel>
+            <Panel className="sticky top-4 z-10">
                 {safeGameSlug && (
                     <Link
                         to={buildHistoryPath(safeMode, safeYear, safeMonth)}
@@ -173,28 +175,48 @@ export const HistoricalRankingsPage = () => {
                         Series Rankings
                     </Link>
                 )}
-                <h1 className="text-2xl font-bold mb-1">
-                    {safeGameSlug ? `${gameName} Rankings` : "Rankings"}
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                    {subtitle}
-                </p>
+                <div className={cn(
+                    "flex flex-col gap-3",
+                    "lg:flex-row lg:items-center lg:justify-between",
+                )}>
+                    <div className="min-w-0">
+                        <h1 className="text-2xl font-bold leading-tight">
+                            {safeGameSlug ? `${gameName} Rankings` : "Rankings"}
+                        </h1>
+                        <p className="text-sm text-muted-foreground">
+                            {subtitle}
+                        </p>
+                    </div>
+                    <div className={cn(
+                        "flex flex-col gap-3 shrink-0",
+                        "sm:flex-row sm:items-center",
+                    )}>
+                        <ModeToggle value={safeMode} onChange={onModeChange} />
+                        <div className="flex items-center gap-2">
+                            <span className={cn(
+                                "text-xs text-muted-foreground",
+                                "whitespace-nowrap",
+                            )}>
+                                {datePickerLabel(safeMode)}
+                            </span>
+                            <MonthYearPicker
+                                value={{ year: safeYear, month: safeMonth }}
+                                onChange={onDateChange}
+                                min={min}
+                                max={today}
+                            />
+                        </div>
+                    </div>
+                </div>
             </Panel>
 
-            <Panel className="flex flex-wrap items-center gap-4">
-                <ModeToggle value={safeMode} onChange={onModeChange} />
-                <MonthYearPicker
-                    value={{ year: safeYear, month: safeMonth }}
-                    onChange={onDateChange}
-                    min={min}
-                    max={today}
-                />
-            </Panel>
-
-            <div className="w-full flex flex-col lg:flex-row gap-4">
+            <div className={cn(
+                "w-full grid grid-cols-1 gap-4",
+                showOldestSidebar && "lg:grid-cols-3",
+            )}>
                 <div className={cn(
                     "flex flex-col gap-2",
-                    showOldestSidebar ? "lg:flex-2" : "flex-1",
+                    showOldestSidebar && "lg:col-span-2",
                 )}>
                     {isLoading && (
                         <Panel className="space-y-2">
@@ -205,14 +227,9 @@ export const HistoricalRankingsPage = () => {
                     )}
 
                     {error && !isLoading && (
-                        <Panel
-                            className={cn(
-                                "text-sm text-red-500",
-                                "border-red-500/20",
-                            )}
-                        >
-                            Error Loading Rankings...
-                        </Panel>
+                        <AlertBanner variant="error">
+                            Error loading rankings. Refresh the page to try again.
+                        </AlertBanner>
                     )}
 
                     {data && !isLoading && !error && (
@@ -226,7 +243,7 @@ export const HistoricalRankingsPage = () => {
                 {showOldestSidebar
                     && oldestQuery.data
                     && oldestQuery.data.length > 0 && (
-                    <div className="lg:flex-1">
+                    <div className="lg:col-span-1">
                         <OldestRunsList runs={oldestQuery.data} />
                     </div>
                 )}

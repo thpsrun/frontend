@@ -6,9 +6,7 @@ import { OAUTH_BASE_URL } from "@/constants"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { PasswordInput } from "@/components/ui/password-input"
+import { FormField } from "@/components/profile/form-field"
 
 type LoginStep = "login" | "totp" | "email-verification"
 
@@ -113,20 +111,18 @@ export function LoginPage() {
                             <p className="text-sm text-muted-foreground">
                                 Enter the 6-digit code from your authenticator app.
                             </p>
-                            <div className="flex flex-col gap-2">
-                                <Label htmlFor="totp-code">Code</Label>
-                                <Input
-                                    id="totp-code"
-                                    type="text"
-                                    inputMode="numeric"
-                                    autoComplete="one-time-code"
-                                    maxLength={6}
-                                    placeholder="000000"
-                                    value={totpCode}
-                                    onChange={(e) => setTotpCode(e.target.value)}
-                                    required
-                                />
-                            </div>
+                            <FormField
+                                label="Code"
+                                id="totp-code"
+                                type="text"
+                                inputMode="numeric"
+                                autoComplete="one-time-code"
+                                maxLength={6}
+                                placeholder="000000"
+                                value={totpCode}
+                                onChange={(e) => setTotpCode(e.target.value)}
+                                required
+                            />
                             <Button
                                 type="submit"
                                 disabled={submitTotp.isPending}
@@ -148,29 +144,26 @@ export function LoginPage() {
                     ) : (
                         <>
                             <form onSubmit={handleLogin} className="flex flex-col gap-4">
-                                <div className="flex flex-col gap-2">
-                                    <Label htmlFor="login">Username or Email</Label>
-                                    <Input
-                                        id="login"
-                                        type="text"
-                                        autoComplete="username"
-                                        placeholder="Username or email"
-                                        value={loginValue}
-                                        onChange={(e) => setLoginValue(e.target.value)}
-                                        required
-                                    />
-                                </div>
-                                <div className="flex flex-col gap-2">
-                                    <Label htmlFor="password">Password</Label>
-                                    <PasswordInput
-                                        id="password"
-                                        autoComplete="current-password"
-                                        placeholder="Password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                    />
-                                </div>
+                                <FormField
+                                    label="Username/Email"
+                                    id="login"
+                                    type="text"
+                                    autoComplete="username"
+                                    placeholder="Username/Email"
+                                    value={loginValue}
+                                    onChange={(e) => setLoginValue(e.target.value)}
+                                    required
+                                />
+                                <FormField
+                                    label="Password"
+                                    id="password"
+                                    type="password"
+                                    autoComplete="current-password"
+                                    placeholder="Password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
                                 <Button
                                     type="submit"
                                     disabled={login.isPending}

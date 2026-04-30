@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useUpdateProfile } from "@/hooks/auth/useUpdateProfile"
 import { AlertBanner } from "@/components/ui/alert-banner"
+import { SectionDivider } from "@/components/ui/section-divider"
 import { FormField } from "@/components/profile/form-field"
 import { SaveButton } from "@/components/profile/save-button"
 import { SectionPanel } from "@/components/profile/section-panel"
@@ -143,10 +144,7 @@ export function SocialSection() {
                         />
                     </div>
 
-                    <div className={cn(
-                        "border-t border-border/40",
-                        "pt-4 mt-2",
-                    )}>
+                    <SectionDivider>
                         <FormField
                             label="Discord"
                             id="discord"
@@ -167,7 +165,7 @@ export function SocialSection() {
                                 </span>
                             }
                         />
-                    </div>
+                    </SectionDivider>
 
                     {statusMsg && (
                         <AlertBanner

@@ -21,6 +21,7 @@ import { BgUpload } from "@/components/profile/bg-upload"
 import { FormField } from "@/components/profile/form-field"
 import { SaveButton } from "@/components/profile/save-button"
 import { SectionPanel } from "@/components/profile/section-panel"
+import { SectionDivider } from "@/components/ui/section-divider"
 import {
     UnsavedChangesGuard,
 } from "@/components/profile/unsaved-changes-guard"
@@ -40,7 +41,6 @@ export function CustomizationSection() {
 
     const [msg, setMsg] = useState<StatusMsg>(null)
 
-    // Gradient state (managed outside form)
     const [g1, setG1] = useState<string | null>(null)
     const [g2, setG2] = useState<string | null>(null)
     const [g3, setG3] = useState<string | null>(null)
@@ -51,7 +51,6 @@ export function CustomizationSection() {
     const [initialG3, setInitialG3] =
         useState<string | null>(null)
 
-    // Background file state
     const [pendingBgFile, setPendingBgFile] =
         useState<File | null>(null)
     const [bgPreviewUrl, setBgPreviewUrl] =
@@ -63,7 +62,6 @@ export function CustomizationSection() {
         },
     })
 
-    // Sync form + gradients with player data
     useEffect(() => {
         if (!player) return
         const c = player.customizations
@@ -78,7 +76,6 @@ export function CustomizationSection() {
         setInitialG3(c.gradient_3)
     }, [player, bioForm])
 
-    // Revoke preview URL on unmount
     useEffect(() => {
         return () => {
             if (bgPreviewUrl) {
@@ -223,7 +220,7 @@ export function CustomizationSection() {
             >
                 <form
                     onSubmit={onSubmit}
-                    className="flex flex-col gap-6"
+                    className="flex flex-col gap-4"
                 >
                     <div className="flex flex-col gap-4">
                         <FormField
@@ -235,9 +232,7 @@ export function CustomizationSection() {
                         />
                     </div>
 
-                    <div className={cn(
-                        "border-t border-border/40",
-                    )} />
+                    <SectionDivider />
 
                     <div className="flex flex-col gap-4">
                         <p className="text-sm font-medium">
@@ -308,9 +303,7 @@ export function CustomizationSection() {
                         </p>
                     </div>
 
-                    <div className={cn(
-                        "border-t border-border/40",
-                    )} />
+                    <SectionDivider />
 
                     <div className="flex flex-col gap-4">
                         <p className="text-sm font-medium">

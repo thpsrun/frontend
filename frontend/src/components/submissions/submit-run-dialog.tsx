@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { AlertBanner } from "@/components/ui/alert-banner"
+import { Textarea } from "@/components/ui/textarea"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useSubmitRun } from "@/hooks/submissions/useSubmitRun"
 import { usePlayerSearch } from "@/hooks/players/usePlayerSearch"
@@ -682,11 +683,11 @@ export function SubmitRunDialog({
                     </div>
 
                     <div className="space-y-1">
-                        <Label className="text-xs">
+                        <Label className="text-xs" htmlFor="run-comment">
                             Comment <span className="text-muted-foreground">(optional)</span>
                         </Label>
-                        <textarea
-                            className="w-full min-h-20 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-y"
+                        <Textarea
+                            id="run-comment"
                             maxLength={2000}
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}

@@ -95,7 +95,6 @@ export const formatLongDate = (
 
 export const timeAgo = (dateStr: string | null): string => {
     if (!dateStr) return ""
-    if (dateStr === null) return "Unknown"
 
     const now = new Date()
     const then = new Date(dateStr)
@@ -103,17 +102,27 @@ export const timeAgo = (dateStr: string | null): string => {
     const days = Math.floor(
         diffMs / (1000 * 60 * 60 * 24),
     )
+    if (days < 0) return ""
     if (days === 0) return "Today"
     if (days === 1) return "Yesterday"
     if (days < 30) return `${days} Days Ago`
 
-    // Months vary by month, obviously, so just round to 30.
-    const months = Math.floor(days / 30)
-    if (months === 1) return "1 Month Ago"
-    if (months < 12) return `${months} Months Ago`
+    // Past 30 days, use calendar-aware month math so "11 months and 27
+    // days" doesn't fall into the gap between (days/30 = 12) and
+    // (days/365.25 = 1) and report as "0 Years Ago".
+    let months =
+        (now.getFullYear() - then.getFullYear()) * 12
+        + (now.getMonth() - then.getMonth())
+    if (now.getDate() < then.getDate()) months -= 1
+    // Calendar dip near the 30-day boundary; clamp so we never say "0".
+    months = Math.max(1, months)
 
-    // Accounts for leap years, in case someone wants to be "umm akshully"
-    const years = Math.floor(days / 365.25)
+    if (months < 12) {
+        if (months === 1) return "1 Month Ago"
+        return `${months} Months Ago`
+    }
+
+    const years = Math.floor(months / 12)
     if (years === 1) return "1 Year Ago"
     return `${years} Years Ago`
 }

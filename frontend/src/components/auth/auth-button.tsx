@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react"
-import { Link, useNavigate, useLocation } from "react-router"
+import { Link, useNavigate } from "react-router"
+import { toast } from "sonner"
 import { useSession } from "@/hooks/auth/useSession"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useLogout } from "@/hooks/auth/useLogout"
@@ -21,37 +21,8 @@ export function AuthButton() {
     const { player } = useCurrentPlayer()
     const logout = useLogout()
     const navigate = useNavigate()
-    const location = useLocation()
-    const [showLogoutMsg, setShowLogoutMsg] = useState(false)
-
-    const logoutPathRef = useRef(location.pathname)
-
-    // Shows the logout banner for 2s, then redirects them home automatically.
-    useEffect(() => {
-        if (!showLogoutMsg) return
-        logoutPathRef.current = location.pathname
-        const timer = setTimeout(() => {
-            setShowLogoutMsg(false)
-            if (location.pathname === logoutPathRef.current) {
-                navigate("/")
-            }
-        }, 2000)
-        return () => clearTimeout(timer)
-    }, [showLogoutMsg, navigate, location.pathname])
 
     if (isLoading) return null
-
-    if (showLogoutMsg) {
-        return (
-            <div className={cn(
-                "rounded-md border bg-popover",
-                "px-4 py-2 text-sm shadow-md",
-                "animate-in fade-in-0 duration-200",
-            )}>
-                Logout Successful!
-            </div>
-        )
-    }
 
     if (!isAuthenticated) {
         return (
@@ -71,9 +42,11 @@ export function AuthButton() {
     const handleLogout = async () => {
         try {
             await logout.mutateAsync()
-            setShowLogoutMsg(true)
+            toast.success("Logout successful.")
+            navigate("/")
         } catch (err) {
             console.error("Logout Failed:", err)
+            toast.error("Logout failed. Please try again.")
         }
     }
 

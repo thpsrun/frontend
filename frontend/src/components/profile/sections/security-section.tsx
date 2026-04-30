@@ -5,8 +5,7 @@ import { useChangePassword } from "@/hooks/auth/useChangePassword"
 import { useSetSrcKey, useDeleteSrcKey } from "@/hooks/auth/useSrcKey"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { PasswordInput } from "@/components/ui/password-input"
+import { FormField } from "@/components/profile/form-field"
 import { SaveButton } from "@/components/profile/save-button"
 import { SectionPanel } from "@/components/profile/section-panel"
 import { validatePassword } from "@/lib/validation"
@@ -93,47 +92,30 @@ export function SecuritySection() {
                     onSubmit={handleChangePassword}
                     className="flex flex-col gap-4"
                 >
-                    <div className="flex flex-col gap-2">
-                        <Label htmlFor="current-password">
-                            Current Password
-                        </Label>
-                        <PasswordInput
-                            id="current-password"
-                            autoComplete="current-password"
-                            required
-                            {...passwordForm.register(
-                                "currentPassword",
-                            )}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <Label htmlFor="new-password">
-                            New Password
-                        </Label>
-                        <PasswordInput
-                            id="new-password"
-                            autoComplete="new-password"
-                            required
-                            {...passwordForm.register(
-                                "newPassword",
-                            )}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <Label
-                            htmlFor="confirm-new-password"
-                        >
-                            Confirm New Password
-                        </Label>
-                        <PasswordInput
-                            id="confirm-new-password"
-                            autoComplete="new-password"
-                            required
-                            {...passwordForm.register(
-                                "confirmNewPassword",
-                            )}
-                        />
-                    </div>
+                    <FormField
+                        label="Current Password"
+                        id="current-password"
+                        type="password"
+                        autoComplete="current-password"
+                        required
+                        {...passwordForm.register("currentPassword")}
+                    />
+                    <FormField
+                        label="New Password"
+                        id="new-password"
+                        type="password"
+                        autoComplete="new-password"
+                        required
+                        {...passwordForm.register("newPassword")}
+                    />
+                    <FormField
+                        label="Confirm New Password"
+                        id="confirm-new-password"
+                        type="password"
+                        autoComplete="new-password"
+                        required
+                        {...passwordForm.register("confirmNewPassword")}
+                    />
 
                     {passwordMsg && (
                         <AlertBanner
