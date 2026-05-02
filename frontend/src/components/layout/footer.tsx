@@ -33,7 +33,7 @@ export function Footer() {
 
                 <p className="text-[0.65rem] text-muted-foreground/60 leading-snug">
                     thps.run is an independent fan website and is not affiliated with,
-                    endorsed by, or in any wasy officially connected with the Tony Hawk's
+                    endorsed by, or in any ways officially connected with the Tony Hawk's
                     franchise, its developers, Activision, or any of its subsidiaries. All
                     trademarks, game names, skate names, and logos appearing on this site
                     are the property of their respective owners.

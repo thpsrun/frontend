@@ -158,3 +158,9 @@ export const changePasswordFn = (data: ChangePasswordRequest): Promise<void> =>
         "/account/password/change",
         { base: "allauth", method: "POST", json: data },
     )
+
+export const reauthenticateFn = (password: string): Promise<void> =>
+    apiFetch<void>(
+        "/auth/reauthenticate",
+        { base: "allauth", method: "POST", json: { password } },
+    )

@@ -2,11 +2,12 @@ import { useState } from "react"
 import { useNavigate, Navigate, Link } from "react-router"
 import { useSession } from "@/hooks/auth/useSession"
 import { useLogin, useSubmitTotp } from "@/hooks/auth/useLogin"
-import { OAUTH_BASE_URL } from "@/constants"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
 import { FormField } from "@/components/profile/form-field"
+import { OAuthProviderButton } from "@/components/auth/oauth-provider-button"
+import { PasskeyLoginButton } from "@/components/auth/passkey-login-button"
 
 type LoginStep = "login" | "totp" | "email-verification"
 
@@ -173,22 +174,23 @@ export function LoginPage() {
                             </form>
 
                             <div className="flex flex-col gap-2">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => {
-                                        window.location.href = `${OAUTH_BASE_URL}/discord/login/`
-                                    }}
+                                <PasskeyLoginButton />
+                                <OAuthProviderButton
+                                    provider="discord"
+                                    process="login"
+                                    callbackPath="/oauth/callback"
+                                    fullWidth
                                 >
-                                    Log in with Discord
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => {
-                                        window.location.href = `${OAUTH_BASE_URL}/twitch/login/`
-                                    }}
+                                    Sign in with Discord
+                                </OAuthProviderButton>
+                                <OAuthProviderButton
+                                    provider="twitch"
+                                    process="login"
+                                    callbackPath="/oauth/callback"
+                                    fullWidth
                                 >
-                                    Log in with Twitch
-                                </Button>
+                                    Sign in with Twitch
+                                </OAuthProviderButton>
                             </div>
 
                             <p className="text-center text-sm text-muted-foreground">

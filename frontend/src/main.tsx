@@ -16,6 +16,8 @@ import { LoginPage } from "./components/auth/login-page.tsx"
 import { RegisterPage } from "./components/auth/register-page.tsx"
 import { OAuthCancelledPage } from "./components/auth/oauth-cancelled-page.tsx"
 import { OAuthErrorPage } from "./components/auth/oauth-error-page.tsx"
+import { NoLinkPage } from "@/components/auth/no-link-page"
+import { OAuthCallbackPage } from "@/components/auth/oauth-callback-page"
 import { ProfileSettingsLayout } from "./components/profile/profile-settings-layout.tsx"
 import { PlayerProfile } from "./components/player/player-profile.tsx"
 import { ProtectedRoute } from "./components/auth/protected-route.tsx"
@@ -73,6 +75,8 @@ const router = createBrowserRouter([
             { path: "register", Component: RegisterPage },
             { path: "login/cancelled", Component: OAuthCancelledPage },
             { path: "login/error", Component: OAuthErrorPage },
+            { path: "login/no-link", Component: NoLinkPage },
+            { path: "oauth/callback", Component: OAuthCallbackPage },
             {
                 Component: ProtectedRoute,
                 children: [

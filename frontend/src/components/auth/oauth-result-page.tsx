@@ -1,15 +1,17 @@
+import type { ReactNode } from "react"
 import { Link } from "react-router"
 
 interface OAuthResultPageProps {
     title: string
-    message: string
+    message: ReactNode
+    children?: ReactNode
 }
 
-export function OAuthResultPage({ title, message }: OAuthResultPageProps) {
+export function OAuthResultPage({ title, message, children }: OAuthResultPageProps) {
     return (
         <div className="flex flex-col items-center gap-3 pt-20 text-center">
             <h2 className="text-xl font-semibold">{title}</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="max-w-md text-sm text-muted-foreground">
                 {message}
             </p>
             <Link
@@ -18,6 +20,7 @@ export function OAuthResultPage({ title, message }: OAuthResultPageProps) {
             >
                 Back to Login
             </Link>
+            {children}
         </div>
     )
 }

@@ -128,3 +128,17 @@ export interface SessionState {
     isAuthenticated: boolean
     user?: AllauthUser
 }
+
+export interface LinkedProvider {
+    uid: string
+    display: string
+    provider: { id: string; name: string }
+}
+
+export interface Authenticator {
+    id: string
+    type: "totp" | "webauthn" | "recovery_codes"
+    name: string
+    last_used_at: number | null
+    created_at: number
+}

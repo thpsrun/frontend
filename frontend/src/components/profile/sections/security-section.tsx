@@ -4,7 +4,6 @@ import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useChangePassword } from "@/hooks/auth/useChangePassword"
 import { useSetSrcKey, useDeleteSrcKey } from "@/hooks/auth/useSrcKey"
 import { AlertBanner } from "@/components/ui/alert-banner"
-import { Button } from "@/components/ui/button"
 import { FormField } from "@/components/profile/form-field"
 import { SaveButton } from "@/components/profile/save-button"
 import { SectionPanel } from "@/components/profile/section-panel"
@@ -13,7 +12,9 @@ import {
     ModerationSettings,
 } from "@/components/profile/moderation-settings"
 import type { StatusMsg } from "@/types/shared"
-import { cn, getErrorMessage } from "@/lib/utils"
+import { getErrorMessage } from "@/lib/utils"
+import { ConnectedAccountsSection } from "./connected-accounts-section"
+import { PasskeysSection } from "./passkeys-section"
 
 interface PasswordFormValues {
     currentPassword: string
@@ -139,40 +140,8 @@ export function SecuritySection() {
                 deleteSrcKey={deleteSrcKey}
             />
 
-            <SectionPanel
-                title="Connected Accounts"
-                description="Manage linked accounts and authentication methods."
-            >
-                <div className="flex flex-col gap-3">
-                    {["Discord", "Twitch", "Passkeys"].map(
-                        (name) => (
-                            <div
-                                key={name}
-                                className={cn(
-                                    "flex items-center",
-                                    "justify-between",
-                                    "rounded-md",
-                                    "border border-border/40",
-                                    "px-4 py-3",
-                                )}
-                            >
-                                <span className={cn(
-                                    "text-sm font-medium",
-                                )}>
-                                    {name}
-                                </span>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled
-                                >
-                                    Coming Soon
-                                </Button>
-                            </div>
-                        ),
-                    )}
-                </div>
-            </SectionPanel>
+            <ConnectedAccountsSection />
+            <PasskeysSection />
         </div>
     )
 }

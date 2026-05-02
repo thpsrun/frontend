@@ -159,9 +159,7 @@ export function SocialSection() {
                                     "flex items-center gap-1",
                                 )}>
                                     <Info className="size-3" />
-                                    Discord will be linked
-                                    via account connection
-                                    in the future.
+                                    Discord can be linked from the Security section.
                                 </span>
                             }
                         />
