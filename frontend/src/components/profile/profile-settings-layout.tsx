@@ -13,6 +13,12 @@ const NAV_GROUPS = [
         ],
     },
     {
+        heading: "Content",
+        items: [
+            { label: "Guides", to: "/profile/settings/guides" },
+        ],
+    },
+    {
         heading: "Developer",
         items: [
             { label: "API Keys", to: "/profile/settings/api-keys" },

@@ -1,3 +1,4 @@
+import { Link } from "react-router"
 import { NavMenu } from "@/components/layout/nav-menu"
 import { Logo } from "@/components/layout/logo"
 import { Socials } from "@/components/layout/socials"
@@ -9,6 +10,12 @@ export const TopBar = () => {
             <div className="flex items-center space-x-4">
                 <Logo />
                 <NavMenu />
+                <Link
+                    to="/guides"
+                    className="text-sm font-medium hover:text-primary"
+                >
+                    Guides
+                </Link>
             </div>
             <div className="flex items-center space-x-4">
                 <Socials />

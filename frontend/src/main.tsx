@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ApiError } from "@/lib/api-client"
 import { Provider as JotaiProvider } from "jotai"
 import "./index.css"
+import "highlight.js/styles/github-dark.css"
 import App from "./App.tsx"
 import {
     createBrowserRouter,
@@ -33,6 +34,12 @@ import { ApiKeysSection } from "./components/profile/sections/api-keys-section.t
 import { DangerSection } from "./components/profile/sections/danger-section.tsx"
 import { HistoricalRankingsPage } from "./components/rankings/historical-rankings-page.tsx"
 import { RankingsRedirect } from "./components/rankings/rankings-redirect.tsx"
+import { GuidesHubPage } from "./components/guides/guides-hub-page.tsx"
+import { GuideDetailPage } from "./components/guides/guide-detail-page.tsx"
+import { GuideFormPage } from "./components/guides/guide-form-page.tsx"
+import { TagsAdminPage } from "./components/admin/tags/tags-admin-page.tsx"
+import { GuidesSection } from "./components/profile/sections/guides-section.tsx"
+import { SuperuserRoute } from "./components/routing/SuperuserRoute.tsx"
 
 // Defaults for how the application should handle web requests.
 // 4xx errors will not retry, since there is an issue that may not be resolvable.
@@ -68,6 +75,8 @@ const router = createBrowserRouter([
                 path: "rankings/history/:mode/:year/:month/:gameSlug?",
                 Component: HistoricalRankingsPage,
             },
+            { path: "guides", Component: GuidesHubPage },
+            { path: "guides/:slug", Component: GuideDetailPage },
             { path: ":gameSlug/*", Component: GameOverview },
             { path: "login", Component: LoginPage },
             { path: "register", Component: RegisterPage },
@@ -87,10 +96,19 @@ const router = createBrowserRouter([
                             { path: "security", Component: SecuritySection },
                             { path: "api-keys", Component: ApiKeysSection },
                             { path: "danger", Component: DangerSection },
+                            { path: "guides", Component: GuidesSection },
                         ],
                     },
                     { path: "submissions", Component: SubmissionsHub },
                     { path: "admin", Component: AdminHub },
+                    { path: "guides/new", element: <GuideFormPage mode="create" /> },
+                    { path: "guides/:slug/edit", element: <GuideFormPage mode="edit" /> },
+                ],
+            },
+            {
+                Component: SuperuserRoute,
+                children: [
+                    { path: "admin/tags", Component: TagsAdminPage },
                 ],
             },
             { path: "player/:playerName", Component: PlayerProfile },

@@ -37,3 +37,37 @@ export function validateEmail(value: string): string | null {
     }
     return null
 }
+
+export function validateGuideTitle(value: string): string | null {
+    const trimmed = value.trim()
+    if (trimmed.length === 0) return "Title is required."
+    if (trimmed.length > 200) return "Title must be 200 characters or fewer."
+    return null
+}
+
+export function validateGuideShortDescription(value: string): string | null {
+    const trimmed = value.trim()
+    if (trimmed.length === 0) return "Short description is required."
+    if (trimmed.length > 500) return "Short description must be 500 characters or fewer."
+    return null
+}
+
+export function validateGuideContent(value: string): string | null {
+    if (value.length === 0) return "Content is required."
+    if (value.length > 50_000) return "Content must be 50,000 characters or fewer."
+    return null
+}
+
+export function validateTagName(value: string): string | null {
+    const trimmed = value.trim()
+    if (trimmed.length === 0) return "Tag name is required."
+    if (trimmed.length > 100) return "Tag name must be 100 characters or fewer."
+    return null
+}
+
+export function validateTagDescription(value: string): string | null {
+    const trimmed = value.trim()
+    if (trimmed.length === 0) return "Tag description is required."
+    if (trimmed.length > 500) return "Tag description must be 500 characters or fewer."
+    return null
+}

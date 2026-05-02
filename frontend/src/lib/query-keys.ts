@@ -11,6 +11,14 @@ export const queryKeys = {
         detail: (gameSlug: string) => [...queryKeys.games.all, "detail", gameSlug] as const,
     },
 
+    guides: {
+        all: ["guides"] as const,
+        list: (params: { game?: string; tag?: string; embed?: string }) =>
+            [...queryKeys.guides.all, "list", params] as const,
+        detail: (slug: string, embed?: string) =>
+            [...queryKeys.guides.all, "detail", slug, embed ?? ""] as const,
+    },
+
     leaderboard: {
         all: ["leaderboard"] as const,
         full: (params: Record<string, unknown>) =>
@@ -58,5 +66,12 @@ export const queryKeys = {
             params === undefined
                 ? ([...queryKeys.admin.all, "sync-logs"] as const)
                 : ([...queryKeys.admin.all, "sync-logs", params] as const),
+    },
+
+    tags: {
+        all: ["tags"] as const,
+        list: () => [...queryKeys.tags.all, "list"] as const,
+        detail: (slug: string) =>
+            [...queryKeys.tags.all, "detail", slug] as const,
     },
 } as const
