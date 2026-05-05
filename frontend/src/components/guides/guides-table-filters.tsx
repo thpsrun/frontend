@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useGames } from "@/hooks/game/useGames"
 import { useTags } from "@/hooks/guides/useTags"
+import { cn } from "@/lib/utils"
 
 export interface FiltersState {
     game: string | undefined
@@ -43,16 +44,18 @@ export function GuidesTableFilters({ pinnedGameSlug, onChange }: Props) {
     const games = useGames()
     const tags = useTags()
 
-    const initialGame = pinnedGameSlug ?? searchParams.get("game") ?? undefined
-    const initialTags = (searchParams.get("tag") ?? "")
-        .split(",")
-        .filter(Boolean)
-    const initialQuery = searchParams.get("q") ?? ""
-
-    const [game, setGame] = useState<string | undefined>(initialGame)
-    const [tagSlugs, setTagSlugs] = useState<string[]>(initialTags)
-    const [queryInput, setQueryInput] = useState<string>(initialQuery)
-    const [debouncedQuery, setDebouncedQuery] = useState<string>(initialQuery)
+    const [game, setGame] = useState<string | undefined>(
+        () => pinnedGameSlug ?? searchParams.get("game") ?? undefined,
+    )
+    const [tagSlugs, setTagSlugs] = useState<string[]>(
+        () => (searchParams.get("tag") ?? "").split(",").filter(Boolean),
+    )
+    const [queryInput, setQueryInput] = useState<string>(
+        () => searchParams.get("q") ?? "",
+    )
+    const [debouncedQuery, setDebouncedQuery] = useState<string>(
+        () => searchParams.get("q") ?? "",
+    )
 
     // debounce query
     const debounceRef = useRef<number | null>(null)
@@ -78,7 +81,9 @@ export function GuidesTableFilters({ pinnedGameSlug, onChange }: Props) {
         else next.delete("tag")
         if (debouncedQuery) next.set("q", debouncedQuery)
         else next.delete("q")
-        setSearchParams(next, { replace: true })
+        if (next.toString() !== searchParams.toString()) {
+            setSearchParams(next, { replace: true })
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [game, tagSlugs, debouncedQuery])
 
@@ -158,11 +163,12 @@ export function GuidesTableFilters({ pinnedGameSlug, onChange }: Props) {
                                             onSelect={() => toggleTag(t.slug)}
                                         >
                                             <span
-                                                className={`mr-2 inline-flex size-4 items-center justify-center rounded border ${
+                                                className={cn(
+                                                    "mr-2 inline-flex size-4 items-center justify-center rounded border",
                                                     checked
                                                         ? "bg-primary text-primary-foreground border-primary"
-                                                        : "border-border"
-                                                }`}
+                                                        : "border-border",
+                                                )}
                                                 aria-hidden
                                             >
                                                 {checked ? "✓" : ""}

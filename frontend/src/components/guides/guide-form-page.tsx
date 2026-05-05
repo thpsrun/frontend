@@ -1,9 +1,13 @@
 import { Link, useParams } from "react-router"
-import { Panel } from "@/components/ui/panel"
+import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
+import { Panel } from "@/components/ui/panel"
+import { Skeleton } from "@/components/ui/skeleton"
+import { SectionPanel } from "@/components/profile/section-panel"
 import { useGuide } from "@/hooks/guides/useGuide"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { ApiError } from "@/lib/api-client"
+import { buildGuideUrl } from "@/lib/guide-urls"
 import { GuideForm } from "./guide-form"
 
 interface Props {
@@ -11,21 +15,25 @@ interface Props {
 }
 
 export function GuideFormPage({ mode }: Props) {
-    const { slug } = useParams<{ slug: string }>()
+    const { guideSlug } = useParams<{ guideSlug: string }>()
     const { player } = useCurrentPlayer()
 
     if (mode === "create") {
         return (
             <div className="container mx-auto max-w-3xl px-4 py-6">
-                <h1 className="mb-4 text-2xl font-semibold">New guide</h1>
-                <GuideForm mode="create" />
+                <SectionPanel
+                    title="New Guide"
+                    description=""
+                >
+                    <GuideForm mode="create" />
+                </SectionPanel>
             </div>
         )
     }
 
     return (
         <EditPage
-            slug={slug ?? ""}
+            slug={guideSlug ?? ""}
             isSuperuser={!!player?.player.is_superuser}
             moderatedSlugs={(player?.moderation?.moderated_games ?? []).map((g) => g.slug)}
         />
@@ -45,11 +53,11 @@ function EditPage({
 
     if (isLoading) {
         return (
-            <div className="container mx-auto max-w-3xl px-4 py-10">
-                <div className="space-y-3">
-                    <div className="h-8 w-2/3 animate-pulse rounded bg-muted/40" />
-                    <div className="h-32 w-full animate-pulse rounded bg-muted/40" />
-                </div>
+            <div className="container mx-auto max-w-3xl px-4 py-6">
+                <Panel className="space-y-3">
+                    <Skeleton className="h-8 w-2/3" />
+                    <Skeleton className="h-32 w-full" />
+                </Panel>
             </div>
         )
     }
@@ -57,15 +65,15 @@ function EditPage({
     if (isError || !guide) {
         const status = error instanceof ApiError ? error.status : null
         return (
-            <div className="container mx-auto max-w-3xl px-4 py-10">
-                <Panel className="p-10 text-center">
-                    <h1 className="text-xl font-semibold">
-                        {status === 403 ? "You can't edit this guide" : "Guide not found"}
-                    </h1>
-                    <Button asChild className="mt-4">
+            <div className="container mx-auto max-w-3xl px-4 py-6">
+                <AlertBanner variant="error">
+                    {status === 403 ? "You can't edit this guide." : "Guide not found."}
+                </AlertBanner>
+                <div className="mt-4">
+                    <Button asChild>
                         <Link to="/guides">Back to guides</Link>
                     </Button>
-                </Panel>
+                </div>
             </div>
         )
     }
@@ -76,24 +84,27 @@ function EditPage({
 
     if (!canEdit) {
         return (
-            <div className="container mx-auto max-w-3xl px-4 py-10">
-                <Panel className="p-10 text-center">
-                    <h1 className="text-xl font-semibold">You can't edit this guide</h1>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                        Only the author, moderators of the game, or admins can make changes.
-                    </p>
-                    <Button asChild className="mt-4">
-                        <Link to={`/guides/${guide.slug}`}>Back to guide</Link>
+            <div className="container mx-auto max-w-3xl px-4 py-6">
+                <AlertBanner variant="error">
+                    You can't edit this guide. Only the author, moderators of the game, or admins can make changes.
+                </AlertBanner>
+                <div className="mt-4">
+                    <Button asChild>
+                        <Link to={buildGuideUrl(guide)}>Back to guide</Link>
                     </Button>
-                </Panel>
+                </div>
             </div>
         )
     }
 
     return (
         <div className="container mx-auto max-w-3xl px-4 py-6">
-            <h1 className="mb-4 text-2xl font-semibold">Edit guide</h1>
-            <GuideForm mode="edit" guide={guide} />
+            <SectionPanel
+                title="Edit guide"
+                description={guide.title}
+            >
+                <GuideForm mode="edit" guide={guide} />
+            </SectionPanel>
         </div>
     )
 }

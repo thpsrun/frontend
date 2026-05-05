@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useNavigate } from "react-router"
 import { toast } from "sonner"
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
 import {
     Select,
     SelectContent,
@@ -41,6 +42,7 @@ import {
     validateGuideContent,
 } from "@/lib/validation"
 import { ApiError } from "@/lib/api-client"
+import { buildGuideUrl, resolveGuideTags } from "@/lib/guide-urls"
 import type { Guide } from "@/types/guides"
 import { UnsavedChangesDialog } from "@/components/profile/unsaved-changes-dialog"
 import { GuideMarkdownEditor } from "./guide-markdown-editor"
@@ -77,12 +79,49 @@ export function GuideForm({ mode, guide }: Props) {
             short_description: guide?.short_description ?? "",
             content: guide?.content ?? "",
             game_id: guide?.game?.id ?? "",
-            tag_ids: (guide?.tags ?? []).map((t) => t.slug),
+            tag_ids: resolveGuideTags(guide?.tags, []).map((t) => t.slug),
         },
     })
 
+    useEffect(() => {
+        if (mode !== "edit" || !guide || !tags.data) return
+        const resolved = resolveGuideTags(guide.tags, tags.data)
+            .map((t) => t.slug)
+            .filter(Boolean)
+        const current = form.getValues("tag_ids")
+        const sameSet = resolved.length === current.length
+            && resolved.every((s) => current.includes(s))
+        if (!sameSet) {
+            form.setValue("tag_ids", resolved, { shouldDirty: false })
+        }
+    }, [mode, guide, tags.data, form])
+
+    function resolveTagIds(slugs: string[]): { ids: string[]; missing: string[] } {
+        const list = tags.data ?? []
+        const ids: string[] = []
+        const missing: string[] = []
+        for (const slug of slugs) {
+            const tag = list.find((t) => t.slug === slug)
+            if (tag?.id === undefined || tag?.id === null) {
+                missing.push(slug)
+            } else {
+                ids.push(String(tag.id))
+            }
+        }
+        return { ids, missing }
+    }
+
     async function onSubmit(values: FormValues) {
         setTopError(null)
+        const { ids: tagIds, missing } = resolveTagIds(values.tag_ids)
+        if (missing.length > 0) {
+            console.error(
+                "[guides] Tag list response missing 'id' for slugs:",
+                missing,
+            )
+            setTopError("Could not save tags. Please refresh and try again.")
+            return
+        }
         try {
             if (mode === "create") {
                 const created = await create.mutateAsync({
@@ -90,10 +129,12 @@ export function GuideForm({ mode, guide }: Props) {
                     short_description: values.short_description.trim(),
                     content: values.content,
                     game_id: values.game_id,
-                    tag_ids: values.tag_ids,
+                    tag_ids: tagIds,
                 })
                 toast.success("Guide created.")
-                navigate(`/guides/${created.slug}`)
+                form.reset(values)
+                guard.bypassNext()
+                navigate(buildGuideUrl(created))
             } else {
                 const updated = await update.mutateAsync({
                     slug: guide!.slug,
@@ -101,11 +142,13 @@ export function GuideForm({ mode, guide }: Props) {
                         title: values.title.trim(),
                         short_description: values.short_description.trim(),
                         content: values.content,
-                        tag_ids: values.tag_ids,
+                        tag_ids: tagIds,
                     },
                 })
                 toast.success("Guide saved.")
-                navigate(`/guides/${updated.slug}`)
+                form.reset(values)
+                guard.bypassNext()
+                navigate(buildGuideUrl(updated))
             }
         } catch (e) {
             if (e instanceof ApiError) {
@@ -146,7 +189,7 @@ export function GuideForm({ mode, guide }: Props) {
 
     function onCancel() {
         if (mode === "edit" && guide) {
-            navigate(`/guides/${guide.slug}`)
+            navigate(buildGuideUrl(guide))
         } else {
             navigate("/guides")
         }
@@ -202,7 +245,7 @@ export function GuideForm({ mode, guide }: Props) {
             ) : (
                 <div className="text-sm">
                     <span className="text-muted-foreground">Game:</span>{" "}
-                    <span className="font-medium">{guide?.game?.name ?? "—"}</span>
+                    <span className="font-medium">{guide?.game?.name ?? "-"}</span>
                 </div>
             )}
 
@@ -256,11 +299,13 @@ export function GuideForm({ mode, guide }: Props) {
                     name="tag_ids"
                     render={({ field }) => {
                         const tagsList = tags.data ?? []
-                        const selected = tagsList.filter((t) => field.value.includes(t.slug))
+                        const selected = tagsList.filter(
+                            (t) => field.value.includes(t.slug),
+                        )
                         const toggle = (slug: string) => {
                             field.onChange(
                                 field.value.includes(slug)
-                                    ? field.value.filter((s) => s !== slug)
+                                    ? field.value.filter((v) => v !== slug)
                                     : [...field.value, slug],
                             )
                         }
@@ -290,25 +335,29 @@ export function GuideForm({ mode, guide }: Props) {
                                         <CommandList>
                                             <CommandEmpty>No tags available.</CommandEmpty>
                                             <CommandGroup>
-                                                {tagsList.map((t) => (
-                                                    <CommandItem
-                                                        key={t.slug}
-                                                        value={`${t.name} ${t.slug}`}
-                                                        onSelect={() => toggle(t.slug)}
-                                                    >
-                                                        <span
-                                                            className={`mr-2 inline-flex size-4 items-center justify-center rounded border ${
-                                                                field.value.includes(t.slug)
-                                                                    ? "bg-primary text-primary-foreground border-primary"
-                                                                    : "border-border"
-                                                            }`}
-                                                            aria-hidden
+                                                {tagsList.map((t) => {
+                                                    const checked = field.value.includes(t.slug)
+                                                    return (
+                                                        <CommandItem
+                                                            key={t.slug}
+                                                            value={`${t.name} ${t.slug}`}
+                                                            onSelect={() => toggle(t.slug)}
                                                         >
-                                                            {field.value.includes(t.slug) ? "✓" : ""}
-                                                        </span>
-                                                        {t.name}
-                                                    </CommandItem>
-                                                ))}
+                                                            <span
+                                                                className={cn(
+                                                                    "mr-2 inline-flex size-4 items-center justify-center rounded border",
+                                                                    checked
+                                                                        ? "bg-primary text-primary-foreground border-primary"
+                                                                        : "border-border",
+                                                                )}
+                                                                aria-hidden
+                                                            >
+                                                                {checked ? "✓" : ""}
+                                                            </span>
+                                                            {t.name}
+                                                        </CommandItem>
+                                                    )
+                                                })}
                                             </CommandGroup>
                                         </CommandList>
                                     </Command>

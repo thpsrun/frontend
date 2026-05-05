@@ -101,52 +101,56 @@ export const GameSidebar = ({
                         />
                     )}
                     <div className={cn(
-                        "flex gap-1 p-2",
+                        "flex flex-col gap-1 p-2",
                         "border-b border-border/40",
                         "bg-muted/10",
                         "outline outline-border/40",
                         "rounded-md",
                     )}>
-                        {hasFullGame && (
-                            <button
-                                onClick={() => navigate(
-                                    `/${gameSlug}`,
+                        {(hasFullGame || hasLevels) && (
+                            <div className="flex gap-1">
+                                {hasFullGame && (
+                                    <button
+                                        onClick={() => navigate(
+                                            `/${gameSlug}`,
+                                        )}
+                                        className={cn(
+                                            "flex-1 px-3 py-1.5",
+                                            "text-xs font-semibold",
+                                            "rounded-md transition",
+                                            !isILView && !isGuidesView
+                                                ? "bg-blue-600 text-white shadow-sm"
+                                                : "text-muted-foreground hover:text-white hover:bg-muted/40",
+                                        )}
+                                    >
+                                        Full Game
+                                    </button>
                                 )}
-                                className={cn(
-                                    "flex-1 px-3 py-1.5",
-                                    "text-xs font-semibold",
-                                    "rounded-md transition",
-                                    !isILView && !isGuidesView
-                                        ? "bg-blue-600 text-white shadow-sm"
-                                        : "text-muted-foreground hover:text-white hover:bg-muted/40",
+                                {hasLevels && (
+                                    <button
+                                        onClick={() => navigate(
+                                            `/${gameSlug}/ils`,
+                                        )}
+                                        className={cn(
+                                            "flex-1 px-3 py-1.5",
+                                            "text-xs font-semibold",
+                                            "rounded-md transition",
+                                            isILView
+                                                ? "bg-blue-600 text-white shadow-sm"
+                                                : "text-muted-foreground hover:text-white hover:bg-muted/40",
+                                        )}
+                                    >
+                                        Individual Levels
+                                    </button>
                                 )}
-                            >
-                                Full Game
-                            </button>
-                        )}
-                        {hasLevels && (
-                            <button
-                                onClick={() => navigate(
-                                    `/${gameSlug}/ils`,
-                                )}
-                                className={cn(
-                                    "flex-1 px-3 py-1.5",
-                                    "text-xs font-semibold",
-                                    "rounded-md transition",
-                                    isILView
-                                        ? "bg-blue-600 text-white shadow-sm"
-                                        : "text-muted-foreground hover:text-white hover:bg-muted/40",
-                                )}
-                            >
-                                Individual Levels
-                            </button>
+                            </div>
                         )}
                         <button
                             onClick={() => navigate(
                                 `/${gameSlug}/guides`,
                             )}
                             className={cn(
-                                "flex-1 px-3 py-1.5",
+                                "w-full px-3 py-1.5",
                                 "text-xs font-semibold",
                                 "rounded-md transition",
                                 isGuidesView
@@ -198,6 +202,7 @@ export const GameSidebar = ({
                 </Panel>
             ) : null}
 
+            {!isGuidesView && (
             <Panel className="p-4 space-y-2">
                 <h3 className={cn(
                     "text-sm font-semibold",
@@ -260,7 +265,9 @@ export const GameSidebar = ({
                     </div>
                 )}
             </Panel>
+            )}
 
+            {!isGuidesView && (
             <Panel className="p-4 space-y-3">
                 <h3 className={cn(
                     "text-sm font-semibold",
@@ -307,6 +314,7 @@ export const GameSidebar = ({
                     </div>
                 )}
             </Panel>
+            )}
         </div>
     )
 }

@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react"
+import { useEffect, useCallback, useRef } from "react"
 import { useBlocker } from "react-router"
 
 interface UseUnsavedChangesGuardOptions {
@@ -12,7 +12,15 @@ export function useUnsavedChangesGuard({
     onSave,
     onDiscard,
 }: UseUnsavedChangesGuardOptions) {
-    const blocker = useBlocker(isDirty)
+    const skipNextRef = useRef(false)
+
+    const blocker = useBlocker(({ currentLocation, nextLocation }) => {
+        if (skipNextRef.current) {
+            skipNextRef.current = false
+            return false
+        }
+        return isDirty && currentLocation.pathname !== nextLocation.pathname
+    })
 
     useEffect(() => {
         if (!isDirty) return
@@ -31,7 +39,6 @@ export function useUnsavedChangesGuard({
                 blocker.proceed()
             }
         } catch {
-            // Save failed - stay on page, error shown by the form
         }
     }, [onSave, blocker])
 
@@ -48,10 +55,15 @@ export function useUnsavedChangesGuard({
         }
     }, [blocker])
 
+    const bypassNext = useCallback(() => {
+        skipNextRef.current = true
+    }, [])
+
     return {
         isBlocked: blocker.state === "blocked",
         handleSave,
         handleDiscard,
         handleCancel,
+        bypassNext,
     }
 }

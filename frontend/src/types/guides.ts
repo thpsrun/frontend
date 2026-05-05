@@ -1,14 +1,18 @@
 import type { Game } from "./api"
+import type { Country, Gradients } from "./shared"
 
 export interface Tag {
+    id?: number
     name: string
     slug: string
     description: string
 }
 
 export interface GuideAuthor {
-    username: string
-    name?: string | null
+    name: string
+    nickname: string | null
+    country: Country | null
+    gradients?: Gradients | null
 }
 
 export interface GuideListItem {

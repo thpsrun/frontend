@@ -69,12 +69,12 @@ export function GuideMarkdownEditor({ value, onChange, placeholder }: Props) {
                         onChange={(e) => onChange(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder={placeholder ?? "Write your guide in Markdown..."}
-                        className="min-h-[400px] resize-y rounded-none border-0 font-mono text-sm focus-visible:ring-0"
+                        className="min-h-100 resize-y rounded-none border-0 font-mono text-sm focus-visible:ring-0"
                     />
                 </TabsContent>
 
                 <TabsContent value="preview" className="mt-0">
-                    <div className="min-h-[400px] p-4">
+                    <div className="min-h-100 p-4">
                         {value
                             ? <GuideMarkdown content={value} />
                             : <p className="text-sm text-muted-foreground">Nothing to preview yet.</p>}

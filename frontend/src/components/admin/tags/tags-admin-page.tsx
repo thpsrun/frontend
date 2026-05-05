@@ -1,6 +1,7 @@
 import { useState } from "react"
-import { Plus } from "lucide-react"
+import { Plus, Tag as TagIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { EmptyState } from "@/components/ui/empty-state"
 import { Panel } from "@/components/ui/panel"
 import { useTags } from "@/hooks/guides/useTags"
 import type { Tag } from "@/types/guides"
@@ -15,23 +16,25 @@ export function TagsAdminPage() {
     const [deleting, setDeleting] = useState<Tag | null>(null)
 
     return (
-        <div className="container mx-auto max-w-4xl px-4 py-6">
-            <div className="mb-4 flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-semibold">Tags</h1>
-                    <p className="text-sm text-muted-foreground">
-                        Tags can be applied to guides. Tags are global across all games.
-                    </p>
+        <div className="space-y-4">
+            <Panel>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl font-semibold">Tags</h2>
+                        <p className="text-sm text-muted-foreground">
+                            Tags are applied to guides and are globally-accessible.
+                        </p>
+                    </div>
+                    <Button onClick={() => setCreating(true)}>
+                        <Plus className="mr-2 size-4" />New tag
+                    </Button>
                 </div>
-                <Button onClick={() => setCreating(true)}>
-                    <Plus className="mr-2 size-4" />New tag
-                </Button>
-            </div>
+            </Panel>
 
             {isLoading
                 ? <Panel className="p-10 text-center text-muted-foreground">Loading...</Panel>
                 : (data?.length ?? 0) === 0
-                    ? <Panel className="p-10 text-center text-muted-foreground">No tags yet.</Panel>
+                    ? <EmptyState icon={TagIcon} title="No tags yet." />
                     : (
                         <TagsTable
                             tags={data ?? []}

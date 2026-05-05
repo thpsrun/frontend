@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Panel } from "@/components/ui/panel"
+import { cn } from "@/lib/utils"
 import type { Tag } from "@/types/guides"
 
 interface Props {
@@ -34,7 +35,7 @@ export function TagsTable({ tags, onEdit, onDelete }: Props) {
         <Panel className="overflow-hidden p-0">
             <Table>
                 <TableHeader>
-                    <TableRow>
+                    <TableRow className="bg-muted/20">
                         <TableHead>
                             <button
                                 type="button"
@@ -50,8 +51,14 @@ export function TagsTable({ tags, onEdit, onDelete }: Props) {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {sorted.map((t) => (
-                        <TableRow key={t.slug}>
+                    {sorted.map((t, idx) => (
+                        <TableRow
+                            key={t.slug}
+                            className={cn(
+                                "transition hover:bg-muted/30",
+                                idx % 2 === 1 ? "bg-muted/10" : "",
+                            )}
+                        >
                             <TableCell>
                                 <div className="font-semibold">{t.name}</div>
                                 <div className="text-sm text-muted-foreground">

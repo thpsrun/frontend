@@ -1,6 +1,4 @@
 import { useState } from "react"
-import { Navigate } from "react-router"
-import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useSyncLogs } from "@/hooks/admin/useSyncLogs"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Badge } from "@/components/ui/badge"
@@ -25,35 +23,26 @@ import type {
 
 const PAGE_SIZE = 50
 
-const statusVariant: Record<
-    string, "default" | "secondary" | "destructive"
-> = {
+type SyncStatus = SyncLogEntry["status"]
+type SyncAction = SyncLogEntry["action"]
+type BadgeVariant = "default" | "secondary" | "destructive"
+
+const STATUS_VARIANT: Record<SyncStatus, BadgeVariant> = {
     pending: "secondary",
     synced: "default",
     failed: "destructive",
 }
 
-// The API returns an ISO-compliant string, but this is to help
-// normalize it and have it appear as a date.
+const ACTION_LABEL: Record<SyncAction, string> = {
+    verify: "Verify",
+    reject: "Reject",
+    change_players: "Change Players",
+}
+
 function formatDate(iso: string): string {
     return new Date(iso).toLocaleString()
 }
 
-function actionLabel(action: string): string {
-    switch (action) {
-        case "verify": return "Verify"
-        case "reject": return "Reject"
-        case "change_players": return "Change Players"
-        default: return action
-    }
-}
-
-// This function is to setup how the table is formatted within the
-// admin hub. The admin hub is supposed to be a collection of the
-// CURRENT speedruns waiting to be synced with SRC, their status,
-// and any issues they have come across. There will be more specifics
-// (e.g. the JSON output) on the Django admin portal, but this should
-// capture a lot of the major issues (unless SRC is super broken).
 function LogRow({
     entry,
     idx,
@@ -85,13 +74,10 @@ function LogRow({
                 </div>
             </TableCell>
             <TableCell className="text-center">
-                {actionLabel(entry.action)}
+                {ACTION_LABEL[entry.action]}
             </TableCell>
             <TableCell className="text-center">
-                <Badge variant={
-                    statusVariant[entry.status]
-                        ?? "secondary"
-                }>
+                <Badge variant={STATUS_VARIANT[entry.status]}>
                     {entry.status}
                 </Badge>
             </TableCell>
@@ -174,22 +160,12 @@ function LogRow({
 }
 
 export function AdminHub() {
-    const { player, isLoading: authLoading } = useCurrentPlayer()
     const [filters, setFilters] = useState<SyncLogsParams>({
         limit: PAGE_SIZE,
         offset: 0,
     })
 
-    const { data, isLoading, error, retry } = useSyncLogs(
-        filters,
-        { enabled: !!player?.player.is_superuser },
-    )
-
-    // If the user is not a superuser within the Django admin panel,
-    // then they are sent back to the main page.
-    if (!authLoading && !player?.player.is_superuser) {
-        return <Navigate to="/" replace />
-    }
+    const { data, isLoading, error, retry } = useSyncLogs(filters)
 
     const totalPages = data
         ? Math.ceil(data.count / PAGE_SIZE)
@@ -217,10 +193,16 @@ export function AdminHub() {
     }
 
     return (
-        <div className={cn(
-            "mx-auto w-full max-w-6xl px-4 py-8",
-            "space-y-6",
-        )}>
+        <div className="space-y-4">
+            <Panel>
+                <div>
+                    <h2 className="text-xl font-semibold">SRC-thps.run Sync Logs</h2>
+                    <p className="text-sm text-muted-foreground">
+                        Monitor and Retry Syncs with thps.run
+                    </p>
+                </div>
+            </Panel>
+
             {error && (
                 <AlertBanner variant="error">
                     {error.message}
@@ -239,12 +221,6 @@ export function AdminHub() {
 
             {data && (
                 <Panel className="p-5 w-full">
-                    <h2 className={cn(
-                        "text-xl font-semibold mb-4",
-                    )}>
-                        SRC-thps.run Sync Logs
-                    </h2>
-
                     <div className={cn(
                         "flex flex-wrap gap-3 mb-4",
                     )}>

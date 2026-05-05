@@ -1,6 +1,7 @@
 import { useCallback } from "react"
 import {
-    Bold, Italic, Heading2, Code, Code2, Quote, List, ListOrdered, Link as LinkIcon, Image as ImageIcon,
+    Bold, Italic, Heading1, Heading2, Heading3, Heading4,
+    Code, Code2, Quote, List, ListOrdered, Link as LinkIcon, Image as ImageIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -23,10 +24,25 @@ const ops: Record<string, Op> = {
         selectStart: 1,
         selectEnd: 1 + (s.length || 6),
     }),
+    h1: (s) => ({
+        insert: `\n# ${s || "Heading"}\n`,
+        selectStart: 3,
+        selectEnd: 3 + (s.length || 7),
+    }),
     h2: (s) => ({
         insert: `\n## ${s || "Heading"}\n`,
         selectStart: 4,
         selectEnd: 4 + (s.length || 7),
+    }),
+    h3: (s) => ({
+        insert: `\n### ${s || "Heading"}\n`,
+        selectStart: 5,
+        selectEnd: 5 + (s.length || 7),
+    }),
+    h4: (s) => ({
+        insert: `\n#### ${s || "Heading"}\n`,
+        selectStart: 6,
+        selectEnd: 6 + (s.length || 7),
     }),
     code: (s) => ({
         insert: `\`${s || "code"}\``,
@@ -111,7 +127,12 @@ export function MarkdownToolbar({ textareaRef, value, onChange }: Props) {
         <div className="flex flex-wrap items-center gap-1 border-b border-border px-2 py-1">
             <ToolbarBtn op="bold" title="Bold (Ctrl+B)" onApply={apply}><Bold className="size-4" /></ToolbarBtn>
             <ToolbarBtn op="italic" title="Italic (Ctrl+I)" onApply={apply}><Italic className="size-4" /></ToolbarBtn>
-            <ToolbarBtn op="h2" title="Heading" onApply={apply}><Heading2 className="size-4" /></ToolbarBtn>
+            <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+            <ToolbarBtn op="h1" title="Heading 1" onApply={apply}><Heading1 className="size-4" /></ToolbarBtn>
+            <ToolbarBtn op="h2" title="Heading 2" onApply={apply}><Heading2 className="size-4" /></ToolbarBtn>
+            <ToolbarBtn op="h3" title="Heading 3" onApply={apply}><Heading3 className="size-4" /></ToolbarBtn>
+            <ToolbarBtn op="h4" title="Heading 4" onApply={apply}><Heading4 className="size-4" /></ToolbarBtn>
+            <span className="mx-1 h-5 w-px bg-border" aria-hidden />
             <ToolbarBtn op="code" title="Inline code" onApply={apply}><Code className="size-4" /></ToolbarBtn>
             <ToolbarBtn op="codeblock" title="Code block" onApply={apply}><Code2 className="size-4" /></ToolbarBtn>
             <ToolbarBtn op="quote" title="Quote" onApply={apply}><Quote className="size-4" /></ToolbarBtn>

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { useNavigate } from "react-router"
+import { Link } from "react-router"
 import { ArrowUp, ArrowDown, FileText, RefreshCw } from "lucide-react"
 import {
     Table,
@@ -13,9 +13,12 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Panel } from "@/components/ui/panel"
 import { useGuides } from "@/hooks/guides/useGuides"
-import type { GuideListItem } from "@/types/guides"
+import { useTags } from "@/hooks/guides/useTags"
+import type { GuideListItem, Tag } from "@/types/guides"
 import { GuideTableSkeleton } from "./guide-table-skeleton"
-import { EmptyState } from "./empty-state"
+import { GradientUsername } from "@/components/profile/gradient-username"
+import { EmptyState } from "@/components/ui/empty-state"
+import { buildGuideUrl, resolveGuideTags } from "@/lib/guide-urls"
 import { cn } from "@/lib/utils"
 
 type SortKey = "title" | "updated"
@@ -35,9 +38,9 @@ interface Props {
 }
 
 function relativeTime(iso: string | null): { rel: string; abs: string } {
-    if (!iso) return { rel: "—", abs: "" }
+    if (!iso) return { rel: "-", abs: "" }
     const d = new Date(iso)
-    if (isNaN(d.getTime())) return { rel: "—", abs: "" }
+    if (isNaN(d.getTime())) return { rel: "-", abs: "" }
     const diff = (Date.now() - d.getTime()) / 1000
     const abs = d.toLocaleString()
     if (diff < 60) return { rel: "just now", abs }
@@ -54,7 +57,6 @@ export function GuidesTable({
     filters,
     emptyState,
 }: Props) {
-    const navigate = useNavigate()
     const showGameColumn = !pinnedGameSlug
     const [sortKey, setSortKey] = useState<SortKey>("updated")
     const [sortDir, setSortDir] = useState<SortDir>("desc")
@@ -64,14 +66,15 @@ export function GuidesTable({
         game: pinnedGameSlug ?? filters.game,
         tag: tagFilter,
     })
+    const tagsList = useTags()
 
     const sorted = useMemo(() => {
         const list = (data ?? []).filter((g) => {
-            if (pinnedAuthorUsername && g.author?.username !== pinnedAuthorUsername) {
+            if (pinnedAuthorUsername && g.author?.name !== pinnedAuthorUsername) {
                 return false
             }
             if (filters.tagSlugs.length > 1) {
-                const slugs = (g.tags ?? []).map((t) => t.slug)
+                const slugs = resolveGuideTags(g.tags, tagsList.data).map((t) => t.slug)
                 if (!filters.tagSlugs.every((s) => slugs.includes(s))) return false
             }
             if (filters.query) {
@@ -92,7 +95,7 @@ export function GuidesTable({
             return sortDir === "asc" ? aT - bT : bT - aT
         })
         return list
-    }, [data, sortKey, sortDir, filters, pinnedAuthorUsername])
+    }, [data, sortKey, sortDir, filters, pinnedAuthorUsername, tagsList.data])
 
     function toggleSort(key: SortKey) {
         if (key === sortKey) {
@@ -116,11 +119,22 @@ export function GuidesTable({
         )
     }
 
+    if (!isLoading && sorted.length === 0) {
+        return (
+            <EmptyState
+                icon={FileText}
+                title={emptyState?.title ?? "No guides match the filters."}
+                description={emptyState?.description}
+                action={emptyState?.action}
+            />
+        )
+    }
+
     return (
         <Panel className="overflow-hidden p-0">
             <Table>
                 <TableHeader>
-                    <TableRow>
+                    <TableRow className="bg-muted/20">
                         <TableHead>
                             <button
                                 type="button"
@@ -156,64 +170,52 @@ export function GuidesTable({
 
                 {isLoading
                     ? <GuideTableSkeleton rows={5} showGameColumn={showGameColumn} />
-                    : sorted.length === 0
-                        ? null
-                        : (
-                            <TableBody>
-                                {sorted.map((g) => (
-                                    <GuideRow
-                                        key={g.slug}
-                                        guide={g}
-                                        showGameColumn={showGameColumn}
-                                        onOpen={() => navigate(`/guides/${g.slug}`)}
-                                    />
-                                ))}
-                            </TableBody>
-                        )}
+                    : (
+                        <TableBody>
+                            {sorted.map((g, idx) => (
+                                <GuideRow
+                                    key={g.slug}
+                                    guide={g}
+                                    idx={idx}
+                                    showGameColumn={showGameColumn}
+                                    masterTags={tagsList.data}
+                                />
+                            ))}
+                        </TableBody>
+                    )}
             </Table>
-
-            {!isLoading && sorted.length === 0 && (
-                <div className="p-6">
-                    <EmptyState
-                        icon={<FileText className="size-8" />}
-                        title={emptyState?.title ?? "No guides match the filters."}
-                        description={emptyState?.description}
-                        action={emptyState?.action}
-                    />
-                </div>
-            )}
         </Panel>
     )
 }
 
 interface RowProps {
     guide: GuideListItem
+    idx: number
     showGameColumn: boolean
-    onOpen: () => void
+    masterTags: Tag[] | undefined
 }
 
-function GuideRow({ guide, showGameColumn, onOpen }: RowProps) {
+function GuideRow({ guide, idx, showGameColumn, masterTags }: RowProps) {
     const updated = relativeTime(guide.updated_at)
+    const rowTags = resolveGuideTags(guide.tags, masterTags)
     return (
-        <TableRow
-            tabIndex={0}
-            onClick={onOpen}
-            onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault()
-                    onOpen()
-                }
-            }}
-            className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
-        >
-            <TableCell className="max-w-[40rem]">
-                <div className="font-semibold">{guide.title}</div>
+        <TableRow className={cn(
+            "transition hover:bg-muted/30",
+            idx % 2 === 1 ? "bg-muted/10" : "",
+        )}>
+            <TableCell className="max-w-160">
+                <Link
+                    to={buildGuideUrl(guide)}
+                    className="font-semibold hover:underline"
+                >
+                    {guide.title}
+                </Link>
                 <div className="line-clamp-2 text-sm text-muted-foreground">
                     {guide.short_description}
                 </div>
-                {guide.tags && guide.tags.length > 0 && (
+                {rowTags.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">
-                        {guide.tags.map((t) => (
+                        {rowTags.map((t) => (
                             <Badge key={t.slug} variant="secondary">{t.name}</Badge>
                         ))}
                     </div>
@@ -223,31 +225,32 @@ function GuideRow({ guide, showGameColumn, onOpen }: RowProps) {
                 <TableCell>
                     {guide.game
                         ? (
-                            <a
-                                href={`/${guide.game.slug}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className={cn("inline-flex")}
+                            <Link
+                                to={`/${guide.game.slug}`}
+                                className="text-link hover:underline"
                             >
-                                <Badge variant="outline">{guide.game.name}</Badge>
-                            </a>
+                                {guide.game.name}
+                            </Link>
                         )
-                        : <span className="text-muted-foreground">—</span>}
+                        : <span className="text-muted-foreground">-</span>}
                 </TableCell>
             )}
             <TableCell>
-                {guide.author?.username
+                {guide.author?.name
                     ? (
-                        <a
-                            href={`/players/${guide.author.username}`}
-                            onClick={(e) => e.stopPropagation()}
+                        <Link
+                            to={`/player/${guide.author.name}`}
                             className="hover:underline"
                         >
-                            {guide.author.username}
-                        </a>
+                            <GradientUsername
+                                name={guide.author.nickname || guide.author.name}
+                                gradients={guide.author.gradients ?? null}
+                            />
+                        </Link>
                     )
-                    : <span className="text-muted-foreground">—</span>}
+                    : <span className="text-muted-foreground">-</span>}
             </TableCell>
-            <TableCell className="whitespace-nowrap">
+            <TableCell className="whitespace-nowrap text-sm">
                 <span title={updated.abs}>{updated.rel}</span>
             </TableCell>
         </TableRow>

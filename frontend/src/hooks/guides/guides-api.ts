@@ -7,7 +7,7 @@ import type {
 } from "@/types/guides"
 
 export const LIST_EMBED = "game,tags"
-export const DETAIL_EMBED = "game,tags,author"
+export const DETAIL_EMBED = "game,tags"
 
 interface ListParams {
     game?: string

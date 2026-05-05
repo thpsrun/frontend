@@ -1,10 +1,9 @@
-import { StrictMode } from "react"
+import { StrictMode, type ComponentType } from "react"
 import { createRoot } from "react-dom/client"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ApiError } from "@/lib/api-client"
 import { Provider as JotaiProvider } from "jotai"
 import "./index.css"
-import "highlight.js/styles/github-dark.css"
 import App from "./App.tsx"
 import {
     createBrowserRouter,
@@ -34,11 +33,8 @@ import { ApiKeysSection } from "./components/profile/sections/api-keys-section.t
 import { DangerSection } from "./components/profile/sections/danger-section.tsx"
 import { HistoricalRankingsPage } from "./components/rankings/historical-rankings-page.tsx"
 import { RankingsRedirect } from "./components/rankings/rankings-redirect.tsx"
-import { GuidesHubPage } from "./components/guides/guides-hub-page.tsx"
-import { GuideDetailPage } from "./components/guides/guide-detail-page.tsx"
-import { GuideFormPage } from "./components/guides/guide-form-page.tsx"
-import { TagsAdminPage } from "./components/admin/tags/tags-admin-page.tsx"
-import { GuidesSection } from "./components/profile/sections/guides-section.tsx"
+import { ProfileContentLayout } from "./components/profile/profile-content-layout.tsx"
+import { AdminLayout } from "./components/admin/admin-layout.tsx"
 import { SuperuserRoute } from "./components/routing/SuperuserRoute.tsx"
 
 // Defaults for how the application should handle web requests.
@@ -63,6 +59,34 @@ const queryClient = new QueryClient({
     },
 })
 
+// Lazy-loading on several components, since they are the heavier parts of the code.
+// If you are wanting to know: if given a function that loads modules, return the router
+// and pulls the components out. This should make the site load a lot faster for a lot of people!
+const lazyComponent = <T, K extends keyof T>(load: () => Promise<T>, key: K) =>
+    async () => ({ Component: (await load())[key] as ComponentType })
+
+const lazyGuideForm = (mode: "create" | "edit") => async () => {
+    const m = await import("./components/guides/guide-form-page.tsx")
+    return { element: <m.GuideFormPage mode={mode} /> }
+}
+
+const lazyGuidesHub = lazyComponent(
+    () => import("./components/guides/guides-hub-page.tsx"),
+    "GuidesHubPage",
+)
+const lazyGuideDetail = lazyComponent(
+    () => import("./components/guides/guide-detail-page.tsx"),
+    "GuideDetailPage",
+)
+const lazyGuidesSection = lazyComponent(
+    () => import("./components/profile/sections/guides-section.tsx"),
+    "GuidesSection",
+)
+const lazyTagsAdmin = lazyComponent(
+    () => import("./components/admin/tags/tags-admin-page.tsx"),
+    "TagsAdminPage",
+)
+
 const router = createBrowserRouter([
     {
         path: "/",
@@ -75,8 +99,8 @@ const router = createBrowserRouter([
                 path: "rankings/history/:mode/:year/:month/:gameSlug?",
                 Component: HistoricalRankingsPage,
             },
-            { path: "guides", Component: GuidesHubPage },
-            { path: "guides/:slug", Component: GuideDetailPage },
+            { path: "guides", lazy: lazyGuidesHub },
+            { path: "guides/:gameSlug/:guideSlug", lazy: lazyGuideDetail },
             { path: ":gameSlug/*", Component: GameOverview },
             { path: "login", Component: LoginPage },
             { path: "register", Component: RegisterPage },
@@ -96,19 +120,36 @@ const router = createBrowserRouter([
                             { path: "security", Component: SecuritySection },
                             { path: "api-keys", Component: ApiKeysSection },
                             { path: "danger", Component: DangerSection },
-                            { path: "guides", Component: GuidesSection },
+                        ],
+                    },
+                    {
+                        path: "profile/content",
+                        Component: ProfileContentLayout,
+                        children: [
+                            { index: true, element: null },
+                            { path: "guides", lazy: lazyGuidesSection },
                         ],
                     },
                     { path: "submissions", Component: SubmissionsHub },
-                    { path: "admin", Component: AdminHub },
-                    { path: "guides/new", element: <GuideFormPage mode="create" /> },
-                    { path: "guides/:slug/edit", element: <GuideFormPage mode="edit" /> },
+                    { path: "guides/new", lazy: lazyGuideForm("create") },
+                    {
+                        path: "guides/:gameSlug/:guideSlug/edit",
+                        lazy: lazyGuideForm("edit"),
+                    },
                 ],
             },
             {
                 Component: SuperuserRoute,
                 children: [
-                    { path: "admin/tags", Component: TagsAdminPage },
+                    {
+                        path: "admin",
+                        Component: AdminLayout,
+                        children: [
+                            { index: true, element: null },
+                            { path: "sync-logs", Component: AdminHub },
+                            { path: "tags", lazy: lazyTagsAdmin },
+                        ],
+                    },
                 ],
             },
             { path: "player/:playerName", Component: PlayerProfile },
