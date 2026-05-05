@@ -86,6 +86,11 @@ export function AuthButton() {
                         Edit Profile
                     </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link to="/profile/content/guides">
+                        My Guides & Runs
+                    </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                     <Link to="/submissions" className="flex items-center gap-2">

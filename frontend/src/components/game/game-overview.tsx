@@ -14,6 +14,7 @@ import { VariableToggles } from "@/components/leaderboard/variable-toggles"
 import { GameSidebar } from "@/components/game/game-sidebar"
 import { ILOverview } from "@/components/ils/il-overview"
 import { WRHistoryChart } from "@/components/leaderboard/wr-history-chart"
+import { GuidesHubPage } from "@/components/guides/guides-hub-page"
 
 import { useGameDetail } from "@/hooks/game/useGameDetail"
 import { useLeaderboard } from "@/hooks/leaderboard/useLeaderboard"
@@ -54,17 +55,18 @@ export const GameOverview = () => {
         [splat],
     )
     const isILView = segments[0] === "ils"
+    const isGuidesView = segments[0] === "guides"
     const ilSegments = useMemo(
         () => isILView ? segments.slice(1) : [],
         [segments, isILView],
     )
 
-    const categorySlug = isILView
+    const categorySlug = (isILView || isGuidesView)
         ? ""
         : (segments[0] || "")
     const valueSlugs = useMemo(
-        () => isILView ? [] : segments.slice(1),
-        [segments, isILView],
+        () => (isILView || isGuidesView) ? [] : segments.slice(1),
+        [segments, isILView, isGuidesView],
     )
 
     const {
@@ -83,7 +85,7 @@ export const GameOverview = () => {
             categorySlug,
             valueSlugs,
         },
-        { enabled: !!safeGameSlug && !!categorySlug && !isILView },
+        { enabled: !!safeGameSlug && !!categorySlug && !isILView && !isGuidesView },
     )
 
     const categories = useMemo(
@@ -136,6 +138,7 @@ export const GameOverview = () => {
     useEffect(() => {
         if (
             !isILView
+            && !isGuidesView
             && !gameLoading
             && gameDetail
             && categories.length === 0
@@ -144,13 +147,13 @@ export const GameOverview = () => {
             navigate(`/${safeGameSlug}/ils`, { replace: true })
         }
     }, [
-        isILView, gameLoading, gameDetail,
+        isILView, isGuidesView, gameLoading, gameDetail,
         categories, hasLevels, safeGameSlug, navigate,
     ])
 
     // Default redirect when category or required variable value slugs are missing from URL
     useEffect(() => {
-        if (isILView) return
+        if (isILView || isGuidesView) return
         if (categories.length === 0) return
 
         const targetCat = categorySlug
@@ -179,7 +182,7 @@ export const GameOverview = () => {
 
         navigate(path, { replace: true })
     }, [
-        isILView, categories, categorySlug,
+        isILView, isGuidesView, categories, categorySlug,
         valueSlugs, safeGameSlug, navigate,
     ])
 
@@ -233,7 +236,7 @@ export const GameOverview = () => {
         return <Navigate to="/" replace />
     }
 
-    if (!categorySlug && !isILView) {
+    if (!categorySlug && !isILView && !isGuidesView) {
         return (
             <div className="flex items-center justify-center p-12">
                 <div className="text-muted-foreground">
@@ -245,7 +248,24 @@ export const GameOverview = () => {
 
     return (
         <div className="w-full flex flex-col lg:flex-row gap-8">
-            {isILView ? (
+            {isGuidesView ? (
+                <>
+                    <div className="flex-1">
+                        <GuidesHubPage pinnedGameSlug={safeGameSlug} />
+                    </div>
+                    <GameSidebar
+                        gameSlug={safeGameSlug}
+                        gameDetail={gameDetail}
+                        gameLoading={gameLoading}
+                        stats={undefined}
+                        recentRuns={[]}
+                        statsLoading={false}
+                        statsError={false}
+                        isILView={false}
+                        isGuidesView={true}
+                    />
+                </>
+            ) : isILView ? (
                 <ILOverview
                     gameSlug={safeGameSlug}
                     gameDetail={gameDetail}

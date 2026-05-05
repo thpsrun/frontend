@@ -60,6 +60,7 @@ interface GameSidebarProps {
     statsLoading: boolean
     statsError: boolean
     isILView: boolean
+    isGuidesView?: boolean
 }
 
 export const GameSidebar = ({
@@ -71,6 +72,7 @@ export const GameSidebar = ({
     statsLoading,
     statsError,
     isILView,
+    isGuidesView = false,
 }: GameSidebarProps) => {
     const navigate = useNavigate()
     const hasLevels = (gameDetail?.levels?.length ?? 0) > 0
@@ -98,46 +100,67 @@ export const GameSidebar = ({
                             )}
                         />
                     )}
-                    {hasLevels && hasFullGame && (
-                        <div className={cn(
-                            "flex gap-1 p-2",
-                            "border-b border-border/40",
-                            "bg-muted/10",
-                            "outline outline-border/40",
-                            "rounded-md",
-                        )}>
-                            <button
-                                onClick={() => navigate(
-                                    `/${gameSlug}`,
+                    <div className={cn(
+                        "flex flex-col gap-1 p-2",
+                        "border-b border-border/40",
+                        "bg-muted/10",
+                        "outline outline-border/40",
+                        "rounded-md",
+                    )}>
+                        {(hasFullGame || hasLevels) && (
+                            <div className="flex gap-1">
+                                {hasFullGame && (
+                                    <button
+                                        onClick={() => navigate(
+                                            `/${gameSlug}`,
+                                        )}
+                                        className={cn(
+                                            "flex-1 px-3 py-1.5",
+                                            "text-xs font-semibold",
+                                            "rounded-md transition",
+                                            !isILView && !isGuidesView
+                                                ? "bg-blue-600 text-white shadow-sm"
+                                                : "text-muted-foreground hover:text-white hover:bg-muted/40",
+                                        )}
+                                    >
+                                        Full Game
+                                    </button>
                                 )}
-                                className={cn(
-                                    "flex-1 px-3 py-1.5",
-                                    "text-xs font-semibold",
-                                    "rounded-md transition",
-                                    !isILView
-                                        ? "bg-blue-600 text-white shadow-sm"
-                                        : "text-muted-foreground hover:text-white hover:bg-muted/40",
+                                {hasLevels && (
+                                    <button
+                                        onClick={() => navigate(
+                                            `/${gameSlug}/ils`,
+                                        )}
+                                        className={cn(
+                                            "flex-1 px-3 py-1.5",
+                                            "text-xs font-semibold",
+                                            "rounded-md transition",
+                                            isILView
+                                                ? "bg-blue-600 text-white shadow-sm"
+                                                : "text-muted-foreground hover:text-white hover:bg-muted/40",
+                                        )}
+                                    >
+                                        Individual Levels
+                                    </button>
                                 )}
-                            >
-                                Full Game
-                            </button>
-                            <button
-                                onClick={() => navigate(
-                                    `/${gameSlug}/ils`,
-                                )}
-                                className={cn(
-                                    "flex-1 px-3 py-1.5",
-                                    "text-xs font-semibold",
-                                    "rounded-md transition",
-                                    isILView
-                                        ? "bg-blue-600 text-white shadow-sm"
-                                        : "text-muted-foreground hover:text-white hover:bg-muted/40",
-                                )}
-                            >
-                                Individual Levels
-                            </button>
-                        </div>
-                    )}
+                            </div>
+                        )}
+                        <button
+                            onClick={() => navigate(
+                                `/${gameSlug}/guides`,
+                            )}
+                            className={cn(
+                                "w-full px-3 py-1.5",
+                                "text-xs font-semibold",
+                                "rounded-md transition",
+                                isGuidesView
+                                    ? "bg-blue-600 text-white shadow-sm"
+                                    : "text-muted-foreground hover:text-white hover:bg-muted/40",
+                            )}
+                        >
+                            Guides
+                        </button>
+                    </div>
                     <div className="p-4 space-y-2 text-center">
                         <h2 className={cn(
                             "text-lg font-bold",
@@ -179,6 +202,7 @@ export const GameSidebar = ({
                 </Panel>
             ) : null}
 
+            {!isGuidesView && (
             <Panel className="p-4 space-y-2">
                 <h3 className={cn(
                     "text-sm font-semibold",
@@ -241,7 +265,9 @@ export const GameSidebar = ({
                     </div>
                 )}
             </Panel>
+            )}
 
+            {!isGuidesView && (
             <Panel className="p-4 space-y-3">
                 <h3 className={cn(
                     "text-sm font-semibold",
@@ -288,6 +314,7 @@ export const GameSidebar = ({
                     </div>
                 )}
             </Panel>
+            )}
         </div>
     )
 }
