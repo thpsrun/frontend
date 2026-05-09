@@ -3,7 +3,12 @@ import { useMemo, useState } from "react"
 import { ILFilterPanel } from "@/components/ils/il-filter-panel"
 import { ILOverviewGrid } from "@/components/ils/il-overview-grid"
 import { ILDetail } from "@/components/ils/il-detail"
-import { GameSidebar } from "@/components/game/game-sidebar"
+import {
+    GameSidebar,
+    GameCardPanel,
+    GameStatsPanel,
+    GameRecentPanel,
+} from "@/components/game/game-sidebar"
 
 import { useILOverview } from "@/hooks/leaderboard/useILOverview"
 import { useILLeaderboard } from "@/hooks/leaderboard/useILLeaderboard"
@@ -161,7 +166,15 @@ export const ILOverview = ({
 
     return (
         <>
-            <div className="flex-1 flex flex-col gap-6">
+            <div className="flex-1 min-w-0 flex flex-col gap-6">
+                <div className="lg:hidden">
+                    <GameCardPanel
+                        gameSlug={gameSlug}
+                        gameDetail={gameDetail}
+                        gameLoading={gameLoading}
+                        isILView={true}
+                    />
+                </div>
                 {levelSlug ? (
                     <ILDetail
                         gameSlug={gameSlug}
@@ -216,22 +229,42 @@ export const ILOverview = ({
                         />
                     </>
                 )}
+                <div className="flex flex-col gap-6 lg:hidden">
+                    <GameStatsPanel
+                        stats={sidebarStats}
+                        statsLoading={sidebarLoading}
+                        statsError={
+                            levelSlug ? !!ilLbError : false
+                        }
+                    />
+                    <GameRecentPanel
+                        gameSlug={gameSlug}
+                        gameDetail={gameDetail}
+                        recentRuns={sidebarRecent}
+                        statsLoading={sidebarLoading}
+                        statsError={
+                            levelSlug ? !!ilLbError : false
+                        }
+                    />
+                </div>
             </div>
 
-            <GameSidebar
-                gameSlug={gameSlug}
-                gameDetail={gameDetail}
-                gameLoading={gameLoading}
-                stats={sidebarStats}
-                recentRuns={sidebarRecent}
-                statsLoading={sidebarLoading}
-                statsError={
-                    levelSlug
-                        ? !!ilLbError
-                        : false
-                }
-                isILView={true}
-            />
+            <div className="hidden lg:block">
+                <GameSidebar
+                    gameSlug={gameSlug}
+                    gameDetail={gameDetail}
+                    gameLoading={gameLoading}
+                    stats={sidebarStats}
+                    recentRuns={sidebarRecent}
+                    statsLoading={sidebarLoading}
+                    statsError={
+                        levelSlug
+                            ? !!ilLbError
+                            : false
+                    }
+                    isILView={true}
+                />
+            </div>
         </>
     )
 }

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate, Navigate, Link } from "react-router"
+import { useNavigate, Navigate, Link, useLocation } from "react-router"
 import { useSession } from "@/hooks/auth/useSession"
 import { useRegister } from "@/hooks/auth/useRegister"
 import {
@@ -19,10 +19,28 @@ import {
     validateEmail,
 } from "@/lib/validation"
 
+function getReturnTo(state: unknown): string {
+    if (
+        state
+        && typeof state === "object"
+        && "from" in state
+        && typeof (state as { from: unknown }).from === "string"
+    ) {
+        const from = (state as { from: string }).from
+        if (from.startsWith("/") && !from.startsWith("//")) {
+            return from
+        }
+    }
+    return "/"
+}
+
 export function RegisterPage() {
     const navigate = useNavigate()
+    const location = useLocation()
     const { isAuthenticated } = useSession()
     const register = useRegister()
+
+    const returnTo = getReturnTo(location.state)
 
     const [srcApiKey, setSrcApiKey] = useState("")
     const [saveKey, setSaveKey] = useState(false)
@@ -35,10 +53,10 @@ export function RegisterPage() {
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
     if (isAuthenticated) {
-        return <Navigate to="/" replace />
+        return <Navigate to={returnTo} replace />
     }
 
-    const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleRegister = async (e: React.ChangeEvent<HTMLFormElement>) => {
         e.preventDefault()
         setError(null)
         setFieldErrors({})
@@ -75,7 +93,7 @@ export function RegisterPage() {
                 password1,
                 password2,
             })
-            navigate("/")
+            navigate(returnTo)
         } catch (err) {
             setError(
                 err instanceof Error
@@ -238,7 +256,14 @@ export function RegisterPage() {
                         />
                         <Button
                             type="submit"
-                            disabled={register.isPending}
+                            disabled={
+                                register.isPending
+                                || !srcApiKey.trim()
+                                || !username.trim()
+                                || !email.trim()
+                                || !password1
+                                || !password2
+                            }
                         >
                             {register.isPending
                                 ? "Creating Account..."

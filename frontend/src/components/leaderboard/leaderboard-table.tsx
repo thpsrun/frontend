@@ -3,7 +3,8 @@ import {
     FaTwitch,
     FaYoutube,
 } from "react-icons/fa"
-import { Cloud, Play } from "lucide-react"
+import { Cloud, Play, Trophy } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
 
 import {
     Table,
@@ -15,12 +16,10 @@ import {
 } from "@/components/ui/table"
 
 import { cn } from "@/lib/utils"
-import { GradientUsername } from "@/components/profile/gradient-username"
 
 import {
-    type CountryCode,
     getRankBackground,
-    CountryFlag,
+    RunPlayers,
     timeAgo,
     formatLongDate,
 } from "@/lib/leaderboard-helpers"
@@ -39,13 +38,11 @@ export const LeaderboardTable = (
 ) => {
     if (runs.length === 0) {
         return (
-            <div className={cn(
-                "text-sm text-muted-foreground",
-                "p-4 border border-dashed",
-                "border-border/40 rounded",
-            )}>
-                No runs found.
-            </div>
+            <EmptyState
+                inset
+                icon={Trophy}
+                title="No Runs Yet??"
+            />
         )
     }
 
@@ -102,9 +99,8 @@ const LeaderboardRow = (
         expectedPlayers?: number;
     },
 ) => {
-    // place <= 0 means unranked/obsolete; fall back to table position
+    // place = 0 means unranked/obsolete; fall back to table position
     const rank = r.place > 0 ? r.place : idx + 1
-    const firstPlayer = r.players[0] ?? null
 
     return (
         <TableRow className={cn(
@@ -122,46 +118,10 @@ const LeaderboardRow = (
                 </div>
             </TableCell>
             <TableCell className="text-sm">
-                {firstPlayer?.country?.id && (
-                    <CountryFlag
-                        countryCode={
-                            firstPlayer
-                                .country.id as CountryCode
-                        }
-                        flagUrl={firstPlayer.country.flag}
-                        title={firstPlayer.country.name}
-                    />
-                )}
-                {r.players.length > 0 ? (
-                    <>
-                        {r.players.map((p, i) => (
-                            <span key={p.name}>
-                                {i > 0 && " & "}
-                                <Link
-                                    to={`/player/${p.name}`}
-                                    className={cn(
-                                        "text-link",
-                                        "hover:underline",
-                                    )}
-                                >
-                                    {p.name ? (
-                                        <GradientUsername
-                                            name={p.name}
-                                            gradients={
-                                                p.gradients
-                                                    ?? null
-                                            }
-                                        />
-                                    ) : "Anonymous"}
-                                </Link>
-                            </span>
-                        ))}
-                        {expectedPlayers
-                            && r.players.length
-                                < expectedPlayers
-                            && " & Anonymous"}
-                    </>
-                ) : "Unknown"}
+                <RunPlayers
+                    players={r.players}
+                    expectedPlayers={expectedPlayers}
+                />
             </TableCell>
             <TableCell className={cn(
                 "text-center font-mono",
@@ -325,28 +285,13 @@ export const RecentRunItem = ({
                 )}>
                     #{r.place}
                 </span>
-                {r.player_country?.id && (
-                    <CountryFlag
-                        countryCode={
-                            r.player_country.id as CountryCode
-                        }
-                        flagUrl={r.player_country.flag}
-                        title={r.player_country.name}
-                    />
-                )}
-                <Link
-                    to={`/player/${r.player_name}`}
-                    className={cn(
-                        "font-medium",
-                        "text-link",
-                        "hover:underline",
-                    )}
-                >
-                    <GradientUsername
-                        name={r.player_name}
-                        gradients={r.gradients ?? null}
-                    />
-                </Link>
+                <RunPlayers
+                    players={[{
+                        name: r.player_name,
+                        country: r.player_country,
+                        gradients: r.gradients,
+                    }]}
+                />
             </div>
             <div className={cn(
                 "flex justify-between items-center",

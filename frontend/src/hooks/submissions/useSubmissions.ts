@@ -62,6 +62,7 @@ export function useSubmissions() {
         data: submissionsQuery.data ?? null,
         isLoading: submissionsQuery.isLoading,
         error: submissionsQuery.error,
+        refetch: submissionsQuery.refetch,
         verifyReject,
         changePlayers,
     }

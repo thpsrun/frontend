@@ -4,6 +4,9 @@ import type {
     AuthMe, VerifySrcRequest, SRCKeyStatusResponse,
 } from "@/types/auth"
 import { AlertBanner } from "@/components/ui/alert-banner"
+import {
+    ConfirmDeleteDialog,
+} from "@/components/ui/confirm-delete-dialog"
 import { FormField } from "@/components/profile/form-field"
 import { SaveButton } from "@/components/profile/save-button"
 import { SectionPanel } from "@/components/profile/section-panel"
@@ -25,6 +28,7 @@ export function ModerationSettings({
 }: ModerationSettingsProps) {
     const [srcApiKey, setSrcApiKey] = useState("")
     const [message, setMessage] = useState<StatusMsg>(null)
+    const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false)
 
     const handleSaveKey = async (
         e: React.SyntheticEvent,
@@ -56,7 +60,6 @@ export function ModerationSettings({
 
     const handleRemoveKey = async () => {
         setMessage(null)
-
         try {
             await deleteSrcKey.mutateAsync()
             setMessage({
@@ -64,13 +67,12 @@ export function ModerationSettings({
                 text: "API Key Removed!",
             })
         } catch (err) {
-            setMessage({
-                type: "error",
-                text: getErrorMessage(
-                    err,
-                    "Failed to Remove API Key",
-                ),
-            })
+            const text = getErrorMessage(
+                err,
+                "Failed to Remove API Key...",
+            )
+            setMessage({ type: "error", text })
+            throw err
         }
     }
 
@@ -162,13 +164,30 @@ export function ModerationSettings({
                             variant="destructive"
                             isPending={deleteSrcKey.isPending}
                             disabled={isPending}
-                            onClick={handleRemoveKey}
+                            onClick={() => setConfirmRemoveOpen(true)}
                             idleLabel="Remove Key"
                             pendingLabel="Removing..."
                         />
                     )}
                 </div>
             </form>
+
+            <ConfirmDeleteDialog
+                open={confirmRemoveOpen}
+                onOpenChange={setConfirmRemoveOpen}
+                title="Remove SRC API Key?"
+                description="REMINDER!!! Removing the key disables run approvals/edits from thps.run until a new key is added."
+                confirmPhrase="REMOVE"
+                inputLabel={(
+                    <>
+                        Type <strong>REMOVE</strong> to confirm
+                    </>
+                )}
+                confirmLabel="Remove key"
+                pendingLabel="Removing..."
+                isPending={deleteSrcKey.isPending}
+                onConfirm={handleRemoveKey}
+            />
         </SectionPanel>
     )
 }

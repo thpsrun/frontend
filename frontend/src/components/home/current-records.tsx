@@ -18,7 +18,7 @@ export const CurrentRecords = () => {
         useGameGroupSpans(runs, getGameKey)
 
     return (
-        <div className="flex-1 rounded-lg p-6 flex flex-col">
+        <div className="flex-1 min-w-0 rounded-lg p-4 md:p-6 flex flex-col">
             <h1 className="text-xl font-semibold mb-4">
                 Current Records
             </h1>

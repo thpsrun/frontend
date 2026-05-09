@@ -40,6 +40,7 @@ export function TagsTable({ tags, onEdit, onDelete }: Props) {
                             <button
                                 type="button"
                                 onClick={() => setAsc((v) => !v)}
+                                aria-label={`Sort by tag (${asc ? "ascending" : "descending"})`}
                                 className="flex items-center gap-1 hover:text-foreground"
                             >
                                 Tag
@@ -69,7 +70,11 @@ export function TagsTable({ tags, onEdit, onDelete }: Props) {
                             <TableCell>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="sm">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            aria-label="Tag Actions"
+                                        >
                                             <MoreHorizontal className="size-4" />
                                         </Button>
                                     </DropdownMenuTrigger>

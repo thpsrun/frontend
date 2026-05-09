@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { useForm } from "react-hook-form"
+import { toast } from "sonner"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useUpdateProfile } from "@/hooks/auth/useUpdateProfile"
 import { AlertBanner } from "@/components/ui/alert-banner"
@@ -65,15 +66,11 @@ export function SocialSection() {
                 },
             })
 
-            setStatusMsg({
-                type: "success",
-                text: "Social links updated.",
-            })
+            toast.success("Social Links Updated!")
         } catch (err) {
-            setStatusMsg({
-                type: "error",
-                text: getErrorMessage(err, "Update failed."),
-            })
+            const text = getErrorMessage(err, "Update Failed...")
+            setStatusMsg({ type: "error", text })
+            toast.error(text)
             throw err
         }
     }, [socialForm, updateProfile])

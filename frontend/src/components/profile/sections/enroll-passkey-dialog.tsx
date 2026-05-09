@@ -34,7 +34,7 @@ export function EnrollPasskeyDialog({
         onOpenChange(next)
     }
 
-    const handleConfirm = (e: React.FormEvent) => {
+    const handleConfirm = (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault()
         const trimmedName = name.trim()
         if (!trimmedName || !password) return

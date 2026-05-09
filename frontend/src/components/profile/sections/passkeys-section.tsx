@@ -1,9 +1,11 @@
 import { useState } from "react"
+import { Fingerprint } from "lucide-react"
 import { usePasskeys } from "@/hooks/auth/usePasskeys"
 import { useEnrollPasskey } from "@/hooks/auth/useEnrollPasskey"
 import { useDeletePasskey } from "@/hooks/auth/useDeletePasskey"
 import type { Authenticator } from "@/types/auth"
 import { Button } from "@/components/ui/button"
+import { EmptyState } from "@/components/ui/empty-state"
 import { SectionPanel } from "@/components/profile/section-panel"
 import { cn } from "@/lib/utils"
 import { EnrollPasskeyDialog } from "./enroll-passkey-dialog"
@@ -52,9 +54,12 @@ export function PasskeysSection() {
         >
             <div className="flex flex-col gap-3">
                 {passkeys.length === 0 && (
-                    <p className="text-sm text-muted-foreground">
-                        No passkeys enrolled.
-                    </p>
+                    <EmptyState
+                        inset
+                        icon={Fingerprint}
+                        title="No Passkeys Enrolled"
+                        description="Add one to sign in without your password!"
+                    />
                 )}
                 {passkeys.map((pk) => (
                     <div key={pk.id} className={ROW_CLASS}>

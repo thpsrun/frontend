@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { useForm } from "react-hook-form"
+import { toast } from "sonner"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useUpdateProfile } from "@/hooks/auth/useUpdateProfile"
 import {
@@ -146,15 +147,11 @@ export function CustomizationSection() {
                 }
             }
 
-            setMsg({
-                type: "success",
-                text: "Customization updated.",
-            })
+            toast.success("Customization Updated!")
         } catch (err) {
-            setMsg({
-                type: "error",
-                text: getErrorMessage(err, "Update failed."),
-            })
+            const text = getErrorMessage(err, "Update Failed..")
+            setMsg({ type: "error", text })
+            toast.error(text)
             throw err
         }
     }, [
@@ -192,14 +189,14 @@ export function CustomizationSection() {
         useCallback(async () => {
             try {
                 await deleteProfileBg.mutateAsync()
+                toast.success("Background Removed!")
             } catch (err) {
-                setMsg({
-                    type: "error",
-                    text: getErrorMessage(
-                        err,
-                        "Failed to remove background.",
-                    ),
-                })
+                const text = getErrorMessage(
+                    err,
+                    "Failed to Remove Background...",
+                )
+                setMsg({ type: "error", text })
+                toast.error(text)
             }
         }, [deleteProfileBg])
 

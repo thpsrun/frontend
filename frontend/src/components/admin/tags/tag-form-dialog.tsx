@@ -16,7 +16,7 @@ import {
     validateTagName,
     validateTagDescription,
 } from "@/lib/validation"
-import { ApiError } from "@/lib/api-client"
+import { getErrorMessage } from "@/lib/utils"
 import { useCreateTag } from "@/hooks/guides/useCreateTag"
 import { useUpdateTag } from "@/hooks/guides/useUpdateTag"
 import type { Tag } from "@/types/guides"
@@ -44,7 +44,8 @@ export function TagFormDialog({ open, onOpenChange, mode, tag }: Props) {
         }
     }, [open, tag])
 
-    async function onSubmit() {
+    async function onSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+        e.preventDefault()
         const nameErr = validateTagName(name)
         const descErr = validateTagDescription(description)
         if (nameErr || descErr) {
@@ -65,8 +66,9 @@ export function TagFormDialog({ open, onOpenChange, mode, tag }: Props) {
             }
             onOpenChange(false)
         } catch (e) {
-            const msg = e instanceof ApiError ? e.message : "Save failed."
+            const msg = getErrorMessage(e, "Save failed.")
             setErrors({ top: msg })
+            toast.error(msg)
         }
     }
 
@@ -75,55 +77,64 @@ export function TagFormDialog({ open, onOpenChange, mode, tag }: Props) {
     return (
         <Dialog open={open} onOpenChange={(v) => { if (!isPending) onOpenChange(v) }}>
             <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>{mode === "create" ? "New tag" : "Edit tag"}</DialogTitle>
-                </DialogHeader>
+                <form
+                    onSubmit={onSubmit}
+                    className="flex flex-col gap-4"
+                >
+                    <DialogHeader>
+                        <DialogTitle>{mode === "create" ? "New tag" : "Edit tag"}</DialogTitle>
+                    </DialogHeader>
 
-                <div className="space-y-3">
-                    {errors.top && <AlertBanner variant="error">{errors.top}</AlertBanner>}
-                    <div className="space-y-1.5">
-                        <Label htmlFor="tag-name">Name</Label>
-                        <Input
-                            id="tag-name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            maxLength={100}
-                        />
-                        {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
-                    </div>
-                    {mode === "edit" && tag && (
+                    <div className="space-y-3">
+                        {errors.top && <AlertBanner variant="error">{errors.top}</AlertBanner>}
                         <div className="space-y-1.5">
-                            <Label>Slug</Label>
-                            <Input value={tag.slug} disabled className="font-mono" />
+                            <Label htmlFor="tag-name">Name</Label>
+                            <Input
+                                id="tag-name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                maxLength={100}
+                            />
+                            {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
                         </div>
-                    )}
-                    <div className="space-y-1.5">
-                        <Label htmlFor="tag-description">Description</Label>
-                        <Textarea
-                            id="tag-description"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            maxLength={500}
-                            rows={3}
-                        />
-                        {errors.description && (
-                            <p className="text-sm text-destructive">{errors.description}</p>
+                        {mode === "edit" && tag && (
+                            <div className="space-y-1.5">
+                                <Label>Slug</Label>
+                                <Input value={tag.slug} disabled className="font-mono" />
+                            </div>
                         )}
+                        <div className="space-y-1.5">
+                            <Label htmlFor="tag-description">Description</Label>
+                            <Textarea
+                                id="tag-description"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                maxLength={500}
+                                rows={3}
+                            />
+                            {errors.description && (
+                                <p className="text-sm text-destructive">{errors.description}</p>
+                            )}
+                        </div>
                     </div>
-                </div>
 
-                <DialogFooter>
-                    <Button
-                        variant="ghost"
-                        onClick={() => onOpenChange(false)}
-                        disabled={isPending}
-                    >
-                        Cancel
-                    </Button>
-                    <Button onClick={onSubmit} disabled={isPending}>
-                        {isPending ? "Saving..." : "Save"}
-                    </Button>
-                </DialogFooter>
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => onOpenChange(false)}
+                            disabled={isPending}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            disabled={isPending || !name.trim()}
+                        >
+                            {isPending ? "Saving..." : "Save"}
+                        </Button>
+                    </DialogFooter>
+                </form>
             </DialogContent>
         </Dialog>
     )

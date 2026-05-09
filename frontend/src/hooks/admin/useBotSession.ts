@@ -1,7 +1,9 @@
 import {
     useQuery, useMutation, useQueryClient,
 } from "@tanstack/react-query"
+import { toast } from "sonner"
 import { queryKeys } from "@/lib/query-keys"
+import { getErrorMessage } from "@/lib/utils"
 import {
     fetchBotSession,
     refreshBotSessionFn,
@@ -26,6 +28,10 @@ export function useBotSession() {
                 queryKeys.admin.botSession(),
                 data,
             )
+            toast.success("Session Refreshed!")
+        },
+        onError: (err) => {
+            toast.error(getErrorMessage(err, "Refresh Failed..."))
         },
     })
 
@@ -35,6 +41,10 @@ export function useBotSession() {
             queryClient.invalidateQueries({
                 queryKey: queryKeys.admin.botSession(),
             })
+            toast.success("Kill Switch Updated!")
+        },
+        onError: (err) => {
+            toast.error(getErrorMessage(err, "Update Failed..."))
         },
     })
 
@@ -42,6 +52,7 @@ export function useBotSession() {
         data: sessionQuery.data ?? null,
         isLoading: sessionQuery.isLoading,
         error: sessionQuery.error,
+        refetch: sessionQuery.refetch,
         refresh,
         updateKillSwitch,
     }

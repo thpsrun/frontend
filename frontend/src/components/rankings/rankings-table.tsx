@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react"
-import { Link } from "react-router"
 import { ChevronDown, ChevronUp } from "lucide-react"
 
 import {
@@ -13,11 +12,9 @@ import {
 import { Panel } from "@/components/ui/panel"
 
 import { cn } from "@/lib/utils"
-import { GradientUsername } from "@/components/profile/gradient-username"
 import {
-    type CountryCode,
-    CountryFlag,
     getRankBackground,
+    RunPlayers,
 } from "@/lib/leaderboard-helpers"
 
 import type { RankingsEntry } from "@/types/api"
@@ -186,24 +183,7 @@ const RankingsRow = (
                 </div>
             </TableCell>
             <TableCell className="text-sm">
-                {entry.player.country?.id && (
-                    <CountryFlag
-                        countryCode={
-                            entry.player.country.id as CountryCode
-                        }
-                        flagUrl={entry.player.country.flag}
-                        title={entry.player.country.name}
-                    />
-                )}
-                <Link
-                    to={`/player/${entry.player.name}`}
-                    className="text-link hover:underline"
-                >
-                    <GradientUsername
-                        name={entry.player.name}
-                        gradients={entry.player.gradients ?? null}
-                    />
-                </Link>
+                <RunPlayers players={[entry.player]} />
             </TableCell>
             {metrics.map((m) => (
                 <PointsCell

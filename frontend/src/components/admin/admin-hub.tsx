@@ -12,6 +12,7 @@ import {
     Table, TableBody, TableCell, TableHead,
     TableHeader, TableRow,
 } from "@/components/ui/table"
+import { TableSkeleton } from "@/components/ui/table-skeleton"
 import {
     Loader2, RotateCcw, ExternalLink, ChevronLeft,
     ChevronRight,
@@ -165,7 +166,7 @@ export function AdminHub() {
         offset: 0,
     })
 
-    const { data, isLoading, error, retry } = useSyncLogs(filters)
+    const { data, isLoading, error, refetch, retry } = useSyncLogs(filters)
 
     const totalPages = data
         ? Math.ceil(data.count / PAGE_SIZE)
@@ -205,18 +206,32 @@ export function AdminHub() {
 
             {error && (
                 <AlertBanner variant="error">
-                    {error.message}
+                    <div className="flex items-center justify-between gap-3">
+                        <span>{error.message}</span>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => refetch()}
+                            className="gap-1 shrink-0"
+                        >
+                            <RotateCcw className="size-3" />
+                            Retry
+                        </Button>
+                    </div>
                 </AlertBanner>
             )}
 
             {isLoading && (
-                <div className={cn(
-                    "flex items-center gap-2",
-                    "text-muted-foreground py-8",
-                )}>
-                    <Loader2 className="size-4 animate-spin" />
-                    Loading SRC-thps.run sync logs...
-                </div>
+                <Panel className="p-5 w-full">
+                    <TableSkeleton
+                        columns={8}
+                        rows={6}
+                        headers={[
+                            "Run", "Action", "Status", "Moderator",
+                            "Attempts", "Last Error", "Updated", "Actions",
+                        ]}
+                    />
+                </Panel>
             )}
 
             {data && (
@@ -398,6 +413,7 @@ export function AdminHub() {
                                 <Button
                                     size="sm"
                                     variant="outline"
+                                    aria-label="Previous page"
                                     disabled={
                                         currentPage <= 1
                                     }
@@ -418,6 +434,7 @@ export function AdminHub() {
                                 <Button
                                     size="sm"
                                     variant="outline"
+                                    aria-label="Next page"
                                     disabled={
                                         currentPage >=
                                             totalPages

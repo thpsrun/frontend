@@ -139,6 +139,7 @@ export function GuidesTable({
                             <button
                                 type="button"
                                 onClick={() => toggleSort("title")}
+                                aria-label={`Sort by guide title${sortKey === "title" ? ` (${sortDir === "asc" ? "ascending" : "descending"})` : ""}`}
                                 className="flex items-center gap-1 hover:text-foreground"
                             >
                                 Guide
@@ -155,6 +156,7 @@ export function GuidesTable({
                             <button
                                 type="button"
                                 onClick={() => toggleSort("updated")}
+                                aria-label={`Sort by updated date${sortKey === "updated" ? ` (${sortDir === "asc" ? "ascending" : "descending"})` : ""}`}
                                 className="flex items-center gap-1 hover:text-foreground"
                             >
                                 Updated

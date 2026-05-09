@@ -7,17 +7,17 @@ export const MainPage = () => {
     const { data: latestRuns } = useTHPSNewRuns()
 
     return (
-        <div className="w-full h-full flex gap-4">
-            <div className="flex-2 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
+        <div className="w-full h-full flex flex-col gap-4 xl:flex-row min-w-0">
+            <div className="xl:flex-2 min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
                 <CurrentRecords />
             </div>
 
-            <div className="flex-1 flex flex-col gap-4">
-                <div className="flex-1 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
+            <div className="xl:flex-1 min-w-0 flex flex-col gap-4">
+                <div className="flex-1 min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
                     <LatestRuns title="Latest Records" data={latestRecords} />
                 </div>
 
-                <div className="flex-1 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
+                <div className="flex-1 min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
                     <LatestRuns title="Latest Runs" data={latestRuns} />
                 </div>
             </div>

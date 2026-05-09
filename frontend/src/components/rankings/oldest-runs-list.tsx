@@ -1,5 +1,3 @@
-import { Link } from "react-router"
-
 import {
     Table,
     TableHeader,
@@ -12,11 +10,9 @@ import { Panel } from "@/components/ui/panel"
 
 import { cn } from "@/lib/utils"
 import {
-    type CountryCode,
-    CountryFlag,
     formatLongDate,
+    RunPlayers,
 } from "@/lib/leaderboard-helpers"
-import { GradientUsername } from "@/components/profile/gradient-username"
 
 import type { OldestRun } from "@/types/api"
 
@@ -99,24 +95,7 @@ const OldestRunRow = (
                 {idx + 1}
             </TableCell>
             <TableCell className="text-sm">
-                {run.player.country?.id && (
-                    <CountryFlag
-                        countryCode={
-                            run.player.country.id as CountryCode
-                        }
-                        flagUrl={run.player.country.flag}
-                        title={run.player.country.name}
-                    />
-                )}
-                <Link
-                    to={`/player/${run.player.name}`}
-                    className="text-link hover:underline"
-                >
-                    <GradientUsername
-                        name={run.player.name}
-                        gradients={run.player.gradients ?? null}
-                    />
-                </Link>
+                <RunPlayers players={[run.player]} />
             </TableCell>
             <TableCell className="text-xs">
                 <div className="text-foreground">

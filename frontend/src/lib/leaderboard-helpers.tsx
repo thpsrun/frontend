@@ -1,6 +1,9 @@
 import * as flags from "country-flag-icons/react/3x2"
+import { Link } from "react-router"
+import type { ReactNode } from "react"
 
 import { cn } from "@/lib/utils"
+import { GradientUsername } from "@/components/profile/gradient-username"
 
 import type {
     GameCategory,
@@ -162,4 +165,78 @@ export const buildLeaderboardPath = (
 ): string => {
     const parts = [gameSlug, categorySlug, ...valueSlugs]
     return `/${parts.join("/")}`
+}
+
+export interface RunPlayer {
+    name: string | null
+    country?: {
+        id: string
+        name: string
+        flag?: string | null
+    } | null
+    gradients?: {
+        gradient_1: string | null
+        gradient_2: string | null
+        gradient_3: string | null
+    } | null
+}
+
+interface RunPlayersProps {
+    players: RunPlayer[]
+    expectedPlayers?: number
+    separator?: ReactNode
+    asLink?: boolean
+    emptyText?: ReactNode
+}
+
+export const RunPlayers = ({
+    players,
+    expectedPlayers,
+    separator = " & ",
+    asLink = true,
+    emptyText = "Unknown",
+}: RunPlayersProps) => {
+    if (players.length === 0) return <>{emptyText}</>
+
+    const first = players[0]
+
+    return (
+        <>
+            {first?.country?.id && (
+                <CountryFlag
+                    countryCode={first.country.id as CountryCode}
+                    flagUrl={first.country.flag}
+                    title={first.country.name}
+                />
+            )}
+            {players.map((p, i) => {
+                const display = p.name ? (
+                    <GradientUsername
+                        name={p.name}
+                        gradients={p.gradients ?? null}
+                    />
+                ) : (
+                    "Anonymous"
+                )
+                return (
+                    <span key={p.name ?? `anon-${i}`}>
+                        {i > 0 && separator}
+                        {asLink && p.name ? (
+                            <Link
+                                to={`/player/${p.name}`}
+                                className="text-link hover:underline"
+                            >
+                                {display}
+                            </Link>
+                        ) : (
+                            display
+                        )}
+                    </span>
+                )
+            })}
+            {expectedPlayers !== undefined
+                && players.length < expectedPlayers
+                && <>{separator}Anonymous</>}
+        </>
+    )
 }

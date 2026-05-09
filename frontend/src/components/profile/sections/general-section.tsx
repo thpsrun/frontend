@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import { useForm } from "react-hook-form"
+import { toast } from "sonner"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useCountries } from "@/hooks/auth/useCountries"
 import { useUpdateProfile } from "@/hooks/auth/useUpdateProfile"
@@ -129,15 +130,11 @@ export function GeneralSection() {
                 }
             }
 
-            setStatusMsg({
-                type: "success",
-                text: "Profile updated.",
-            })
+            toast.success("Profile Updated!")
         } catch (err) {
-            setStatusMsg({
-                type: "error",
-                text: getErrorMessage(err, "Update failed."),
-            })
+            const text = getErrorMessage(err, "Update Failed...")
+            setStatusMsg({ type: "error", text })
+            toast.error(text)
             throw err
         }
     }, [
@@ -309,8 +306,7 @@ export function GeneralSection() {
                                 "text-xs",
                                 "text-muted-foreground",
                             )}>
-                                New image selected -
-                                save to apply.
+                                New image selected. Save to apply!
                             </p>
                         )}
                     </div>

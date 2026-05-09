@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { toast } from "sonner"
 import {
     Dialog,
     DialogContent,
@@ -46,7 +47,8 @@ export function VerifyDialog({
         ? `${run.category.name} - ${run.level.name}`
         : run.category.name
 
-    const handleSubmit = () => {
+    const handleSubmit = (e: React.SubmitEvent) => {
+        e.preventDefault()
         setError(null)
         verifyReject.mutate(
             {
@@ -57,8 +59,18 @@ export function VerifyDialog({
                 },
             },
             {
-                onSuccess: () => handleOpenChange(false),
-                onError: (err) => setError(err.message),
+                onSuccess: () => {
+                    toast.success(
+                        action === "verified"
+                            ? "Run verified."
+                            : "Run rejected.",
+                    )
+                    handleOpenChange(false)
+                },
+                onError: (err) => {
+                    setError(err.message)
+                    toast.error(err.message)
+                },
             },
         )
     }
@@ -66,75 +78,86 @@ export function VerifyDialog({
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Review Run</DialogTitle>
-                </DialogHeader>
+                <form
+                    onSubmit={handleSubmit}
+                    className="flex flex-col gap-4"
+                >
+                    <DialogHeader>
+                        <DialogTitle>Review Run</DialogTitle>
+                    </DialogHeader>
 
-                <div className="space-y-3 text-sm">
-                    <div>
-                        <span className="text-muted-foreground">Runner:</span>{" "}
-                        {playerNames}
-                    </div>
-                    <div>
-                        <span className="text-muted-foreground">Category:</span>{" "}
-                        {levelLabel}
-                    </div>
-                    <div>
-                        <span className="text-muted-foreground">Time:</span>{" "}
-                        <span className="font-mono">{run.times.p_time}</span>
-                    </div>
-
-                    <div className="flex gap-2 pt-2">
-                        <Button
-                            size="sm"
-                            variant={action === "verified" ? "default" : "outline"}
-                            onClick={() => setAction("verified")}
-                        >
-                            Verify
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant={action === "rejected" ? "destructive" : "outline"}
-                            onClick={() => setAction("rejected")}
-                        >
-                            Reject
-                        </Button>
-                    </div>
-
-                    {action === "rejected" && (
-                        <div className="space-y-1.5">
-                            <Label htmlFor="reject-reason">Reason (required)</Label>
-                            <Input
-                                id="reject-reason"
-                                value={reason}
-                                onChange={(e) => setReason(e.target.value)}
-                                placeholder="Why is this run being rejected?"
-                            />
+                    <div className="space-y-3 text-sm">
+                        <div>
+                            <span className="text-muted-foreground">Runner:</span>{" "}
+                            {playerNames}
                         </div>
-                    )}
+                        <div>
+                            <span className="text-muted-foreground">Category:</span>{" "}
+                            {levelLabel}
+                        </div>
+                        <div>
+                            <span className="text-muted-foreground">Time:</span>{" "}
+                            <span className="font-mono">{run.times.p_time}</span>
+                        </div>
 
-                    {error && (
-                        <AlertBanner variant="error">{error}</AlertBanner>
-                    )}
-                </div>
+                        <div className="flex gap-2 pt-2">
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant={action === "verified" ? "default" : "outline"}
+                                onClick={() => setAction("verified")}
+                            >
+                                Verify
+                            </Button>
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant={action === "rejected" ? "destructive" : "outline"}
+                                onClick={() => setAction("rejected")}
+                            >
+                                Reject
+                            </Button>
+                        </div>
 
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => handleOpenChange(false)}>
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={handleSubmit}
-                        disabled={
-                            verifyReject.isPending ||
-                            (action === "rejected" && !reason.trim())
-                        }
-                    >
-                        {verifyReject.isPending && (
-                            <Loader2 className="size-4 animate-spin mr-1" />
+                        {action === "rejected" && (
+                            <div className="space-y-1.5">
+                                <Label htmlFor="reject-reason">Reason (required)</Label>
+                                <Input
+                                    id="reject-reason"
+                                    value={reason}
+                                    onChange={(e) => setReason(e.target.value)}
+                                    placeholder="Rejection Reason"
+                                />
+                            </div>
                         )}
-                        {action === "verified" ? "Verify Run" : "Reject Run"}
-                    </Button>
-                </DialogFooter>
+
+                        {error && (
+                            <AlertBanner variant="error">{error}</AlertBanner>
+                        )}
+                    </div>
+
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => handleOpenChange(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            disabled={
+                                verifyReject.isPending ||
+                                (action === "rejected" && !reason.trim())
+                            }
+                        >
+                            {verifyReject.isPending && (
+                                <Loader2 className="size-4 animate-spin mr-1" />
+                            )}
+                            {action === "verified" ? "Verify Run" : "Reject Run"}
+                        </Button>
+                    </DialogFooter>
+                </form>
             </DialogContent>
         </Dialog>
     )

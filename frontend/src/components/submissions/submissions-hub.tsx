@@ -3,12 +3,15 @@ import { Link } from "react-router"
 import { useSubmissions } from "@/hooks/submissions/useSubmissions"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Panel } from "@/components/ui/panel"
 import {
     Table, TableBody, TableCell, TableHead,
     TableHeader, TableRow,
 } from "@/components/ui/table"
-import { Info, ExternalLink, Loader2 } from "lucide-react"
+import { TableSkeleton } from "@/components/ui/table-skeleton"
+import { EmptyState } from "@/components/ui/empty-state"
+import { Info, ExternalLink, RotateCcw, Inbox } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
     SyncStatusBadge,
@@ -152,7 +155,7 @@ interface GameGroup {
 }
 
 export function SubmissionsHub() {
-    const { data, isLoading, error } = useSubmissions()
+    const { data, isLoading, error, refetch } = useSubmissions()
 
     const { rows, groups } = useMemo(() => {
         if (!data) return { rows: [] as RowData[], groups: [] as GameGroup[] }
@@ -205,14 +208,25 @@ export function SubmissionsHub() {
 
     if (isLoading) {
         return (
-            <div className="mx-auto max-w-5xl px-4 py-8">
-                <div className={cn(
-                    "flex items-center gap-2",
-                    "text-muted-foreground",
-                )}>
-                    <Loader2 className="size-4 animate-spin" />
-                    Loading Submissions...
-                </div>
+            <div className={cn(
+                "mx-auto max-w-5xl px-4 py-8",
+                "space-y-6",
+            )}>
+                <Panel className="p-5">
+                    <div className="flex items-center gap-3 mb-4">
+                        <h2 className="text-xl font-semibold">
+                            Pending Runs
+                        </h2>
+                    </div>
+                    <TableSkeleton
+                        columns={7}
+                        rows={4}
+                        headers={[
+                            "Type", "Category", "Players",
+                            "Time", "Date", "Links", "Sync",
+                        ]}
+                    />
+                </Panel>
             </div>
         )
     }
@@ -221,7 +235,18 @@ export function SubmissionsHub() {
         return (
             <div className="mx-auto max-w-5xl px-4 py-8">
                 <AlertBanner variant="error">
-                    {error.message}
+                    <div className="flex items-center justify-between gap-3">
+                        <span>{error.message}</span>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => refetch()}
+                            className="gap-1 shrink-0"
+                        >
+                            <RotateCcw className="size-3" />
+                            Retry
+                        </Button>
+                    </div>
                 </AlertBanner>
             </div>
         )
@@ -264,14 +289,12 @@ export function SubmissionsHub() {
                 </div>
 
                 {groups.length === 0 ? (
-                    <div className={cn(
-                        "text-sm text-muted-foreground",
-                        "py-6 text-center",
-                        "border border-dashed",
-                        "border-border/40 rounded-md",
-                    )}>
-                        No pending runs.
-                    </div>
+                    <EmptyState
+                        inset
+                        icon={Inbox}
+                        title="No pending runs"
+                        description="Submitted runs will show here while they wait on moderators."
+                    />
                 ) : (
                     <div className="space-y-6">
                         {groups.map((group) => (
@@ -292,18 +315,18 @@ export function SubmissionsHub() {
                                 </div>
                                 <div className={cn(
                                     "rounded-md border",
-                                    "border-border/40 overflow-hidden",
+                                    "border-border/40",
                                 )}>
-                                    <Table className="table-fixed w-full">
+                                    <Table>
                                         <TableHeader>
                                             <TableRow className="bg-muted/20">
-                                                <TableHead className="text-center w-20">Type</TableHead>
+                                                <TableHead className="text-center">Type</TableHead>
                                                 <TableHead className="text-center">Category</TableHead>
                                                 <TableHead className="text-center">Players</TableHead>
-                                                <TableHead className="text-center w-24">Time</TableHead>
-                                                <TableHead className="text-center w-28">Date</TableHead>
-                                                <TableHead className="text-center w-28">Links</TableHead>
-                                                <TableHead className="text-center w-24">Sync</TableHead>
+                                                <TableHead className="text-center">Time</TableHead>
+                                                <TableHead className="text-center">Date</TableHead>
+                                                <TableHead className="text-center">Links</TableHead>
+                                                <TableHead className="text-center">Sync</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>

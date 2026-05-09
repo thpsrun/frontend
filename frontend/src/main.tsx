@@ -7,9 +7,9 @@ import "./index.css"
 import App from "./App.tsx"
 import {
     createBrowserRouter,
-    Navigate,
     RouterProvider,
 } from "react-router";
+import { NotFoundPage } from "./components/layout/not-found-page.tsx"
 import { MainPage } from "./components/home/main-page.tsx"
 import { GameOverview } from "./components/game/game-overview.tsx"
 import { LoginPage } from "./components/auth/login-page.tsx"
@@ -170,7 +170,7 @@ const router = createBrowserRouter([
             { path: "bluesky", element: <SocialRedirect platform="Bluesky" /> },
             { path: "youtube", element: <SocialRedirect platform="YouTube" /> },
             { path: "twitch", element: <SocialRedirect platform="Twitch" /> },
-            { path: "*", element: <Navigate to="/" replace /> },
+            { path: "*", Component: NotFoundPage },
         ]
     },
 ]);

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate, Navigate, Link } from "react-router"
+import { useNavigate, Navigate, Link, useLocation } from "react-router"
 import { useSession } from "@/hooks/auth/useSession"
 import { useLogin, useSubmitTotp } from "@/hooks/auth/useLogin"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,11 +11,29 @@ import { PasskeyLoginButton } from "@/components/auth/passkey-login-button"
 
 type LoginStep = "login" | "totp" | "email-verification"
 
+function getReturnTo(state: unknown): string {
+    if (
+        state
+        && typeof state === "object"
+        && "from" in state
+        && typeof (state as { from: unknown }).from === "string"
+    ) {
+        const from = (state as { from: string }).from
+        if (from.startsWith("/") && !from.startsWith("//")) {
+            return from
+        }
+    }
+    return "/"
+}
+
 export function LoginPage() {
     const navigate = useNavigate()
+    const location = useLocation()
     const { isAuthenticated } = useSession()
     const login = useLogin()
     const submitTotp = useSubmitTotp()
+
+    const returnTo = getReturnTo(location.state)
 
     const [loginValue, setLoginValue] = useState("")
     const [password, setPassword] = useState("")
@@ -24,7 +42,7 @@ export function LoginPage() {
     const [error, setError] = useState<string | null>(null)
 
     if (isAuthenticated) {
-        return <Navigate to="/" replace />
+        return <Navigate to={returnTo} replace />
     }
 
     const handleLogin = async (e: React.SyntheticEvent) => {
@@ -41,7 +59,7 @@ export function LoginPage() {
             } else if (result.emailVerificationRequired) {
                 setStep("email-verification")
             } else {
-                navigate("/")
+                navigate(returnTo)
             }
         } catch (err) {
             setError(
@@ -58,7 +76,7 @@ export function LoginPage() {
 
         try {
             await submitTotp.mutateAsync(totpCode)
-            navigate("/")
+            navigate(returnTo)
         } catch (err) {
             setError(
                 err instanceof Error
@@ -126,7 +144,10 @@ export function LoginPage() {
                             />
                             <Button
                                 type="submit"
-                                disabled={submitTotp.isPending}
+                                disabled={
+                                    submitTotp.isPending
+                                    || totpCode.length !== 6
+                                }
                             >
                                 {submitTotp.isPending ? "Verifying..." : "Verify"}
                             </Button>
@@ -167,7 +188,11 @@ export function LoginPage() {
                                 />
                                 <Button
                                     type="submit"
-                                    disabled={login.isPending}
+                                    disabled={
+                                        login.isPending
+                                        || !loginValue.trim()
+                                        || !password
+                                    }
                                 >
                                     {login.isPending ? "Logging In..." : "Log In"}
                                 </Button>

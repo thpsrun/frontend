@@ -28,13 +28,15 @@ import {
     assembleTime, parseTimeSecs, isValidYouTubeUrl,
     getYouTubeEmbedUrl,
     SectionLabel, Divider, ReadOnlyField,
+    CategoryVariableGrid, PlatformEmulatedRow,
+    buildDefaultVariables, timeFieldsToSecs,
 } from "@/components/submissions/run-form-helpers"
 import {
     ChangePlayersDialog,
 } from "@/components/submissions/change-players-dialog"
 
 import type {
-    GameDetail, GameCategory, RunDetail,
+    GameDetail, RunDetail,
 } from "@/types/api"
 import type {
     PendingRun, RunUpdateRequest,
@@ -134,6 +136,20 @@ function EditRunForm({
         detail.date ? detail.date.slice(0, 10) : "",
     )
 
+    const initial = useMemo(() => ({
+        categoryId: detail.category,
+        levelId: detail.level,
+        platformId: detail.platform,
+        obsolete: detail.obsolete,
+        place: String(detail.place),
+        video: detail.video ?? "",
+        archVideo: detail.arch_video ?? "",
+        srcUrl: detail.url ?? "",
+        description: run.description ?? "",
+        date: detail.date ? detail.date.slice(0, 10) : "",
+        variables: JSON.stringify(detail.variables),
+    }), [detail, run.description])
+
     const [rta, setRta] = useState<TimeFields>(
         () => parseTimeSecs(detail.times.time_secs),
     )
@@ -149,6 +165,30 @@ function EditRunForm({
     )
     const [error, setError] = useState<string | null>(null)
     const [playersOpen, setPlayersOpen] = useState(false)
+
+    const isDirty = (
+        categoryId !== initial.categoryId
+        || levelId !== initial.levelId
+        || platformId !== initial.platformId
+        || obsolete !== initial.obsolete
+        || place !== initial.place
+        || video !== initial.video
+        || archVideo !== initial.archVideo
+        || srcUrl !== initial.srcUrl
+        || description !== initial.description
+        || date !== initial.date
+        || JSON.stringify(variableValues) !== initial.variables
+    )
+
+    const handleCancel = () => {
+        if (isDirty) {
+            const ok = window.confirm(
+                "Discard changes? Any unsaved edits will be lost.",
+            )
+            if (!ok) return
+        }
+        onClose()
+    }
 
     const { player } = useCurrentPlayer()
     const { verifyReject } = useSubmissions()
@@ -366,64 +406,19 @@ function EditRunForm({
                             </div>
                         )}
 
-                        <div className="flex items-end gap-3">
-                            <div className="flex-1 space-y-1">
-                                <p className="text-xs text-muted-foreground">Platform</p>
-                                <Select value={platformId} onValueChange={setPlatformId}>
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select platform..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {gameDetail.platforms.map((p) => (
-                                            <SelectItem key={p.id} value={p.id}>
-                                                {p.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <label className="flex items-center gap-2 h-9 shrink-0 cursor-pointer">
-                                <Checkbox
-                                    checked={emulated}
-                                    onCheckedChange={(v) => setEmulated(v === true)}
-                                />
-                                <span className="text-sm">Emulated?</span>
-                            </label>
-                        </div>
+                        <PlatformEmulatedRow
+                            platforms={gameDetail.platforms}
+                            platformId={platformId}
+                            onPlatformChange={setPlatformId}
+                            emulated={emulated}
+                            onEmulatedChange={setEmulated}
+                        />
 
-                        {applicableVariables.length > 0 && (
-                            <div className="grid grid-cols-2 gap-3">
-                                {applicableVariables.map((variable) => (
-                                    <div key={variable.id} className="space-y-1">
-                                        <p className="text-xs text-muted-foreground">
-                                            {variable.name}
-                                        </p>
-                                        <Select
-                                            value={variableValues[variable.id] ?? ""}
-                                            onValueChange={(v) =>
-                                                handleVariableChange(variable.id, v)
-                                            }
-                                        >
-                                            <SelectTrigger className="min-w-35 w-fit">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {variable.values
-                                                    .filter((val) => !val.archive)
-                                                    .map((val) => (
-                                                        <SelectItem
-                                                            key={val.value}
-                                                            value={val.value}
-                                                        >
-                                                            {val.name}
-                                                        </SelectItem>
-                                                    ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        <CategoryVariableGrid
+                            variables={applicableVariables}
+                            values={variableValues}
+                            onChange={handleVariableChange}
+                        />
                     </div>
 
                     <Divider />
@@ -602,7 +597,7 @@ function EditRunForm({
             )}
 
             <DialogFooter>
-                <Button variant="outline" onClick={onClose}>
+                <Button variant="outline" onClick={handleCancel}>
                     Cancel
                 </Button>
                 <Button
@@ -627,23 +622,3 @@ function EditRunForm({
     )
 }
 
-function buildDefaultVariables(
-    cat: GameCategory,
-): Record<string, string> {
-    const result: Record<string, string> = {}
-    cat.variables
-        .filter((v) => !v.archive)
-        .forEach((v) => {
-            if (v.values.length > 0) result[v.id] = v.values[0].value
-        })
-    return result
-}
-
-function timeFieldsToSecs(fields: TimeFields): number | null {
-    const h = parseInt(fields.hrs) || 0
-    const m = parseInt(fields.min) || 0
-    const s = parseInt(fields.sec) || 0
-    const ms = parseInt(fields.ms) || 0
-    if (h === 0 && m === 0 && s === 0 && ms === 0) return null
-    return h * 3600 + m * 60 + s + ms / 1000
-}

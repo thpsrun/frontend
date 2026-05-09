@@ -31,7 +31,7 @@ export function RemovePasskeyDialog({
         onOpenChange(next)
     }
 
-    const handleConfirm = (e: React.FormEvent) => {
+    const handleConfirm = (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (!password) return
         onConfirm(password)

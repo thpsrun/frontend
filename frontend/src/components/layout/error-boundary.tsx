@@ -24,17 +24,22 @@ export class ErrorBoundary extends Component<
         console.error("Uncaught error:", error, info)
     }
 
+    handleRetry = (): void => {
+        this.setState({ hasError: false })
+    }
+
     render(): ReactNode {
         if (this.state.hasError) {
             return (
                 <div className="flex flex-col items-center gap-4 pt-20 text-center">
                     <AlertTriangle className="size-8 text-destructive" />
                     <h2 className="text-xl font-semibold">
-                        Something Went Wrong????
+                        Something went wrong
                     </h2>
                     <p className="max-w-sm text-sm text-muted-foreground">
-                        An unexpected error occurred. If this
-                        error persists, please contact{" "}
+                        An unexpected error occurred. Try
+                        again, or return home. If this keeps
+                        happening, contact{" "}
                         <span className="font-medium text-foreground">
                             Anastasia
                         </span>{" "}
@@ -43,14 +48,22 @@ export class ErrorBoundary extends Component<
                             THPS Speedrun Discord
                         </span>.
                     </p>
-                    <Button
-                        variant="outline"
-                        onClick={() => {
-                            window.location.href = "/"
-                        }}
-                    >
-                        Return Home
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="default"
+                            onClick={this.handleRetry}
+                        >
+                            Try again
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                window.location.href = "/"
+                            }}
+                        >
+                            Return home
+                        </Button>
+                    </div>
                 </div>
             )
         }

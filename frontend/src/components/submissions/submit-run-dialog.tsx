@@ -11,13 +11,13 @@ import {
     Select, SelectContent, SelectItem,
     SelectTrigger, SelectValue,
 } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Textarea } from "@/components/ui/textarea"
 import {
     TimeRow, type TimeFields, EMPTY_TIME, assembleTime,
     isValidYouTubeUrl, getTodayString, SectionLabel, Divider,
-    ReadOnlyField,
+    ReadOnlyField, CategoryVariableGrid, PlatformEmulatedRow,
+    buildDefaultVariables,
 } from "@/components/submissions/run-form-helpers"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useSubmitRun } from "@/hooks/submissions/useSubmitRun"
@@ -96,19 +96,6 @@ export function SubmitRunDialog({
         return result
     }
 
-    const buildDefaultVarValues = (
-        cat: GameCategory,
-    ): Record<string, string> => {
-        const result: Record<string, string> = {}
-        const vars = cat.variables.filter((v) => !v.archive)
-        vars.forEach((variable) => {
-            if (variable.values.length > 0) {
-                result[variable.id] = variable.values[0].value
-            }
-        })
-        return result
-    }
-
     const [selectedCategoryId, setSelectedCategoryId] = useState(
         activeCategory.id,
     )
@@ -153,7 +140,7 @@ export function SubmitRunDialog({
             (c) => c.id === newCategoryId,
         )
         if (newCat) {
-            setSelectedVarValues(buildDefaultVarValues(newCat))
+            setSelectedVarValues(buildDefaultVariables(newCat))
             // Reset players if new category has fewer max players
             setPlayers((prev) =>
                 prev.slice(0, newCat.players),
@@ -262,15 +249,18 @@ export function SubmitRunDialog({
         submitRun.mutate(payload, {
             onSuccess: (data) => {
                 onOpenChange(false)
-                toast.success(data.message, {
-                    description: "View on Speedrun.com",
+                toast.success("Run submitted.", {
+                    description: data.message,
                     action: {
-                        label: "Open",
+                        label: "View on SRC",
                         onClick: () => window.open(data.src_url, "_blank"),
                     },
                 })
             },
-            onError: (err) => setError(err.message),
+            onError: (err) => {
+                setError(err.message)
+                toast.error(err.message)
+            },
         })
     }
 
@@ -287,11 +277,6 @@ export function SubmitRunDialog({
                         {` · ${selectedCategory.name}`}
                     </DialogDescription>
                 </DialogHeader>
-
-                <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-md px-4 py-3 text-sm">
-                    Most run settings cannot be modified after submission. Changes must
-                    be made directly on Speedrun.com.
-                </div>
 
                 <div className="space-y-3">
                     <SectionLabel>Run Info</SectionLabel>
@@ -321,86 +306,24 @@ export function SubmitRunDialog({
                             </Select>
                         </div>
                     </div>
-                    <div className="flex items-end gap-3">
-                        <div className="flex-1 space-y-1">
-                            <p className="text-xs text-muted-foreground">
-                                Platform
-                            </p>
-                            <Select
-                                value={selectedPlatformId}
-                                onValueChange={setSelectedPlatformId}
-                            >
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select platform..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {gameDetail.platforms.map((platform) => (
-                                        <SelectItem
-                                            key={platform.id}
-                                            value={platform.id}
-                                        >
-                                            {platform.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <label className="flex items-center gap-2 h-9 shrink-0 cursor-pointer">
-                            <Checkbox
-                                checked={emulated}
-                                onCheckedChange={(v) => setEmulated(v === true)}
-                            />
-                            <span className="text-sm">Emulated?</span>
-                        </label>
-                    </div>
+                    <PlatformEmulatedRow
+                        platforms={gameDetail.platforms}
+                        platformId={selectedPlatformId}
+                        onPlatformChange={setSelectedPlatformId}
+                        emulated={emulated}
+                        onEmulatedChange={setEmulated}
+                    />
                     {activeLevel && (
                         <ReadOnlyField
                             label="Level"
                             value={activeLevel.name}
                         />
                     )}
-                    {applicableVariables.length > 0 && (
-                        <div className="grid grid-cols-2 gap-3">
-                            {applicableVariables.map((variable) => (
-                                <div
-                                    key={variable.id}
-                                    className="space-y-1"
-                                >
-                                    <p className="text-xs text-muted-foreground">
-                                        {variable.name}
-                                    </p>
-                                    <Select
-                                        value={
-                                            selectedVarValues[variable.id]
-                                            ?? ""
-                                        }
-                                        onValueChange={(val) =>
-                                            handleVarValueChange(
-                                                variable.id,
-                                                val,
-                                            )
-                                        }
-                                    >
-                                        <SelectTrigger className="min-w-35 w-fit">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {variable.values
-                                                .filter((v) => !v.archive)
-                                                .map((val) => (
-                                                    <SelectItem
-                                                        key={val.value}
-                                                        value={val.value}
-                                                    >
-                                                        {val.name}
-                                                    </SelectItem>
-                                                ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                    <CategoryVariableGrid
+                        variables={applicableVariables}
+                        values={selectedVarValues}
+                        onChange={handleVarValueChange}
+                    />
                 </div>
 
                 <Divider />
@@ -518,8 +441,10 @@ export function SubmitRunDialog({
                                 </div>
 
                                 <Button
+                                    type="button"
                                     size="icon"
                                     variant="ghost"
+                                    aria-label="Remove player"
                                     className="shrink-0"
                                     onClick={() => removePlayer(idx)}
                                     disabled={players.length <= 1}
@@ -619,7 +544,16 @@ export function SubmitRunDialog({
                     </Button>
                     <Button
                         onClick={handleSubmit}
-                        disabled={submitRun.isPending}
+                        disabled={
+                            submitRun.isPending
+                            || !selectedPlatformId
+                            || !video.trim()
+                            || players.some((p) =>
+                                p.rel === "user"
+                                    ? !p.id
+                                    : !p.displayName.trim()
+                            )
+                        }
                     >
                         {submitRun.isPending && (
                             <Loader2 className="size-4 animate-spin mr-1" />

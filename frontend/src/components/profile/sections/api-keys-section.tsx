@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react"
 import { Link } from "react-router"
-import { Plus } from "lucide-react"
+import { Plus, KeyRound } from "lucide-react"
 import { API_BASE_URL } from "@/constants"
 import { Button } from "@/components/ui/button"
 import { AlertBanner } from "@/components/ui/alert-banner"
+import { EmptyState } from "@/components/ui/empty-state"
 import { SectionPanel } from "@/components/profile/section-panel"
 import { useApiKeys } from "@/hooks/auth/useApiKeys"
 import { ApiKeysTable } from "@/components/profile/api-keys/api-keys-table"
@@ -76,11 +77,11 @@ export function ApiKeysSection() {
                     )}
 
                     {!keysQuery.isLoading && !keysQuery.isError && active.length === 0 && (
-                        <div className="flex flex-col items-center gap-3 py-10 text-center">
-                            <p className="text-sm text-muted-foreground">
-                                You don't have any API keys yet.
-                            </p>
-                        </div>
+                        <EmptyState
+                            inset
+                            icon={KeyRound}
+                            title="No thps.run API Keys Yet"
+                        />
                     )}
 
                     {active.length > 0 && (

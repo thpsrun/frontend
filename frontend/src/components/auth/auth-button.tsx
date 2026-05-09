@@ -4,7 +4,7 @@ import { useSession } from "@/hooks/auth/useSession"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useLogout } from "@/hooks/auth/useLogout"
 import { BACKEND_URL } from "@/constants"
-import { cn } from "@/lib/utils"
+import { cn, getErrorMessage } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { GradientUsername } from "@/components/profile/gradient-username"
 import {
@@ -42,11 +42,11 @@ export function AuthButton() {
     const handleLogout = async () => {
         try {
             await logout.mutateAsync()
-            toast.success("Logout successful.")
+            toast.success("Logged Out Successfully.")
             navigate("/")
         } catch (err) {
             console.error("Logout Failed:", err)
-            toast.error("Logout failed. Please try again.")
+            toast.error(getErrorMessage(err, "Logout Failed. Please Try Again..."))
         }
     }
 

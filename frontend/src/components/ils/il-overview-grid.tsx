@@ -2,12 +2,10 @@ import { Link } from "react-router"
 
 import { Panel } from "@/components/ui/panel"
 import { cn } from "@/lib/utils"
-import { GradientUsername } from "@/components/profile/gradient-username"
 
 import {
-    type CountryCode,
-    CountryFlag,
     getRankBackground,
+    RunPlayers,
     SkeletonRow,
 } from "@/lib/leaderboard-helpers"
 
@@ -220,26 +218,10 @@ const ILCardRow = (
                 </span>
             </td>
             <td className="py-0.5">
-                {player?.country?.id && (
-                    <CountryFlag
-                        countryCode={
-                            player
-                                .country.id as CountryCode
-                        }
-                        flagUrl={player.country.flag}
-                        title={player.country.name}
-                    />
-                )}
-                {player?.name ? (
-                    <GradientUsername
-                        name={player.name}
-                        gradients={
-                            player.gradients
-                                ?? null
-                        }
-                    />
-                ) : "Unknown"}
-
+                <RunPlayers
+                    players={player ? [player] : []}
+                    asLink={false}
+                />
             </td>
             <td className={cn(
                 "py-0.5 text-right",

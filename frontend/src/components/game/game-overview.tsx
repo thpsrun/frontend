@@ -11,7 +11,12 @@ import { Panel } from "@/components/ui/panel"
 
 import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table"
 import { VariableToggles } from "@/components/leaderboard/variable-toggles"
-import { GameSidebar } from "@/components/game/game-sidebar"
+import {
+    GameSidebar,
+    GameCardPanel,
+    GameStatsPanel,
+    GameRecentPanel,
+} from "@/components/game/game-sidebar"
 import { ILOverview } from "@/components/ils/il-overview"
 import { WRHistoryChart } from "@/components/leaderboard/wr-history-chart"
 import { GuidesHubPage } from "@/components/guides/guides-hub-page"
@@ -250,20 +255,31 @@ export const GameOverview = () => {
         <div className="w-full flex flex-col lg:flex-row gap-8">
             {isGuidesView ? (
                 <>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0 flex flex-col gap-6">
+                        <div className="lg:hidden">
+                            <GameCardPanel
+                                gameSlug={safeGameSlug}
+                                gameDetail={gameDetail}
+                                gameLoading={gameLoading}
+                                isILView={false}
+                                isGuidesView
+                            />
+                        </div>
                         <GuidesHubPage pinnedGameSlug={safeGameSlug} />
                     </div>
-                    <GameSidebar
-                        gameSlug={safeGameSlug}
-                        gameDetail={gameDetail}
-                        gameLoading={gameLoading}
-                        stats={undefined}
-                        recentRuns={[]}
-                        statsLoading={false}
-                        statsError={false}
-                        isILView={false}
-                        isGuidesView={true}
-                    />
+                    <div className="hidden lg:block">
+                        <GameSidebar
+                            gameSlug={safeGameSlug}
+                            gameDetail={gameDetail}
+                            gameLoading={gameLoading}
+                            stats={undefined}
+                            recentRuns={[]}
+                            statsLoading={false}
+                            statsError={false}
+                            isILView={false}
+                            isGuidesView={true}
+                        />
+                    </div>
                 </>
             ) : isILView ? (
                 <ILOverview
@@ -274,7 +290,15 @@ export const GameOverview = () => {
                 />
             ) : (
             <>
-            <div className="flex-1 flex flex-col gap-6">
+            <div className="flex-1 min-w-0 flex flex-col gap-6">
+                <div className="lg:hidden">
+                    <GameCardPanel
+                        gameSlug={safeGameSlug}
+                        gameDetail={gameDetail}
+                        gameLoading={gameLoading}
+                        isILView={false}
+                    />
+                </div>
                 <Panel className="p-0">
                     <div className={cn(
                         "border-b border-border/40",
@@ -412,18 +436,35 @@ export const GameOverview = () => {
                         )}
                     </div>
                 </Panel>
+
+                <div className="flex flex-col gap-6 lg:hidden">
+                    <GameStatsPanel
+                        stats={stats}
+                        statsLoading={lbLoading}
+                        statsError={!!lbError}
+                    />
+                    <GameRecentPanel
+                        gameSlug={safeGameSlug}
+                        gameDetail={gameDetail}
+                        recentRuns={recentRuns}
+                        statsLoading={lbLoading}
+                        statsError={!!lbError}
+                    />
+                </div>
             </div>
 
-            <GameSidebar
-                gameSlug={safeGameSlug}
-                gameDetail={gameDetail}
-                gameLoading={gameLoading}
-                stats={stats}
-                recentRuns={recentRuns}
-                statsLoading={lbLoading}
-                statsError={!!lbError}
-                isILView={false}
-            />
+            <div className="hidden lg:block">
+                <GameSidebar
+                    gameSlug={safeGameSlug}
+                    gameDetail={gameDetail}
+                    gameLoading={gameLoading}
+                    stats={stats}
+                    recentRuns={recentRuns}
+                    statsLoading={lbLoading}
+                    statsError={!!lbError}
+                    isILView={false}
+                />
+            </div>
             {isAuthenticated && player && activeCategory && gameDetail && (
                 <SubmitRunDialog
                     open={showSubmit}

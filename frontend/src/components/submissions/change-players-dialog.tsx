@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { toast } from "sonner"
 import {
     Dialog, DialogContent, DialogHeader,
     DialogTitle, DialogFooter,
@@ -77,7 +78,8 @@ export function ChangePlayersDialog({
         setRows((prev) => prev.filter((_, i) => i !== idx))
     }
 
-    const handleSubmit = () => {
+    const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
+        e.preventDefault()
         setError(null)
         const players: ChangePlayerEntry[] = rows.map((r) => ({
             rel: r.rel,
@@ -87,8 +89,14 @@ export function ChangePlayersDialog({
         changePlayers.mutate(
             { runId: run.id, data: { players } },
             {
-                onSuccess: () => handleOpenChange(false),
-                onError: (err) => setError(err.message),
+                onSuccess: () => {
+                    toast.success("Players updated.")
+                    handleOpenChange(false)
+                },
+                onError: (err) => {
+                    setError(err.message)
+                    toast.error(err.message)
+                },
             },
         )
     }
@@ -99,117 +107,126 @@ export function ChangePlayersDialog({
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-md">
-                <DialogHeader>
-                    <DialogTitle>
-                        Change Players
-                    </DialogTitle>
-                </DialogHeader>
+                <form
+                    onSubmit={handleSubmit}
+                    className="flex flex-col gap-4"
+                >
+                    <DialogHeader>
+                        <DialogTitle>
+                            Change Players
+                        </DialogTitle>
+                    </DialogHeader>
 
-                <div className="space-y-3">
-                    {rows.map((row, idx) => (
-                        <div
-                            key={idx}
-                            className="flex items-end gap-2"
-                        >
-                            <div className="w-24">
-                                <Label className="text-xs">
-                                    Type
-                                </Label>
-                                <Select
-                                    value={row.rel}
-                                    onValueChange={(v) =>
-                                        updateRow(
-                                            idx,
-                                            "rel",
-                                            v,
-                                        )
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="user">
-                                            User
-                                        </SelectItem>
-                                        <SelectItem value="guest">
-                                            Guest
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="flex-1">
-                                <Label className="text-xs">
-                                    {row.rel === "user"
-                                        ? "Player Name"
-                                        : "Guest Name"}
-                                </Label>
-                                <Input
-                                    value={row.value}
-                                    onChange={(e) =>
-                                        updateRow(
-                                            idx,
-                                            "value",
-                                            e.target.value,
-                                        )
-                                    }
-                                    placeholder={
-                                        row.rel === "user"
-                                            ? "e.g. SpeedRunner"
-                                            : "e.g. GuestRunner"
-                                    }
-                                />
-                            </div>
-                            <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={() => removeRow(idx)}
-                                disabled={rows.length <= 1}
-                                className="shrink-0"
+                    <div className="space-y-3">
+                        {rows.map((row, idx) => (
+                            <div
+                                key={idx}
+                                className="flex items-end gap-2"
                             >
-                                <Trash2 className="size-4" />
-                            </Button>
-                        </div>
-                    ))}
+                                <div className="w-24">
+                                    <Label className="text-xs">
+                                        Type
+                                    </Label>
+                                    <Select
+                                        value={row.rel}
+                                        onValueChange={(v) =>
+                                            updateRow(
+                                                idx,
+                                                "rel",
+                                                v,
+                                            )
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="user">
+                                                User
+                                            </SelectItem>
+                                            <SelectItem value="guest">
+                                                Guest
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="flex-1">
+                                    <Label className="text-xs">
+                                        {row.rel === "user"
+                                            ? "Player Name"
+                                            : "Guest Name"}
+                                    </Label>
+                                    <Input
+                                        value={row.value}
+                                        onChange={(e) =>
+                                            updateRow(
+                                                idx,
+                                                "value",
+                                                e.target.value,
+                                            )
+                                        }
+                                        placeholder={
+                                            row.rel === "user"
+                                                ? "e.g. SpeedRunner"
+                                                : "e.g. GuestRunner"
+                                        }
+                                    />
+                                </div>
+                                <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    aria-label="Remove player"
+                                    onClick={() => removeRow(idx)}
+                                    disabled={rows.length <= 1}
+                                    className="shrink-0"
+                                >
+                                    <Trash2 className="size-4" />
+                                </Button>
+                            </div>
+                        ))}
 
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        className="gap-1"
-                        onClick={addRow}
-                    >
-                        <Plus className="size-3" />
-                        Add Player
-                    </Button>
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="gap-1"
+                            onClick={addRow}
+                        >
+                            <Plus className="size-3" />
+                            Add Player
+                        </Button>
 
-                    {error && (
-                        <AlertBanner variant="error">
-                            {error}
-                        </AlertBanner>
-                    )}
-                </div>
-
-                <DialogFooter>
-                    <Button
-                        variant="outline"
-                        onClick={() => handleOpenChange(false)}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={handleSubmit}
-                        disabled={
-                            changePlayers.isPending || !isValid
-                        }
-                    >
-                        {changePlayers.isPending && (
-                            <Loader2 className={
-                                "size-4 animate-spin mr-1"
-                            } />
+                        {error && (
+                            <AlertBanner variant="error">
+                                {error}
+                            </AlertBanner>
                         )}
-                        Update Players
-                    </Button>
-                </DialogFooter>
+                    </div>
+
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => handleOpenChange(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            disabled={
+                                changePlayers.isPending || !isValid
+                            }
+                        >
+                            {changePlayers.isPending && (
+                                <Loader2 className={
+                                    "size-4 animate-spin mr-1"
+                                } />
+                            )}
+                            Update Players
+                        </Button>
+                    </DialogFooter>
+                </form>
             </DialogContent>
         </Dialog>
     )

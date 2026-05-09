@@ -4,12 +4,13 @@ import { AlertBanner } from "@/components/ui/alert-banner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Panel } from "@/components/ui/panel"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
     ToggleGroup, ToggleGroupItem,
 } from "@/components/ui/toggle-group"
 import {
-    Loader2, RefreshCw, Bot, AlertTriangle,
-    CheckCircle2, XCircle,
+    Loader2, RefreshCw, AlertTriangle,
+    CheckCircle2, XCircle, RotateCcw,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { BotSessionResponse } from "@/types/bot-session"
@@ -94,11 +95,10 @@ function StatusPanel({
                 "text-base font-semibold mb-3",
                 "flex items-center gap-2",
             )}>
-                <Bot className="size-4" />
                 Session Status
             </h3>
             <div className="space-y-0">
-                <StatusRow label="Effective state">
+                <StatusRow label="Current State">
                     <EffectiveBadge
                         enabled={session.v2_effective_enabled}
                     />
@@ -108,10 +108,10 @@ function StatusPanel({
                         {session.status || "unknown"}
                     </span>
                 </StatusRow>
-                <StatusRow label="Last validated">
+                <StatusRow label="Last Valid Session">
                     {formatDate(session.validated_at)}
                 </StatusRow>
-                <StatusRow label="Last refresh attempt">
+                <StatusRow label="Last Session Refresh Attempt">
                     {formatDate(
                         session.last_refresh_attempt_at,
                     )}
@@ -121,7 +121,7 @@ function StatusPanel({
                         override={session.v2_enabled_override}
                     />
                 </StatusRow>
-                <StatusRow label="Circuit breaker">
+                <StatusRow label="Circuit Breaker">
                     {session.disabled_by_circuit_breaker ? (
                         <Badge variant="warning">
                             Tripped
@@ -130,10 +130,10 @@ function StatusPanel({
                         <Badge variant="outline">OK</Badge>
                     )}
                 </StatusRow>
-                <StatusRow label="Queued edits">
+                <StatusRow label="Queued Edits">
                     {session.queued_edit_count}
                 </StatusRow>
-                <StatusRow label="Failed edits">
+                <StatusRow label="Failed Edits">
                     {session.failed_edit_count > 0 ? (
                         <span className="text-destructive">
                             {session.failed_edit_count}
@@ -143,14 +143,14 @@ function StatusPanel({
                     )}
                 </StatusRow>
                 {session.last_severe_error_at && (
-                    <StatusRow label="Last severe error">
+                    <StatusRow label="Last Severe Error">
                         {formatDate(
                             session.last_severe_error_at,
                         )}
                     </StatusRow>
                 )}
                 {session.last_severe_error_category && (
-                    <StatusRow label="Error category">
+                    <StatusRow label="Error Category">
                         <span className="font-mono text-xs">
                             {session.last_severe_error_category}
                         </span>
@@ -193,7 +193,7 @@ function ControlsPanel({
 
             <div className="space-y-2">
                 <span className="text-sm font-medium">
-                    Force refresh
+                    Force Refresh
                 </span>
                 <p className="text-xs text-muted-foreground">
                     Manually triggers a session refresh. This can take ~2 minutes... hopefully.
@@ -222,13 +222,13 @@ function ControlsPanel({
 
             <div className="space-y-2">
                 <span className="text-sm font-medium">
-                    Bot state override
+                    Bot Override
                 </span>
                 <p className="text-xs text-muted-foreground">
                     Inherit follows the base environmental default (usually On).
-                    "Force On" enables the SRC v2 API regardless of this, with 
+                    "Force On" enables the SRC v2 API regardless of this, with
                     "Force Off" being a kill switch to stop issues. "Force Off" is
-                    also invoked when a critical failrue is occurred by the processes.
+                    also invoked when a critical failure occurs in the processes.
                 </p>
                 <ToggleGroup
                     type="single"
@@ -264,9 +264,28 @@ function ControlsPanel({
     )
 }
 
+function BotSessionSkeletonPanel() {
+    return (
+        <Panel className="p-5">
+            <Skeleton className="h-5 w-32 mb-4" />
+            <div className="space-y-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                        key={i}
+                        className="flex justify-between items-center py-2 border-b border-border/30 last:border-b-0"
+                    >
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-4 w-20" />
+                    </div>
+                ))}
+            </div>
+        </Panel>
+    )
+}
+
 export function BotSessionPage() {
     const {
-        data, isLoading, error,
+        data, isLoading, error, refetch,
         refresh, updateKillSwitch,
     } = useBotSession()
 
@@ -285,7 +304,18 @@ export function BotSessionPage() {
 
             {error && (
                 <AlertBanner variant="error">
-                    {error.message}
+                    <div className="flex items-center justify-between gap-3">
+                        <span>{error.message}</span>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => refetch()}
+                            className="gap-1 shrink-0"
+                        >
+                            <RotateCcw className="size-3" />
+                            Retry
+                        </Button>
+                    </div>
                 </AlertBanner>
             )}
 
@@ -295,18 +325,17 @@ export function BotSessionPage() {
                         "flex items-center gap-2",
                     )}>
                         <AlertTriangle className="size-4" />
-                        Circuit breaker tripped!! Tasks may still be queued.
+                        Circuit breaker tripped!! Tasks may still be queued!
                     </span>
                 </AlertBanner>
             )}
 
             {isLoading && (
                 <div className={cn(
-                    "flex items-center gap-2",
-                    "text-muted-foreground py-8",
+                    "grid gap-4 md:grid-cols-2",
                 )}>
-                    <Loader2 className="size-4 animate-spin" />
-                    Loading THPSBot Session Status...
+                    <BotSessionSkeletonPanel />
+                    <BotSessionSkeletonPanel />
                 </div>
             )}
 

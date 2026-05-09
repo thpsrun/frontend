@@ -1,8 +1,10 @@
 import {
     useQuery, useMutation, useQueryClient,
 } from "@tanstack/react-query"
+import { toast } from "sonner"
 import { apiFetch } from "@/lib/api-client"
 import { queryKeys } from "@/lib/query-keys"
+import { getErrorMessage } from "@/lib/utils"
 import type {
     SyncLogsResponse, SyncLogsParams, RetryResponse,
 } from "@/types/submissions"
@@ -50,6 +52,10 @@ export function useSyncLogs(
             queryClient.invalidateQueries({
                 queryKey: queryKeys.admin.syncLogs(),
             })
+            toast.success("Retry Queued")
+        },
+        onError: (err) => {
+            toast.error(getErrorMessage(err, "Retry Failed..."))
         },
     })
 
@@ -57,6 +63,7 @@ export function useSyncLogs(
         data: logsQuery.data ?? null,
         isLoading: logsQuery.isLoading,
         error: logsQuery.error,
+        refetch: logsQuery.refetch,
         retry,
     }
 }

@@ -20,24 +20,43 @@ export function DangerSection() {
         useState(false)
     const [deleteConfirmName, setDeleteConfirmName] =
         useState("")
+    const [password, setPassword] = useState("")
     const [deleteMsg, setDeleteMsg] =
         useState<string | null>(null)
 
     if (!player) return null
 
-    const handleDeleteAccount = async () => {
+    const nameMatches =
+        deleteConfirmName.toLowerCase()
+        === player.player.name.toLowerCase()
+    const canSubmit =
+        nameMatches && password.length > 0
+        && !deleteAccount.isPending
+
+    const resetForm = () => {
+        setShowDeleteConfirm(false)
+        setDeleteConfirmName("")
+        setPassword("")
+        setDeleteMsg(null)
+    }
+
+    const handleDeleteAccount = async (
+        e: React.SyntheticEvent<HTMLFormElement>,
+    ) => {
+        e.preventDefault()
         setDeleteMsg(null)
 
-        if (
-            deleteConfirmName.toLowerCase()
-            !== player.player.name.toLowerCase()
-        ) {
+        if (!nameMatches) {
             setDeleteMsg("Name does not match.")
+            return
+        }
+        if (!password) {
+            setDeleteMsg("Password is required.")
             return
         }
 
         try {
-            await deleteAccount.mutateAsync()
+            await deleteAccount.mutateAsync({ password })
             await logout.mutateAsync()
             navigate("/")
         } catch (err) {
@@ -55,9 +74,7 @@ export function DangerSection() {
             title="Danger Zone"
             description={
                 <>
-                    Permanently delete your account. Your
-                    runs will be preserved under
-                    "Anonymous".
+                    Permanently delete your account. Your runs will be preserved under "Anonymous".
                 </>
             }
             className="border-destructive/50"
@@ -73,15 +90,21 @@ export function DangerSection() {
                     Delete Account
                 </Button>
             ) : (
-                <div className="flex flex-col gap-4">
+                <form
+                    onSubmit={handleDeleteAccount}
+                    className="flex flex-col gap-4"
+                >
                     <p className="text-sm text-muted-foreground">
                         Type{" "}
                         <strong>
                             {player.player.name}
                         </strong>
-                        {" "}to confirm account
-                        deletion. This action cannot
-                        be undone.
+                        {" "}and confirm your password to
+                        delete your account. This action
+                        cannot be undone!
+                    </p>
+                    <p className="text-xs text-muted-foreground line-through">
+                        I mean, Anastasia could fix it... But it'd be annoying.
                     </p>
                     <FormField
                         label="Display Name"
@@ -93,6 +116,18 @@ export function DangerSection() {
                             )
                         }
                         placeholder={player.player.name}
+                        autoComplete="off"
+                    />
+                    <FormField
+                        label="Password"
+                        id="delete-confirm-password"
+                        type="password"
+                        autoComplete="current-password"
+                        value={password}
+                        onChange={(e) =>
+                            setPassword(e.target.value)
+                        }
+                        required
                     />
 
                     {deleteMsg && (
@@ -103,31 +138,27 @@ export function DangerSection() {
 
                     <div className="flex gap-2">
                         <SaveButton
-                            type="button"
+                            type="submit"
                             variant="destructive"
-                            onClick={handleDeleteAccount}
                             isPending={
                                 deleteAccount.isPending
                             }
+                            disabled={!canSubmit}
                             idleLabel="Permanently Delete"
                             pendingLabel="Deleting..."
                         />
                         <Button
+                            type="button"
                             variant="outline"
-                            onClick={() => {
-                                setShowDeleteConfirm(
-                                    false,
-                                )
-                                setDeleteConfirmName(
-                                    "",
-                                )
-                                setDeleteMsg(null)
-                            }}
+                            onClick={resetForm}
+                            disabled={
+                                deleteAccount.isPending
+                            }
                         >
                             Cancel
                         </Button>
                     </div>
-                </div>
+                </form>
             )}
         </SectionPanel>
     )
