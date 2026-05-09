@@ -2,7 +2,7 @@ import { useState, useMemo } from "react"
 import { toast } from "sonner"
 import {
     Dialog, DialogContent, DialogHeader,
-    DialogTitle, DialogFooter,
+    DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +14,11 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Textarea } from "@/components/ui/textarea"
+import {
+    TimeRow, type TimeFields, EMPTY_TIME, assembleTime,
+    isValidYouTubeUrl, getTodayString, SectionLabel, Divider,
+    ReadOnlyField,
+} from "@/components/submissions/run-form-helpers"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useSubmitRun } from "@/hooks/submissions/useSubmitRun"
 import { usePlayerSearch } from "@/hooks/players/usePlayerSearch"
@@ -39,108 +44,6 @@ interface PlayerRow {
     searchQuery: string
 }
 
-interface TimeFields {
-    hrs: string
-    min: string
-    sec: string
-    ms: string
-}
-
-const EMPTY_TIME: TimeFields = { hrs: "", min: "", sec: "", ms: "" }
-
-function assembleTime(fields: TimeFields): string | null {
-    const h = parseInt(fields.hrs) || 0
-    const m = parseInt(fields.min) || 0
-    const s = parseInt(fields.sec) || 0
-    const ms = parseInt(fields.ms) || 0
-    if (h === 0 && m === 0 && s === 0 && ms === 0) return null
-    return `${h}h ${m}m ${s}s ${ms}ms`
-}
-
-// THPS community only allows YouTube videos, so this is a quick
-// validation for the client-side (server-side has its own too).
-function isValidYouTubeUrl(url: string): boolean {
-    try {
-        const parsed = new URL(url)
-        const validHosts = [
-            "youtube.com", "www.youtube.com",
-            "m.youtube.com", "youtu.be",
-        ]
-        return validHosts.includes(parsed.hostname)
-    } catch {
-        return false
-    }
-}
-
-function getTodayString(): string {
-    return new Date().toISOString().slice(0, 10)
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-    return (
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-            {children}
-        </p>
-    )
-}
-
-function Divider() {
-    return <div className="border-t border-border/40" />
-}
-
-function ReadOnlyField({ label, value }: { label: string; value: string }) {
-    return (
-        <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <div className="bg-muted/20 border border-border/40 rounded-md px-3 py-2 text-sm">
-                {value}
-            </div>
-        </div>
-    )
-}
-
-// TODO: Really don't like how this is formatted, need to revisit and see how to improve UI wise.
-function TimeRow({
-    label,
-    fields,
-    onChange,
-}: {
-    label: string
-    fields: TimeFields
-    onChange: (fields: TimeFields) => void
-}) {
-    const inputs: { key: keyof TimeFields; unit: string }[] = [
-        { key: "hrs", unit: "hrs" },
-        { key: "min", unit: "min" },
-        { key: "sec", unit: "sec" },
-        { key: "ms", unit: "ms" },
-    ]
-
-    return (
-        <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <div className="flex gap-2">
-                {inputs.map(({ key, unit }) => (
-                    <div key={key} className="flex flex-col items-center gap-0.5">
-                        <Input
-                            className="w-14 text-center font-mono"
-                            type="number"
-                            min={0}
-                            placeholder="0"
-                            value={fields[key]}
-                            onChange={(e) =>
-                                onChange({ ...fields, [key]: e.target.value })
-                            }
-                        />
-                        <span className="text-[10px] text-muted-foreground">
-                            {unit}
-                        </span>
-                    </div>
-                ))}
-            </div>
-        </div>
-    )
-}
 
 export function SubmitRunDialog({
     open,
@@ -375,7 +278,14 @@ export function SubmitRunDialog({
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Submit Run</DialogTitle>
+                    <DialogTitle className="font-display text-3xl uppercase tracking-tight leading-none">
+                        Submit Run
+                    </DialogTitle>
+                    <DialogDescription className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground font-medium">
+                        {gameDetail.name}
+                        {activeLevel ? ` · ${activeLevel.name}` : ""}
+                        {` · ${selectedCategory.name}`}
+                    </DialogDescription>
                 </DialogHeader>
 
                 <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-md px-4 py-3 text-sm">

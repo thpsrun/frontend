@@ -388,3 +388,42 @@ export interface WRHistoryResponse {
     level: string | null
     entries: WRHistoryEntry[]
 }
+
+// Utilized on GET /api/v1/runs/{id}
+export interface RunDetailTimes {
+    time: string | null
+    time_secs: number | null
+    timenl: string | null
+    timenl_secs: number | null
+    timeigt: string | null
+    timeigt_secs: number | null
+    p_time: string
+    p_time_secs: number
+}
+
+export interface RunDetailPlayer {
+    id: string
+    name: string
+    order: number
+}
+
+export interface RunDetail {
+    id: string
+    runtype: "main" | "il"
+    place: number
+    points: number
+    obsolete: boolean
+    subcategory: string | null
+    platform: string
+    times: RunDetailTimes
+    video: string | null
+    arch_video: string | null
+    date: string | null
+    v_date: string | null
+    url: string | null
+    game: string
+    category: string
+    level: string | null
+    players: RunDetailPlayer[]
+    variables: Record<string, string>
+}

@@ -88,6 +88,10 @@ const lazyTagsAdmin = lazyComponent(
     () => import("./components/admin/tags/tags-admin-page.tsx"),
     "TagsAdminPage",
 )
+const lazyBotSession = lazyComponent(
+    () => import("./components/admin/bot-session/bot-session-page.tsx"),
+    "BotSessionPage",
+)
 
 const router = createBrowserRouter([
     {
@@ -151,6 +155,7 @@ const router = createBrowserRouter([
                         children: [
                             { index: true, element: null },
                             { path: "sync-logs", Component: AdminHub },
+                            { path: "bot-session", lazy: lazyBotSession },
                             { path: "tags", lazy: lazyTagsAdmin },
                         ],
                     },

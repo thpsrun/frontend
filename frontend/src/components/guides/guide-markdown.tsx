@@ -6,8 +6,67 @@ import rehypeSanitize, { defaultSchema } from "rehype-sanitize"
 import rehypeSlug from "rehype-slug"
 import rehypeHighlight from "rehype-highlight"
 import { Copy, Check } from "lucide-react"
+import type { Element } from "hast"
 import { cn } from "@/lib/utils"
 import "highlight.js/styles/github-dark.css"
+
+const YOUTUBE_HOSTS = new Set([
+    "youtube.com",
+    "www.youtube.com",
+    "m.youtube.com",
+    "youtu.be",
+    "www.youtu.be",
+])
+
+const YOUTUBE_ID_PATTERN = /^[a-zA-Z0-9_-]{11}$/
+
+function extractYouTubeId(rawHref: string): string | null {
+    let url: URL
+    try {
+        url = new URL(rawHref)
+    } catch {
+        return null
+    }
+    if (!YOUTUBE_HOSTS.has(url.hostname)) return null
+    if (url.hostname === "youtu.be" || url.hostname === "www.youtu.be") {
+        const id = url.pathname.slice(1).split("/")[0]
+        return YOUTUBE_ID_PATTERN.test(id) ? id : null
+    }
+    if (url.pathname === "/watch") {
+        const v = url.searchParams.get("v")
+        return v && YOUTUBE_ID_PATTERN.test(v) ? v : null
+    }
+    const segmentMatch = url.pathname.match(/^\/(?:embed|shorts|live|v)\/([^/?#]+)/)
+    if (segmentMatch && YOUTUBE_ID_PATTERN.test(segmentMatch[1])) {
+        return segmentMatch[1]
+    }
+    return null
+}
+
+function paragraphYouTubeId(node: Element | undefined): string | null {
+    if (!node || node.children.length !== 1) return null
+    const child = node.children[0]
+    if (child.type !== "element" || child.tagName !== "a") return null
+    const href = child.properties?.href
+    if (typeof href !== "string") return null
+    return extractYouTubeId(href)
+}
+
+function YouTubeEmbed({ videoId }: { videoId: string }) {
+    return (
+        <div className="my-4 aspect-video w-full overflow-hidden rounded-md border border-border">
+            <iframe
+                src={`https://www.youtube-nocookie.com/embed/${videoId}`}
+                title="YouTube video"
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="h-full w-full border-0"
+            />
+        </div>
+    )
+}
 
 const SANITIZE_SCHEMA = {
     ...defaultSchema,
@@ -121,9 +180,11 @@ const COMPONENTS: Components = {
             {children}
         </h6>
     ),
-    p: ({ children, ...rest }) => (
-        <p className="my-3 leading-relaxed" {...rest}>{children}</p>
-    ),
+    p: ({ children, node, ...rest }) => {
+        const youtubeId = paragraphYouTubeId(node)
+        if (youtubeId) return <YouTubeEmbed videoId={youtubeId} />
+        return <p className="my-3 leading-relaxed" {...rest}>{children}</p>
+    },
     ul: ({ children, ...rest }) => (
         <ul className="my-3 list-disc pl-6 space-y-1" {...rest}>{children}</ul>
     ),

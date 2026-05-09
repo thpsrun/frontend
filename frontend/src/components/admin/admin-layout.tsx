@@ -2,9 +2,10 @@ import { SidebarLayout, type NavGroup } from "@/components/layout/sidebar-layout
 
 const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     {
-        heading: "Submissions",
+        heading: "Admin",
         items: [
             { label: "Sync Logs", to: "/admin/sync-logs" },
+            { label: "THPSBot Status", to: "/admin/bot-session" },
         ],
     },
     {

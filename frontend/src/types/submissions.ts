@@ -32,6 +32,8 @@ export interface PendingRun {
     runtype: string
     place: number
     points: number
+    obsolete: boolean
+    arch_video: string | null
     subcategory: string
     times: SubmissionTimes
     video: string | null
@@ -180,4 +182,35 @@ export interface PlayerSearchResult {
     name: string
     nickname: string | null
     country_id: string | null
+}
+
+// Utilized on PUT /api/v1/runs/{id}
+export interface RunUpdateRequest {
+    category_id?: string
+    level_id?: string | null
+    runtype?: "main" | "il"
+    place?: number
+    time?: string | null
+    time_secs?: number | null
+    timenl?: string | null
+    timenl_secs?: number | null
+    timeigt?: string | null
+    timeigt_secs?: number | null
+    video?: string | null
+    arch_video?: string | null
+    obsolete?: boolean
+    platform_id?: string
+    description?: string | null
+    emulated?: boolean
+    date?: string | null
+    url?: string | null
+    variable_values?: Record<string, string> | null
+}
+
+// Utilized on PUT /api/v1/runs/{id}
+export interface RunUpdateResponse {
+    id: string
+    runtype: "main" | "il"
+    place: number
+    obsolete: boolean
 }

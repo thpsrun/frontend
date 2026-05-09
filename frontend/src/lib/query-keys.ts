@@ -39,6 +39,11 @@ export const queryKeys = {
             [...queryKeys.rankings.all, "oldest-runs", gameSlug] as const,
     },
 
+    runs: {
+        all: ["runs"] as const,
+        detail: (id: string) => [...queryKeys.runs.all, "detail", id] as const,
+    },
+
     player: {
         all: ["player"] as const,
         profile: (playerName: string, includeObsolete: boolean) =>
@@ -68,6 +73,7 @@ export const queryKeys = {
             params === undefined
                 ? ([...queryKeys.admin.all, "sync-logs"] as const)
                 : ([...queryKeys.admin.all, "sync-logs", params] as const),
+        botSession: () => [...queryKeys.admin.all, "bot-session"] as const,
     },
 
     tags: {
