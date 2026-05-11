@@ -1,17 +1,16 @@
 import { useMemo, useState } from "react"
 import { Link } from "react-router"
 import { useSubmissions } from "@/hooks/submissions/useSubmissions"
-import { AlertBanner } from "@/components/ui/alert-banner"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Panel } from "@/components/ui/panel"
+import { QueryErrorBanner } from "@/components/ui/query-error-banner"
 import {
     Table, TableBody, TableCell, TableHead,
     TableHeader, TableRow,
 } from "@/components/ui/table"
 import { TableSkeleton } from "@/components/ui/table-skeleton"
 import { EmptyState } from "@/components/ui/empty-state"
-import { Info, ExternalLink, RotateCcw, Inbox } from "lucide-react"
+import { Info, ExternalLink, Inbox } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
     SyncStatusBadge,
@@ -234,20 +233,7 @@ export function SubmissionsHub() {
     if (error) {
         return (
             <div className="mx-auto max-w-5xl px-4 py-8">
-                <AlertBanner variant="error">
-                    <div className="flex items-center justify-between gap-3">
-                        <span>{error.message}</span>
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => refetch()}
-                            className="gap-1 shrink-0"
-                        >
-                            <RotateCcw className="size-3" />
-                            Retry
-                        </Button>
-                    </div>
-                </AlertBanner>
+                <QueryErrorBanner error={error} onRetry={refetch} />
             </div>
         )
     }

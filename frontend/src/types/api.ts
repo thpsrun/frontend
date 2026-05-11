@@ -213,6 +213,15 @@ export interface LbsRun {
 }
 
 // Utilized on /api/v1/website/lbs/{gameSlug}/
+// Player shape embedded in recent-run entries (carries nickname).
+export interface LbsRecentPlayer {
+    name: string
+    nickname: string | null
+    country: Country | null
+    gradients?: Gradients | null
+}
+
+// Utilized on /api/v1/website/lbs/{gameSlug}/
 export interface LbsRecentRun {
     runtype: string
     category: string
@@ -221,13 +230,11 @@ export interface LbsRecentRun {
     p_time: string
     p_time_secs: number
     place: number
-    player_name: string
-    player_country: Country | null
-    gradients?: Gradients | null
+    players: LbsRecentPlayer[]
     v_date: string
-    url: string | null
+    url?: string | null
     video: string | null
-    arch_video: string | null
+    arch_video?: string | null
     value_slugs: string[] | null
 }
 

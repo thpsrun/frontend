@@ -169,6 +169,7 @@ export const buildLeaderboardPath = (
 
 export interface RunPlayer {
     name: string | null
+    nickname?: string | null
     country?: {
         id: string
         name: string
@@ -212,7 +213,7 @@ export const RunPlayers = ({
             {players.map((p, i) => {
                 const display = p.name ? (
                     <GradientUsername
-                        name={p.name}
+                        name={p.nickname || p.name}
                         gradients={p.gradients ?? null}
                     />
                 ) : (

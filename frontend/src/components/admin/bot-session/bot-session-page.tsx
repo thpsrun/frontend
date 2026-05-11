@@ -1,18 +1,19 @@
-import { type ReactNode } from "react"
 import { useBotSession } from "@/hooks/admin/useBotSession"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { MetaRow } from "@/components/ui/meta-row"
 import { Panel } from "@/components/ui/panel"
+import { QueryErrorBanner } from "@/components/ui/query-error-banner"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
     ToggleGroup, ToggleGroupItem,
 } from "@/components/ui/toggle-group"
 import {
     Loader2, RefreshCw, AlertTriangle,
-    CheckCircle2, XCircle, RotateCcw,
+    CheckCircle2, XCircle,
 } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn, formatDate } from "@/lib/utils"
 import type { BotSessionResponse } from "@/types/bot-session"
 
 type OverrideValue = "auto" | "on" | "off"
@@ -27,33 +28,6 @@ function valueToOverride(value: OverrideValue): boolean | null {
     if (value === "on") return true
     if (value === "off") return false
     return null
-}
-
-function formatDate(iso: string | null): string {
-    if (!iso) return "Never"
-    return new Date(iso).toLocaleString()
-}
-
-function StatusRow({
-    label,
-    children,
-}: {
-    label: string
-    children: ReactNode
-}) {
-    return (
-        <div className={cn(
-            "flex justify-between items-center py-2",
-            "border-b border-border/30 last:border-b-0",
-        )}>
-            <span className="text-sm text-muted-foreground">
-                {label}
-            </span>
-            <div className="text-sm font-medium">
-                {children}
-            </div>
-        </div>
-    )
 }
 
 function EffectiveBadge({ enabled }: { enabled: boolean }) {
@@ -98,30 +72,31 @@ function StatusPanel({
                 Session Status
             </h3>
             <div className="space-y-0">
-                <StatusRow label="Current State">
+                <MetaRow label="Current State">
                     <EffectiveBadge
                         enabled={session.v2_effective_enabled}
                     />
-                </StatusRow>
-                <StatusRow label="Status">
+                </MetaRow>
+                <MetaRow label="Status">
                     <span className="capitalize">
                         {session.status || "unknown"}
                     </span>
-                </StatusRow>
-                <StatusRow label="Last Valid Session">
-                    {formatDate(session.validated_at)}
-                </StatusRow>
-                <StatusRow label="Last Session Refresh Attempt">
+                </MetaRow>
+                <MetaRow label="Last Valid Session">
+                    {formatDate(session.validated_at, "Never")}
+                </MetaRow>
+                <MetaRow label="Last Session Refresh Attempt">
                     {formatDate(
                         session.last_refresh_attempt_at,
+                        "Never",
                     )}
-                </StatusRow>
-                <StatusRow label="Override">
+                </MetaRow>
+                <MetaRow label="Override">
                     <OverrideBadge
                         override={session.v2_enabled_override}
                     />
-                </StatusRow>
-                <StatusRow label="Circuit Breaker">
+                </MetaRow>
+                <MetaRow label="Circuit Breaker">
                     {session.disabled_by_circuit_breaker ? (
                         <Badge variant="warning">
                             Tripped
@@ -129,11 +104,11 @@ function StatusPanel({
                     ) : (
                         <Badge variant="outline">OK</Badge>
                     )}
-                </StatusRow>
-                <StatusRow label="Queued Edits">
+                </MetaRow>
+                <MetaRow label="Queued Edits">
                     {session.queued_edit_count}
-                </StatusRow>
-                <StatusRow label="Failed Edits">
+                </MetaRow>
+                <MetaRow label="Failed Edits">
                     {session.failed_edit_count > 0 ? (
                         <span className="text-destructive">
                             {session.failed_edit_count}
@@ -141,20 +116,21 @@ function StatusPanel({
                     ) : (
                         session.failed_edit_count
                     )}
-                </StatusRow>
+                </MetaRow>
                 {session.last_severe_error_at && (
-                    <StatusRow label="Last Severe Error">
+                    <MetaRow label="Last Severe Error">
                         {formatDate(
                             session.last_severe_error_at,
+                            "Never",
                         )}
-                    </StatusRow>
+                    </MetaRow>
                 )}
                 {session.last_severe_error_category && (
-                    <StatusRow label="Error Category">
+                    <MetaRow label="Error Category">
                         <span className="font-mono text-xs">
                             {session.last_severe_error_category}
                         </span>
-                    </StatusRow>
+                    </MetaRow>
                 )}
             </div>
         </Panel>
@@ -303,20 +279,7 @@ export function BotSessionPage() {
             </Panel>
 
             {error && (
-                <AlertBanner variant="error">
-                    <div className="flex items-center justify-between gap-3">
-                        <span>{error.message}</span>
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => refetch()}
-                            className="gap-1 shrink-0"
-                        >
-                            <RotateCcw className="size-3" />
-                            Retry
-                        </Button>
-                    </div>
-                </AlertBanner>
+                <QueryErrorBanner error={error} onRetry={refetch} />
             )}
 
             {data?.disabled_by_circuit_breaker && (

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
-import { useNavigate } from "react-router"
+import { useNavigate, useSearchParams } from "react-router"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -61,8 +61,18 @@ interface Props {
     guide?: Guide
 }
 
-export function GuideForm({ mode, guide }: Props) {
+export function GuideForm(props: Props) {
+    return (
+        <GuideFormInner
+            key={`${props.mode}:${props.guide?.slug ?? ""}`}
+            {...props}
+        />
+    )
+}
+
+function GuideFormInner({ mode, guide }: Props) {
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
     const games = useGames()
     const tags = useTags()
     const create = useCreateGuide()
@@ -71,6 +81,10 @@ export function GuideForm({ mode, guide }: Props) {
 
     const [showDelete, setShowDelete] = useState(false)
     const [topError, setTopError] = useState<string | null>(null)
+
+    const requestedGameSlug = mode === "create"
+        ? searchParams.get("game")
+        : null
 
     const form = useForm<FormValues>({
         mode: "onBlur",
@@ -82,6 +96,16 @@ export function GuideForm({ mode, guide }: Props) {
             tag_ids: resolveGuideTags(guide?.tags, []).map((t) => t.slug),
         },
     })
+
+    // Prefill the game field from ?game=slug once games load. Only seed if the
+    // user hasn't already chosen a game, so background refetches can't clobber
+    // their selection.
+    useEffect(() => {
+        if (!requestedGameSlug || !games.data) return
+        if (form.getValues("game_id")) return
+        const match = games.data.find((g) => g.slug === requestedGameSlug)
+        if (match) form.setValue("game_id", match.id, { shouldDirty: false })
+    }, [requestedGameSlug, games.data, form])
 
     useEffect(() => {
         if (mode !== "edit" || !guide || !tags.data) return

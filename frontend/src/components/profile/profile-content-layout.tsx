@@ -15,7 +15,7 @@ export function ProfileContentLayout() {
             navGroups={NAV_GROUPS}
             indexPath="/profile/content"
             redirectTo="/profile/content/guides"
-            maxWidth="max-w-200"
+            maxWidth="max-w-5xl"
         />
     )
 }

@@ -32,7 +32,7 @@ interface Props {
     navGroups: ReadonlyArray<NavGroup>
     indexPath: string
     redirectTo: string
-    maxWidth: "max-w-200" | "max-w-300"
+    maxWidth: "max-w-200" | "max-w-300" | "max-w-5xl"
     mobileExtras?: ReactNode
     desktopExtras?: ReactNode
 }

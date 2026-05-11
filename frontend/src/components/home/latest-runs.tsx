@@ -1,7 +1,7 @@
 import { useCallback } from "react"
 import { Link } from "react-router"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { cn } from "@/lib/utils"
+import { cn, truncate } from "@/lib/utils"
 import { buildLeaderboardPath } from "@/lib/leaderboard-helpers"
 import { useGameGroupSpans, PlayerCell } from "@/lib/home-table-helpers"
 import type React from "react"
@@ -33,12 +33,12 @@ export const LatestRuns: React.FC<LatestRunsProps> = ({ title, data }) => {
             <h1 className="text-xl font-semibold mb-4">
                 {title}
             </h1>
-            <Table>
+            <Table containerClassName="overflow-x-hidden">
                 <TableHeader>
                     <TableRow>
                         <TableHead className="w-25">Game</TableHead>
                         <TableHead>Category</TableHead>
-                        <TableHead className="w-75">Player</TableHead>
+                        <TableHead className="w-50">Player</TableHead>
                         <TableHead>Time</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -78,19 +78,25 @@ export const LatestRuns: React.FC<LatestRunsProps> = ({ title, data }) => {
                                 </TableCell>
                             )}
                             <TableCell>
-                                <Link
-                                    to={run.level
-                                        ? `/${run.game_slug}/ils/${run.level.slug}/${run.category.slug}`
-                                        : buildLeaderboardPath(
-                                            run.game_slug,
-                                            run.category.slug,
-                                            run.value_slugs,
-                                        )
-                                    }
-                                    className="text-link hover:underline"
-                                >
-                                    {run.level?.name ?? run.category.name}
-                                </Link>
+                                {(() => {
+                                    const fullName = run.level?.name ?? run.category.name
+                                    return (
+                                        <Link
+                                            to={run.level
+                                                ? `/${run.game_slug}/ils/${run.level.slug}/${run.category.slug}`
+                                                : buildLeaderboardPath(
+                                                    run.game_slug,
+                                                    run.category.slug,
+                                                    run.value_slugs,
+                                                )
+                                            }
+                                            title={fullName}
+                                            className="text-link hover:underline"
+                                        >
+                                            {truncate(fullName, 20)}
+                                        </Link>
+                                    )
+                                })()}
                             </TableCell>
                             <TableCell className="flex items-center">
                                 <PlayerCell players={run.players} />

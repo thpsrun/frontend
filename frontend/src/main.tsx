@@ -92,6 +92,14 @@ const lazyBotSession = lazyComponent(
     () => import("./components/admin/bot-session/bot-session-page.tsx"),
     "BotSessionPage",
 )
+const lazyReconcile = lazyComponent(
+    () => import("./components/admin/reconcile/reconcile-page.tsx"),
+    "ReconcilePage",
+)
+const lazyReconcileDetail = lazyComponent(
+    () => import("./components/admin/reconcile/reconcile-detail-page.tsx"),
+    "ReconcileDetailPage",
+)
 
 const router = createBrowserRouter([
     {
@@ -156,6 +164,8 @@ const router = createBrowserRouter([
                             { index: true, element: null },
                             { path: "sync-logs", Component: AdminHub },
                             { path: "bot-session", lazy: lazyBotSession },
+                            { path: "reconcile", lazy: lazyReconcile },
+                            { path: "reconcile/:jobId", lazy: lazyReconcileDetail },
                             { path: "tags", lazy: lazyTagsAdmin },
                         ],
                     },

@@ -19,7 +19,7 @@ import { GuideTableSkeleton } from "./guide-table-skeleton"
 import { GradientUsername } from "@/components/profile/gradient-username"
 import { EmptyState } from "@/components/ui/empty-state"
 import { buildGuideUrl, resolveGuideTags } from "@/lib/guide-urls"
-import { cn } from "@/lib/utils"
+import { cn, truncate } from "@/lib/utils"
 
 type SortKey = "title" | "updated"
 type SortDir = "asc" | "desc"
@@ -32,7 +32,7 @@ interface FiltersState {
 
 interface Props {
     pinnedGameSlug?: string
-    pinnedAuthorUsername?: string
+    pinnedAuthorId?: string
     filters: FiltersState
     emptyState?: { title: string; description?: string; action?: React.ReactNode }
 }
@@ -53,7 +53,7 @@ function relativeTime(iso: string | null): { rel: string; abs: string } {
 
 export function GuidesTable({
     pinnedGameSlug,
-    pinnedAuthorUsername,
+    pinnedAuthorId,
     filters,
     emptyState,
 }: Props) {
@@ -65,14 +65,12 @@ export function GuidesTable({
     const { data, isLoading, isError, error, refetch } = useGuides({
         game: pinnedGameSlug ?? filters.game,
         tag: tagFilter,
+        playerId: pinnedAuthorId,
     })
     const tagsList = useTags()
 
     const sorted = useMemo(() => {
         const list = (data ?? []).filter((g) => {
-            if (pinnedAuthorUsername && g.author?.name !== pinnedAuthorUsername) {
-                return false
-            }
             if (filters.tagSlugs.length > 1) {
                 const slugs = resolveGuideTags(g.tags, tagsList.data).map((t) => t.slug)
                 if (!filters.tagSlugs.every((s) => slugs.includes(s))) return false
@@ -95,7 +93,7 @@ export function GuidesTable({
             return sortDir === "asc" ? aT - bT : bT - aT
         })
         return list
-    }, [data, sortKey, sortDir, filters, pinnedAuthorUsername, tagsList.data])
+    }, [data, sortKey, sortDir, filters, tagsList.data])
 
     function toggleSort(key: SortKey) {
         if (key === sortKey) {
@@ -213,7 +211,7 @@ function GuideRow({ guide, idx, showGameColumn, masterTags }: RowProps) {
                     {guide.title}
                 </Link>
                 <div className="line-clamp-2 text-sm text-muted-foreground">
-                    {guide.short_description}
+                    {truncate(guide.short_description, 50)}
                 </div>
                 {rowTags.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">

@@ -1,9 +1,10 @@
 import { useState } from "react"
 import { useSyncLogs } from "@/hooks/admin/useSyncLogs"
-import { AlertBanner } from "@/components/ui/alert-banner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Panel } from "@/components/ui/panel"
+import { Pagination } from "@/components/ui/pagination"
+import { QueryErrorBanner } from "@/components/ui/query-error-banner"
 import {
     Select, SelectContent, SelectItem,
     SelectTrigger, SelectValue,
@@ -14,10 +15,9 @@ import {
 } from "@/components/ui/table"
 import { TableSkeleton } from "@/components/ui/table-skeleton"
 import {
-    Loader2, RotateCcw, ExternalLink, ChevronLeft,
-    ChevronRight,
+    Loader2, RotateCcw, ExternalLink,
 } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn, formatDate } from "@/lib/utils"
 import type {
     SyncLogsParams, SyncLogEntry,
 } from "@/types/submissions"
@@ -38,10 +38,6 @@ const ACTION_LABEL: Record<SyncAction, string> = {
     verify: "Verify",
     reject: "Reject",
     change_players: "Change Players",
-}
-
-function formatDate(iso: string): string {
-    return new Date(iso).toLocaleString()
 }
 
 function LogRow({
@@ -205,20 +201,7 @@ export function AdminHub() {
             </Panel>
 
             {error && (
-                <AlertBanner variant="error">
-                    <div className="flex items-center justify-between gap-3">
-                        <span>{error.message}</span>
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => refetch()}
-                            className="gap-1 shrink-0"
-                        >
-                            <RotateCcw className="size-3" />
-                            Retry
-                        </Button>
-                    </div>
-                </AlertBanner>
+                <QueryErrorBanner error={error} onRetry={refetch} />
             )}
 
             {isLoading && (
@@ -396,62 +379,12 @@ export function AdminHub() {
                         </Table>
                     </div>
 
-                    {totalPages > 1 && (
-                        <div className={cn(
-                            "flex items-center",
-                            "justify-between pt-4",
-                            "text-sm",
-                        )}>
-                            <span className={cn(
-                                "text-muted-foreground",
-                            )}>
-                                {data.count} total logs
-                            </span>
-                            <div className={cn(
-                                "flex items-center gap-2",
-                            )}>
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    aria-label="Previous page"
-                                    disabled={
-                                        currentPage <= 1
-                                    }
-                                    onClick={() =>
-                                        goToPage(
-                                            currentPage - 1,
-                                        )
-                                    }
-                                >
-                                    <ChevronLeft
-                                        className="size-4"
-                                    />
-                                </Button>
-                                <span>
-                                    Page {currentPage} of{" "}
-                                    {totalPages}
-                                </span>
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    aria-label="Next page"
-                                    disabled={
-                                        currentPage >=
-                                            totalPages
-                                    }
-                                    onClick={() =>
-                                        goToPage(
-                                            currentPage + 1,
-                                        )
-                                    }
-                                >
-                                    <ChevronRight
-                                        className="size-4"
-                                    />
-                                </Button>
-                            </div>
-                        </div>
-                    )}
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={goToPage}
+                        totalLabel={`${data.count} total logs`}
+                    />
                 </Panel>
             )}
         </div>

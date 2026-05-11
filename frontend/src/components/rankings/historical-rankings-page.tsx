@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Panel } from "@/components/ui/panel"
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { QueryErrorBanner } from "@/components/ui/query-error-banner"
 import { SkeletonRow } from "@/lib/leaderboard-helpers"
 import { ApiError } from "@/lib/api-client"
 import { useGames } from "@/hooks/game/useGames"
@@ -95,7 +95,7 @@ export const HistoricalRankingsPage = () => {
     const safeMonth = parsed?.month ?? today.month
     const safeGameSlug = parsed?.gameSlug
 
-    const { data, isLoading, error } = useHistoricalRankings(
+    const { data, isLoading, error, refetch } = useHistoricalRankings(
         {
             mode: safeMode,
             year: safeYear,
@@ -227,9 +227,7 @@ export const HistoricalRankingsPage = () => {
                     )}
 
                     {error && !isLoading && (
-                        <AlertBanner variant="error">
-                            Error loading rankings. Refresh the page to try again.
-                        </AlertBanner>
+                        <QueryErrorBanner error={error} onRetry={refetch} />
                     )}
 
                     {data && !isLoading && !error && (

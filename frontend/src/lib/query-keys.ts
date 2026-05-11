@@ -13,7 +13,7 @@ export const queryKeys = {
 
     guides: {
         all: ["guides"] as const,
-        list: (params: { game?: string; tag?: string; embed?: string }) =>
+        list: (params: { game?: string; tag?: string; player_id?: string; embed?: string }) =>
             [...queryKeys.guides.all, "list", params] as const,
         detail: (slug: string, embed?: string) =>
             [...queryKeys.guides.all, "detail", slug, embed ?? ""] as const,
@@ -74,6 +74,16 @@ export const queryKeys = {
                 ? ([...queryKeys.admin.all, "sync-logs"] as const)
                 : ([...queryKeys.admin.all, "sync-logs", params] as const),
         botSession: () => [...queryKeys.admin.all, "bot-session"] as const,
+        reconcileJobs: <T extends object>(params?: T) =>
+            params === undefined
+                ? ([...queryKeys.admin.all, "reconcile-jobs"] as const)
+                : ([...queryKeys.admin.all, "reconcile-jobs", params] as const),
+        reconcileJob: (jobId: string) =>
+            [...queryKeys.admin.all, "reconcile-job", jobId] as const,
+        reconcileItems: <T extends object>(jobId: string, params?: T) =>
+            params === undefined
+                ? ([...queryKeys.admin.all, "reconcile-items", jobId] as const)
+                : ([...queryKeys.admin.all, "reconcile-items", jobId, params] as const),
     },
 
     tags: {

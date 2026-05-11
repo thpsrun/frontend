@@ -6,6 +6,7 @@ const NAV_GROUPS: ReadonlyArray<NavGroup> = [
         items: [
             { label: "Sync Logs", to: "/admin/sync-logs" },
             { label: "THPSBot Status", to: "/admin/bot-session" },
+            { label: "Reconcile", to: "/admin/reconcile" },
         ],
     },
     {

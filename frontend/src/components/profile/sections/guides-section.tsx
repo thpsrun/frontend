@@ -9,7 +9,7 @@ import { GuidesTable } from "@/components/guides/guides-table"
 
 export function GuidesSection() {
     const { player } = useCurrentPlayer()
-    const username = player?.player.username
+    const playerId = player?.player_id
     const [filters, setFilters] = useState<FiltersState>({
         game: undefined,
         tagSlugs: [],
@@ -35,20 +35,22 @@ export function GuidesSection() {
                 <GuidesTableFilters onChange={setFilters} />
             </Panel>
 
-            <GuidesTable
-                pinnedAuthorUsername={username}
-                filters={filters}
-                emptyState={{
-                    title: "You haven't written any guides yet.",
-                    action: (
-                        <Button asChild>
-                            <Link to="/guides/new">
-                                <Plus className="mr-2 size-4" />Write your first guide
-                            </Link>
-                        </Button>
-                    ),
-                }}
-            />
+            {playerId && (
+                <GuidesTable
+                    pinnedAuthorId={playerId}
+                    filters={filters}
+                    emptyState={{
+                        title: "You haven't written any guides yet.",
+                        action: (
+                            <Button asChild>
+                                <Link to="/guides/new">
+                                    <Plus className="mr-2 size-4" />Write your first guide
+                                </Link>
+                            </Button>
+                        ),
+                    }}
+                />
+            )}
         </div>
     )
 }

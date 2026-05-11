@@ -285,13 +285,7 @@ export const RecentRunItem = ({
                 )}>
                     #{r.place}
                 </span>
-                <RunPlayers
-                    players={[{
-                        name: r.player_name,
-                        country: r.player_country,
-                        gradients: r.gradients,
-                    }]}
-                />
+                <RunPlayers players={r.players} />
             </div>
             <div className={cn(
                 "flex justify-between items-center",

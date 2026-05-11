@@ -34,7 +34,11 @@ export function GuidesHubPage({ pinnedGameSlug }: Props) {
                     </div>
                     {isAuthenticated && (
                         <Button asChild>
-                            <Link to="/guides/new">
+                            <Link
+                                to={pinnedGameSlug
+                                    ? `/guides/new?game=${encodeURIComponent(pinnedGameSlug)}`
+                                    : "/guides/new"}
+                            >
                                 <Plus className="mr-2 size-4" />New Guide
                             </Link>
                         </Button>
