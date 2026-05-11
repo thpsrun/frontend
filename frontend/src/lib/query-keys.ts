@@ -84,6 +84,8 @@ export const queryKeys = {
             params === undefined
                 ? ([...queryKeys.admin.all, "reconcile-items", jobId] as const)
                 : ([...queryKeys.admin.all, "reconcile-items", jobId, params] as const),
+        gameDisplay: (gameId: string) =>
+            [...queryKeys.admin.all, "game-display", gameId] as const,
     },
 
     tags: {

@@ -100,6 +100,14 @@ const lazyReconcileDetail = lazyComponent(
     () => import("./components/admin/reconcile/reconcile-detail-page.tsx"),
     "ReconcileDetailPage",
 )
+const lazyGameDisplay = lazyComponent(
+    () => import("./components/admin/game-display/game-display-page.tsx"),
+    "GameDisplayPage",
+)
+const lazyGameDisplayDetail = lazyComponent(
+    () => import("./components/admin/game-display/game-display-detail-page.tsx"),
+    "GameDisplayDetailPage",
+)
 
 const router = createBrowserRouter([
     {
@@ -167,6 +175,8 @@ const router = createBrowserRouter([
                             { path: "reconcile", lazy: lazyReconcile },
                             { path: "reconcile/:jobId", lazy: lazyReconcileDetail },
                             { path: "tags", lazy: lazyTagsAdmin },
+                            { path: "game-display", lazy: lazyGameDisplay },
+                            { path: "game-display/:gameId", lazy: lazyGameDisplayDetail },
                         ],
                     },
                 ],
