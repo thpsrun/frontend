@@ -40,8 +40,10 @@ import { BACKEND_URL } from "@/constants"
 import { cn } from "@/lib/utils"
 import {
     type CountryCode,
+    buildLeaderboardPath,
     CountryFlag,
     getRankBackground,
+    StreakDagger,
     timeAgo,
     formatLongDate,
 } from "@/lib/leaderboard-helpers"
@@ -49,10 +51,6 @@ import {
 import therunGgIcon from "@/assets/icons/therun-gg.png"
 import type { PlayerRun, Game } from "@/types/api"
 
-
-// Base points for 1st place; points above this are streak bonuses
-const FG_BASE_POINTS = 1000
-const IL_BASE_POINTS = 250
 
 type SortMode = "latest" | "chronological" | "all"
 
@@ -72,22 +70,12 @@ function groupRunsByGame(runs: PlayerRun[]): Map<string, PlayerRun[]> {
 
 function buildRunLeaderboardPath(r: PlayerRun): string | null {
     if (!r.category) return null
-    if (r.level) {
-        // IL: /:gameSlug/ils/:levelSlug/:categorySlug/:valueSlugs
-        return `/${[
-            r.game.slug,
-            "ils",
-            r.level.slug,
-            r.category.slug,
-            ...r.value_slugs,
-        ].join("/")}`
-    }
-    // FG: /:gameSlug/:categorySlug/:valueSlugs
-    return `/${[
+    return buildLeaderboardPath(
         r.game.slug,
         r.category.slug,
-        ...r.value_slugs,
-    ].join("/")}`
+        r.value_slugs,
+        r.level?.slug ?? null,
+    )
 }
 
 function ProfileSkeleton() {
@@ -354,31 +342,10 @@ function RunsColumn({
                                             ) : (
                                                 <>
                                                     {r.points}
-                                                    {(() => {
-                                                        const base =
-                                                            r.level === null
-                                                                ? FG_BASE_POINTS
-                                                                : IL_BASE_POINTS
-                                                        const bonus =
-                                                            r.points - base
-                                                        if (bonus <= 0) {
-                                                            return null
-                                                        }
-                                                        return (
-                                                            <sup
-                                                                className={cn(
-                                                                    "text-[0.6em]",
-                                                                    "text-muted-foreground",
-                                                                    "cursor-help ml-0.5",
-                                                                )}
-                                                                title={
-                                                                    `Streak Bonus: ${bonus} points`
-                                                                }
-                                                            >
-                                                                †
-                                                            </sup>
-                                                        )
-                                                    })()}
+                                                    <StreakDagger
+                                                        points={r.points}
+                                                        isIl={r.level !== null}
+                                                    />
                                                 </>
                                             )}
                                         </TableCell>

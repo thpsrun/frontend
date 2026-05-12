@@ -20,7 +20,7 @@ export function GuideFormPage({ mode }: Props) {
 
     if (mode === "create") {
         return (
-            <div className="container mx-auto max-w-3xl px-4 py-6">
+            <div className="container mx-auto max-w-3xl px-4">
                 <SectionPanel
                     title="New Guide"
                     description=""
@@ -53,7 +53,7 @@ function EditPage({
 
     if (isLoading) {
         return (
-            <div className="container mx-auto max-w-3xl px-4 py-6">
+            <div className="container mx-auto max-w-3xl px-4">
                 <Panel className="space-y-3">
                     <Skeleton className="h-8 w-2/3" />
                     <Skeleton className="h-32 w-full" />
@@ -65,7 +65,7 @@ function EditPage({
     if (isError || !guide) {
         const status = error instanceof ApiError ? error.status : null
         return (
-            <div className="container mx-auto max-w-3xl px-4 py-6">
+            <div className="container mx-auto max-w-3xl px-4">
                 <AlertBanner variant="error">
                     {status === 403 ? "You can't edit this guide." : "Guide not found."}
                 </AlertBanner>
@@ -84,7 +84,7 @@ function EditPage({
 
     if (!canEdit) {
         return (
-            <div className="container mx-auto max-w-3xl px-4 py-6">
+            <div className="container mx-auto max-w-3xl px-4">
                 <AlertBanner variant="error">
                     You can't edit this guide. Only the author, moderators of the game, or admins can make changes.
                 </AlertBanner>
@@ -98,7 +98,7 @@ function EditPage({
     }
 
     return (
-        <div className="container mx-auto max-w-3xl px-4 py-6">
+        <div className="container mx-auto max-w-3xl px-4">
             <SectionPanel
                 title="Edit guide"
                 description={guide.title}

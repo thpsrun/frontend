@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function PrivacyPage() {
     return (
-        <div className="flex justify-center pt-8">
+        <div className="flex justify-center">
             <Card className="w-full max-w-3xl">
                 <CardHeader>
                     <CardTitle className="text-2xl">

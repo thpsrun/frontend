@@ -20,7 +20,7 @@ export function SocialRedirect({ platform }: SocialRedirectProps) {
 
     if (isLoading) {
         return (
-            <div className="flex justify-center pt-12 text-sm text-muted-foreground">
+            <div className="flex justify-center text-sm text-muted-foreground">
                 Redirecting...
             </div>
         )
@@ -30,14 +30,14 @@ export function SocialRedirect({ platform }: SocialRedirectProps) {
         s => s.platform.toLowerCase() === platform.toLowerCase(),
     )) {
         return (
-            <div className="flex justify-center pt-12 text-sm text-muted-foreground">
+            <div className="flex justify-center text-sm text-muted-foreground">
                 Link Not Found?
             </div>
         )
     }
 
     return (
-        <div className="flex justify-center pt-12 text-sm text-muted-foreground">
+        <div className="flex justify-center text-sm text-muted-foreground">
             Redirecting...
         </div>
     )

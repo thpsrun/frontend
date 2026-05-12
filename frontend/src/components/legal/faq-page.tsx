@@ -3,7 +3,7 @@ import { Link } from "react-router"
 
 export function FAQPage() {
     return (
-        <div className="flex justify-center pt-8">
+        <div className="flex justify-center">
             <Card className="w-full max-w-3xl">
                 <CardHeader>
                     <CardTitle className="text-2xl">

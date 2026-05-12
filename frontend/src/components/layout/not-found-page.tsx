@@ -4,7 +4,7 @@ import { Compass } from "lucide-react"
 
 export function NotFoundPage() {
     return (
-        <div className="flex flex-col items-center gap-4 pt-20 text-center">
+        <div className="flex flex-col items-center gap-4 text-center">
             <Compass className="size-8 text-muted-foreground" />
             <h2 className="text-3xl font-semibold tracking-tight">
                 404

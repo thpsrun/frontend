@@ -8,7 +8,7 @@ export function ProtectedRoute() {
 
     if (isLoading) {
         return (
-            <div className="flex justify-center pt-20 text-muted-foreground">
+            <div className="flex justify-center text-muted-foreground">
                 <Loader2 className="size-5 animate-spin" />
             </div>
         )

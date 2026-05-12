@@ -208,7 +208,7 @@ export function SubmissionsHub() {
     if (isLoading) {
         return (
             <div className={cn(
-                "mx-auto max-w-5xl px-4 py-8",
+                "mx-auto max-w-5xl px-4",
                 "space-y-6",
             )}>
                 <Panel className="p-5">
@@ -232,7 +232,7 @@ export function SubmissionsHub() {
 
     if (error) {
         return (
-            <div className="mx-auto max-w-5xl px-4 py-8">
+            <div className="mx-auto max-w-5xl px-4">
                 <QueryErrorBanner error={error} onRetry={refetch} />
             </div>
         )
@@ -240,7 +240,7 @@ export function SubmissionsHub() {
 
     return (
         <div className={cn(
-            "mx-auto max-w-5xl px-4 py-8",
+            "mx-auto max-w-5xl px-4",
             "space-y-6",
         )}>
             <Panel className="flex items-start gap-2.5 px-4 py-3 text-sm text-muted-foreground">

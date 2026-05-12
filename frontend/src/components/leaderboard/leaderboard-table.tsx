@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils"
 import {
     getRankBackground,
     RunPlayers,
+    StreakDagger,
     timeAgo,
     formatLongDate,
 } from "@/lib/leaderboard-helpers"
@@ -148,7 +149,7 @@ const LeaderboardRow = (
                 "text-sm",
             )}>
                 {r.points}
-                <StreakDagger run={r} />
+                <StreakDagger points={r.points} isIl={r.level !== null} />
             </TableCell>
             <TableCell className="text-center text-xs">
                 <span
@@ -216,29 +217,6 @@ const LeaderboardRow = (
                 </div>
             </TableCell>
         </TableRow>
-    )
-}
-
-
-// Base points awarded for a 1st-place run before streak bonuses
-const FG_BASE_POINTS = 1000
-const IL_BASE_POINTS = 250
-
-const StreakDagger = ({ run }: { run: LbsRun }) => {
-    const base = run.level === null
-        ? FG_BASE_POINTS
-        : IL_BASE_POINTS
-    const bonus = run.points - base
-
-    if (bonus <= 0) return null
-
-    return (
-        <sup
-            className="text-[0.6em] text-muted-foreground cursor-help ml-0.5"
-            title={`Streak Bonus: ${bonus} points`}
-        >
-            †
-        </sup>
     )
 }
 

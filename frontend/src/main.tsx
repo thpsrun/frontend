@@ -1,7 +1,8 @@
 import { StrictMode, type ComponentType } from "react"
 import { createRoot } from "react-dom/client"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { ApiError } from "@/lib/api-client"
+import { ApiError, setAuthLostHandler } from "@/lib/api-client"
+import { queryKeys } from "@/lib/query-keys"
 import { Provider as JotaiProvider } from "jotai"
 import "./index.css"
 import App from "./App.tsx"
@@ -17,6 +18,7 @@ import { RegisterPage } from "./components/auth/register-page.tsx"
 import { OAuthCancelledPage } from "./components/auth/oauth-cancelled-page.tsx"
 import { OAuthErrorPage } from "./components/auth/oauth-error-page.tsx"
 import { NoLinkPage } from "@/components/auth/no-link-page"
+import { BannedPage } from "@/components/auth/banned-page"
 import { OAuthCallbackPage } from "@/components/auth/oauth-callback-page"
 import { ProfileSettingsLayout } from "./components/profile/profile-settings-layout.tsx"
 import { PlayerProfile } from "./components/player/player-profile.tsx"
@@ -61,6 +63,11 @@ const queryClient = new QueryClient({
     },
 })
 
+setAuthLostHandler(() => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.auth.session() })
+    queryClient.removeQueries({ queryKey: queryKeys.auth.me() })
+})
+
 // Lazy-loading on several components, since they are the heavier parts of the code.
 // If you are wanting to know: if given a function that loads modules, return the router
 // and pulls the components out. This should make the site load a lot faster for a lot of people!
@@ -83,6 +90,10 @@ const lazyGuideDetail = lazyComponent(
 const lazyGuidesSection = lazyComponent(
     () => import("./components/profile/sections/guides-section.tsx"),
     "GuidesSection",
+)
+const lazyRunsSection = lazyComponent(
+    () => import("./components/profile/sections/runs-section.tsx"),
+    "RunsSection",
 )
 const lazyTagsAdmin = lazyComponent(
     () => import("./components/admin/tags/tags-admin-page.tsx"),
@@ -108,6 +119,14 @@ const lazyGameDisplayDetail = lazyComponent(
     () => import("./components/admin/game-display/game-display-detail-page.tsx"),
     "GameDisplayDetailPage",
 )
+const lazyUsersAdmin = lazyComponent(
+    () => import("./components/admin/users/users-admin-page.tsx"),
+    "UsersAdminPage",
+)
+const lazyUsersAdminDetail = lazyComponent(
+    () => import("./components/admin/users/users-admin-detail.tsx"),
+    "UsersAdminDetailPage",
+)
 
 const router = createBrowserRouter([
     {
@@ -129,6 +148,7 @@ const router = createBrowserRouter([
             { path: "login/cancelled", Component: OAuthCancelledPage },
             { path: "login/error", Component: OAuthErrorPage },
             { path: "login/no-link", Component: NoLinkPage },
+            { path: "login/banned", Component: BannedPage },
             { path: "oauth/callback", Component: OAuthCallbackPage },
             {
                 Component: ProtectedRoute,
@@ -152,6 +172,7 @@ const router = createBrowserRouter([
                         children: [
                             { index: true, element: null },
                             { path: "guides", lazy: lazyGuidesSection },
+                            { path: "runs", lazy: lazyRunsSection },
                         ],
                     },
                     { path: "submissions", Component: SubmissionsHub },
@@ -177,6 +198,8 @@ const router = createBrowserRouter([
                             { path: "tags", lazy: lazyTagsAdmin },
                             { path: "game-display", lazy: lazyGameDisplay },
                             { path: "game-display/:gameId", lazy: lazyGameDisplayDetail },
+                            { path: "users", lazy: lazyUsersAdmin },
+                            { path: "users/:ident", lazy: lazyUsersAdminDetail },
                         ],
                     },
                 ],

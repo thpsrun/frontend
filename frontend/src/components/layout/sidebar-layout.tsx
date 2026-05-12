@@ -126,7 +126,7 @@ export function SidebarLayout({
     }))
 
     return (
-        <div className="flex justify-center px-4 pt-12">
+        <div className="flex justify-center px-4">
             <div className={cn(
                 "w-full",
                 maxWidth,

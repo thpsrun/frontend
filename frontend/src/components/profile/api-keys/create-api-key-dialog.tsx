@@ -23,10 +23,7 @@ import { validateApiKeyLabel } from "@/lib/validation"
 import { useCreateApiKey } from "@/hooks/auth/useCreateApiKey"
 import { useCapabilities } from "@/hooks/auth/useCapabilities"
 import { apiKeyErrorMessage } from "@/hooks/auth/api-keys-api"
-import {
-    capabilityLabel,
-    GAME_SCOPED_CAPS,
-} from "@/lib/capability-labels"
+import { capabilityLabel } from "@/lib/capability-labels"
 import {
     LabelDescriptionFields,
     type LabelDescriptionFormValues,
@@ -86,19 +83,11 @@ export function CreateApiKeyDialog({
     }, [open, form])
 
     const capOptions: ScopePillOption[] = (caps.data?.capabilities ?? []).map(
-        (raw) => {
-            const isGameScoped = GAME_SCOPED_CAPS.has(raw)
-            const disabled = isGameScoped && scopeGames.length === 0
-            return {
-                value: raw,
-                label: capabilityLabel(raw),
-                suffix: raw,
-                disabled,
-                disabledReason: disabled
-                    ? "Select at least one game to enable game-scoped capabilities."
-                    : undefined,
-            }
-        },
+        (raw) => ({
+            value: raw,
+            label: capabilityLabel(raw),
+            suffix: raw,
+        }),
     )
 
     const gameOptions: ScopePillOption[] = (caps.data?.games ?? []).map(

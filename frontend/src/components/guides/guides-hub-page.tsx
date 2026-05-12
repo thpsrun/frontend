@@ -26,7 +26,7 @@ export function GuidesHubPage({ pinnedGameSlug }: Props) {
         : "Guides"
 
     return (
-        <div className="container mx-auto max-w-6xl px-4 py-6 space-y-4">
+        <div className="container mx-auto max-w-6xl px-4 space-y-4">
             <Panel className="space-y-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">

@@ -81,7 +81,7 @@ export function OAuthCallbackPage() {
     }, [params, navigate, qc])
 
     return (
-        <div className="pt-20 text-center text-sm text-muted-foreground">
+        <div className="text-center text-sm text-muted-foreground">
             Signing you in...
         </div>
     )

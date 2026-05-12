@@ -93,7 +93,7 @@ export function LoginPage() {
     }
 
     return (
-        <div className="flex justify-center pt-12">
+        <div className="flex justify-center">
             <Card className="w-full max-w-100">
                 <CardHeader>
                     <CardTitle className="text-xl">

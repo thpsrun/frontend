@@ -6,9 +6,9 @@ export function useSession() {
     const sessionQuery = useQuery({
         queryKey: queryKeys.auth.session(),
         queryFn: ({ signal }) => checkSession(signal),
-        staleTime: 5 * 60 * 1000,
+        staleTime: 30_000,
         retry: false,
-        refetchOnWindowFocus: true,
+        refetchOnWindowFocus: "always",
     })
 
     return {

@@ -162,9 +162,32 @@ export const buildLeaderboardPath = (
     gameSlug: string,
     categorySlug: string,
     valueSlugs: string[],
+    levelSlug?: string | null,
 ): string => {
-    const parts = [gameSlug, categorySlug, ...valueSlugs]
+    const parts = levelSlug
+        ? [gameSlug, "ils", levelSlug, categorySlug, ...valueSlugs]
+        : [gameSlug, categorySlug, ...valueSlugs]
     return `/${parts.join("/")}`
+}
+
+// Base points awarded for a 1st-place run before streak bonuses.
+const FG_BASE_POINTS = 1000
+const IL_BASE_POINTS = 250
+
+export const StreakDagger = (
+    { points, isIl }: { points: number; isIl: boolean },
+) => {
+    const base = isIl ? IL_BASE_POINTS : FG_BASE_POINTS
+    const bonus = points - base
+    if (bonus <= 0) return null
+    return (
+        <sup
+            className="text-[0.6em] text-muted-foreground cursor-help ml-0.5"
+            title={`Streak Bonus: ${bonus} points`}
+        >
+            †
+        </sup>
+    )
 }
 
 export interface RunPlayer {

@@ -19,6 +19,8 @@ export const CAPABILITY_LABELS: Record<string, string> = {
     "profile.edit_own": "Edit Own Profile",
     "submissions.list_own": "List Own Submissions",
     "sync_logs.admin": "Administer Sync Logs",
+    "reconcile.admin": "Reconciliation",
+    "games.display.admin": "Games Display Changes",
 }
 
 export const GAME_SCOPED_CAPS = new Set<string>([

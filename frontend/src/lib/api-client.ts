@@ -36,6 +36,16 @@ export class ApiError extends Error {
     }
 }
 
+type AuthLostHandler = () => void
+let authLostHandler: AuthLostHandler | null = null
+let bannedRedirected = false
+
+const BANNED_DETAIL = "Account disabled"
+
+export function setAuthLostHandler(handler: AuthLostHandler | null): void {
+    authLostHandler = handler
+}
+
 export function getCsrfToken(): string {
     const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]*)/)
     return match ? decodeURIComponent(match[1]) : ""
@@ -107,7 +117,19 @@ export async function apiFetch<T = unknown>(
     })
 
     if (!res.ok) {
-        throw await parseError(res)
+        const error = await parseError(res)
+        if (
+            error.status === 403
+            && (error.body as { detail?: unknown } | null)?.detail === BANNED_DETAIL
+        ) {
+            if (!bannedRedirected) {
+                bannedRedirected = true
+                window.location.assign("/login/banned")
+            }
+        } else if (error.status === 401 && base === "api" && authLostHandler) {
+            authLostHandler()
+        }
+        throw error
     }
 
     if (res.status === 204) {

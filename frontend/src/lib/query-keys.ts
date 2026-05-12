@@ -42,13 +42,26 @@ export const queryKeys = {
     runs: {
         all: ["runs"] as const,
         detail: (id: string) => [...queryKeys.runs.all, "detail", id] as const,
+        list: <T extends object>(params?: T) =>
+            params === undefined
+                ? ([...queryKeys.runs.all, "list"] as const)
+                : ([...queryKeys.runs.all, "list", params] as const),
+        listPaginated: <T extends object>(params: T) =>
+            [...queryKeys.runs.all, "list-paginated", params] as const,
     },
 
     player: {
         all: ["player"] as const,
         profile: (playerName: string, includeObsolete: boolean) =>
             [...queryKeys.player.all, "profile", playerName, includeObsolete] as const,
+        profilePrefix: (playerName: string) =>
+            [...queryKeys.player.all, "profile", playerName] as const,
         search: (query: string) => [...queryKeys.player.all, "search", query] as const,
+    },
+
+    awards: {
+        all: ["awards"] as const,
+        list: () => [...queryKeys.awards.all, "list"] as const,
     },
 
     auth: {
@@ -86,6 +99,10 @@ export const queryKeys = {
                 : ([...queryKeys.admin.all, "reconcile-items", jobId, params] as const),
         gameDisplay: (gameId: string) =>
             [...queryKeys.admin.all, "game-display", gameId] as const,
+        userModerates: (ident: string) =>
+            [...queryKeys.admin.all, "user-moderates", ident] as const,
+        userAwards: (ident: string) =>
+            [...queryKeys.admin.all, "user-awards", ident] as const,
     },
 
     tags: {

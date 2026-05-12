@@ -9,7 +9,7 @@ interface OAuthResultPageProps {
 
 export function OAuthResultPage({ title, message, children }: OAuthResultPageProps) {
     return (
-        <div className="flex flex-col items-center gap-3 pt-20 text-center">
+        <div className="flex flex-col items-center gap-3 text-center">
             <h2 className="text-xl font-semibold">{title}</h2>
             <p className="max-w-md text-sm text-muted-foreground">
                 {message}

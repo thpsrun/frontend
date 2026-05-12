@@ -69,7 +69,7 @@ export function GuideDetailPage() {
         const status = error instanceof ApiError ? error.status : null
         if (status === 404 || status === 403) {
             return (
-                <div className="container mx-auto max-w-3xl px-4 py-6">
+                <div className="container mx-auto max-w-3xl px-4">
                     <AlertBanner variant="error">
                         Guide not found. This guide may have been removed or the URL is wrong.
                     </AlertBanner>
@@ -82,7 +82,7 @@ export function GuideDetailPage() {
             )
         }
         return (
-            <div className="container mx-auto max-w-3xl px-4 py-6">
+            <div className="container mx-auto max-w-3xl px-4">
                 <AlertBanner variant="error">
                     {error instanceof Error ? error.message : "Couldn't load this guide."}
                 </AlertBanner>
@@ -92,7 +92,7 @@ export function GuideDetailPage() {
 
     if (isLoading || !guide) {
         return (
-            <div className="container mx-auto max-w-5xl px-4 py-6">
+            <div className="container mx-auto max-w-5xl px-4">
                 <Panel className="space-y-3">
                     <Skeleton className="h-8 w-2/3" />
                     <Skeleton className="h-4 w-1/2" />
@@ -134,7 +134,7 @@ export function GuideDetailPage() {
     const showToc = tocHeadings.length >= TOC_MIN_HEADINGS
 
     return (
-        <div className="container mx-auto max-w-6xl px-4 py-6 space-y-6">
+        <div className="container mx-auto max-w-6xl px-4 space-y-6">
             <Panel className="px-4 py-2">
                 <nav className="text-sm text-muted-foreground" aria-label="Breadcrumb">
                     <Link to="/guides" className="hover:underline">Guides</Link>
