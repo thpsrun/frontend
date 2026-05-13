@@ -2,6 +2,7 @@ import { apiFetch } from "@/lib/api-client"
 import type {
     AdminModeratedGame,
     AdminPfpResponse,
+    AdminProfileBgResponse,
     AwardEntry,
     BanRequest,
     SessionsRevokedResponse,
@@ -72,6 +73,21 @@ export const uploadPfpFn = (
 
 export const deletePfpFn = (ident: string): Promise<void> =>
     apiFetch<void>(`${usersBase(ident)}/pfp`, { method: "DELETE" })
+
+export const uploadProfileBgFn = (
+    ident: string,
+    file: File,
+): Promise<AdminProfileBgResponse> => {
+    const body = new FormData()
+    body.append("file", file)
+    return apiFetch<AdminProfileBgResponse>(
+        `${usersBase(ident)}/profile-bg`,
+        { method: "POST", body },
+    )
+}
+
+export const deleteProfileBgFn = (ident: string): Promise<void> =>
+    apiFetch<void>(`${usersBase(ident)}/profile-bg`, { method: "DELETE" })
 
 export const revokeSessionsFn = (
     ident: string,

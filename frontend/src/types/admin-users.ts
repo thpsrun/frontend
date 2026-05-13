@@ -12,6 +12,10 @@ export interface AdminPfpResponse {
     pfp: string
 }
 
+export interface AdminProfileBgResponse {
+    profile_bg: string
+}
+
 export interface SessionsRevokedResponse {
     revoked: number
 }

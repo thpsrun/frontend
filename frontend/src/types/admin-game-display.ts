@@ -21,7 +21,6 @@ export interface GameDisplayResponse {
     categories: DisplayItem[]
     levels: DisplayItem[]
     variable_groups: VariableGroup[]
-    page_loaded_at: string
 }
 
 export interface ReorderRequest {

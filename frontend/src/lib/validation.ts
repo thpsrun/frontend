@@ -71,3 +71,35 @@ export function validateTagDescription(value: string): string | null {
     if (trimmed.length > 500) return "Tag description must be 500 characters or fewer."
     return null
 }
+
+export function validateNavItemName(value: string): string | null {
+    const trimmed = value.trim()
+    if (trimmed.length === 0) return "Name is required."
+    if (trimmed.length > 100) return "Name must be 100 characters or fewer."
+    return null
+}
+
+// Control characters to remove some potential parsing tricks
+const URL_CONTROL_CHARS = /[\x00-\x1F\x7F]/
+
+// Requires HTTP(s) and rejects JavaScript and other crap.
+export function validateNavUrl(value: string): string | null {
+    const trimmed = value.trim()
+    if (trimmed.length === 0) return null
+    if (trimmed.length > 500) return "URL must be 500 characters or fewer."
+    if (URL_CONTROL_CHARS.test(trimmed)) return "URL contains invalid characters."
+    if (trimmed.startsWith("/")) return null
+    if (/^https?:\/\//i.test(trimmed)) return null
+    return "URL must start with /, http://, or https://."
+}
+
+export function validateSocialUrl(value: string): string | null {
+    const trimmed = value.trim()
+    if (trimmed.length === 0) return "URL is required."
+    if (trimmed.length > 500) return "URL must be 500 characters or fewer."
+    if (URL_CONTROL_CHARS.test(trimmed)) return "URL contains invalid characters."
+    if (!/^https?:\/\//i.test(trimmed)) {
+        return "URL must start with http:// or https://."
+    }
+    return null
+}

@@ -2,17 +2,23 @@ import { SidebarLayout, type NavGroup } from "@/components/layout/sidebar-layout
 
 const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     {
-        heading: "ADMIN",
+        heading: "Admin",
         items: [
             { label: "Sync Logs", to: "/admin/sync-logs" },
-            { label: "Users", to: "/admin/users" },
+            { label: "User Management", to: "/admin/users" },
+        ],
+    },
+    {
+        heading: "Site Management",
+        items: [
             { label: "Game Display", to: "/admin/game-display" },
-            { label: "THPSBot Status", to: "/admin/bot-session" },
+            { label: "Navbar", to: "/admin/navbar" },
+            { label: "THPSBot Status", to: "/admin/thpsbot" },
             { label: "Reconcile", to: "/admin/reconcile" },
         ],
     },
     {
-        heading: "CONTENT",
+        heading: "Content Management",
         items: [
             { label: "Tags", to: "/admin/tags" },
         ],

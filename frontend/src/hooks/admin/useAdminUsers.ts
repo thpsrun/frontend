@@ -5,11 +5,13 @@ import {
 } from "@tanstack/react-query"
 import { toast } from "sonner"
 
+import { ApiError } from "@/lib/api-client"
 import { queryKeys } from "@/lib/query-keys"
 import { getErrorMessage } from "@/lib/utils"
 import type {
     AdminModeratedGame,
     AdminPfpResponse,
+    AdminProfileBgResponse,
     AwardEntry,
     SessionsRevokedResponse,
 } from "@/types/admin-users"
@@ -17,6 +19,7 @@ import {
     addModeratorFn,
     banUserFn,
     deletePfpFn,
+    deleteProfileBgFn,
     fetchUserAwards,
     fetchUserModerates,
     forcePasswordResetFn,
@@ -26,6 +29,7 @@ import {
     revokeSessionsFn,
     unbanUserFn,
     uploadPfpFn,
+    uploadProfileBgFn,
 } from "./admin-users-api"
 
 export function useUserModerates(ident: string | undefined) {
@@ -194,36 +198,68 @@ export function useRevokeAward(ident: string, playerName: string) {
     })
 }
 
-export function useUploadPfp(ident: string) {
+function useProfileMediaMutation<TResponse, TInput>(
+    ident: string,
+    mutationFn: (input: TInput) => Promise<TResponse>,
+    msgs: { success: string; error: string; notFound?: string },
+) {
     const queryClient = useQueryClient()
-    return useMutation<AdminPfpResponse, Error, File>({
-        mutationFn: (file) => uploadPfpFn(ident, file),
+    return useMutation<TResponse, Error, TInput>({
+        mutationFn,
         onSuccess: () => {
-            toast.success("Profile picture uploaded!")
+            toast.success(msgs.success)
             queryClient.invalidateQueries({
                 queryKey: queryKeys.player.profilePrefix(ident),
             })
         },
         onError: (err) => {
-            toast.error(getErrorMessage(err, "Failed to Upload Picture..."))
+            if (msgs.notFound && err instanceof ApiError && err.status === 404) {
+                toast.error(msgs.notFound)
+                return
+            }
+            toast.error(getErrorMessage(err, msgs.error))
         },
     })
 }
 
+export function useUploadPfp(ident: string) {
+    return useProfileMediaMutation<AdminPfpResponse, File>(
+        ident,
+        (file) => uploadPfpFn(ident, file),
+        { success: "Profile Picture Uploaded!", error: "Failed to Upload Picture..." },
+    )
+}
+
 export function useDeletePfp(ident: string) {
-    const queryClient = useQueryClient()
-    return useMutation<void, Error, void>({
-        mutationFn: () => deletePfpFn(ident),
-        onSuccess: () => {
-            toast.success("Profile picture removed.")
-            queryClient.invalidateQueries({
-                queryKey: queryKeys.player.profilePrefix(ident),
-            })
+    return useProfileMediaMutation<void, void>(
+        ident,
+        () => deletePfpFn(ident),
+        { success: "Profile Picture Removed!", error: "Failed to Delete Picture..." },
+    )
+}
+
+export function useUploadProfileBg(ident: string) {
+    return useProfileMediaMutation<AdminProfileBgResponse, File>(
+        ident,
+        (file) => uploadProfileBgFn(ident, file),
+        {
+            success: "Profile Background Uploaded!",
+            error: "Failed to Upload Background...",
+            notFound: "No Linked Account Found...",
         },
-        onError: (err) => {
-            toast.error(getErrorMessage(err, "Failed to Delete Picture..."))
+    )
+}
+
+export function useDeleteProfileBg(ident: string) {
+    return useProfileMediaMutation<void, void>(
+        ident,
+        () => deleteProfileBgFn(ident),
+        {
+            success: "Profile Background Removed!",
+            error: "Failed to Delete Background...",
+            notFound: "No Linked Account Found...",
         },
-    })
+    )
 }
 
 export function useRevokeSessions(ident: string) {

@@ -99,8 +99,12 @@ const lazyTagsAdmin = lazyComponent(
     () => import("./components/admin/tags/tags-admin-page.tsx"),
     "TagsAdminPage",
 )
+const lazyNavbarAdmin = lazyComponent(
+    () => import("./components/admin/navbar/navbar-admin-page.tsx"),
+    "NavbarAdminPage",
+)
 const lazyBotSession = lazyComponent(
-    () => import("./components/admin/bot-session/bot-session-page.tsx"),
+    () => import("./components/admin/thpsbot/bot-session-page.tsx"),
     "BotSessionPage",
 )
 const lazyReconcile = lazyComponent(
@@ -192,10 +196,11 @@ const router = createBrowserRouter([
                         children: [
                             { index: true, element: null },
                             { path: "sync-logs", Component: AdminHub },
-                            { path: "bot-session", lazy: lazyBotSession },
+                            { path: "thpsbot", lazy: lazyBotSession },
                             { path: "reconcile", lazy: lazyReconcile },
                             { path: "reconcile/:jobId", lazy: lazyReconcileDetail },
                             { path: "tags", lazy: lazyTagsAdmin },
+                            { path: "navbar", lazy: lazyNavbarAdmin },
                             { path: "game-display", lazy: lazyGameDisplay },
                             { path: "game-display/:gameId", lazy: lazyGameDisplayDetail },
                             { path: "users", lazy: lazyUsersAdmin },

@@ -5,6 +5,7 @@ import { UserSearchCombobox } from "./user-search-combobox"
 import { ModeratesSection } from "./sections/moderates-section"
 import { AwardsSection } from "./sections/awards-section"
 import { PfpSection } from "./sections/pfp-section"
+import { ProfileBgSection } from "./sections/profile-bg-section"
 import { AccountSection } from "./sections/account-section"
 
 export function UsersAdminDetailPage() {
@@ -46,8 +47,9 @@ export function UsersAdminDetailPage() {
             </div>
             <div className="grid gap-4 lg:grid-cols-2">
                 <PfpSection ident={ident} />
-                <AccountSection ident={ident} />
+                <ProfileBgSection ident={ident} />
             </div>
+            <AccountSection ident={ident} />
         </div>
     )
 }

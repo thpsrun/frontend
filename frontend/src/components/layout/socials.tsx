@@ -1,24 +1,6 @@
-import type { ComponentType } from "react"
-import {
-    SiBluesky,
-    SiDiscord,
-    SiTwitch,
-    SiYoutube,
-} from "@icons-pack/react-simple-icons"
-import { FaTrophy } from "react-icons/fa6"
 import { cn } from "@/lib/utils"
 import { useNavbar } from "@/hooks/home/useNavbar"
-
-const platformIcons: Record<
-    string,
-    ComponentType<{ className?: string }>
-> = {
-    YouTube: SiYoutube,
-    Twitch: SiTwitch,
-    Discord: SiDiscord,
-    Bluesky: SiBluesky,
-    Speedrun: FaTrophy,
-}
+import { getSocialPlatform } from "@/lib/social-platforms"
 
 const socialIconClass = cn(
     "w-5 h-5 text-ring",
@@ -34,8 +16,9 @@ export const Socials = () => {
     return (
         <div className="flex items-center space-x-4">
             {data.social.map(social => {
-                const Icon = platformIcons[social.platform]
-                if (!Icon) return null
+                const entry = getSocialPlatform(social.platform)
+                if (!entry) return null
+                const { Icon } = entry
 
                 return (
                     <a

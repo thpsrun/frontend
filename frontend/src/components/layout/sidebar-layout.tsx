@@ -133,7 +133,7 @@ export function SidebarLayout({
                 "flex flex-col lg:flex-row gap-6",
             )}>
                 <Panel className="lg:hidden flex flex-col gap-2 p-3">
-                    <span className="text-[10px] uppercase tracking-wide text-muted-foreground px-1">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-foreground/80 px-1">
                         Section
                     </span>
                     <MobileSectionSelect
@@ -151,7 +151,7 @@ export function SidebarLayout({
                     <Panel className="flex flex-col p-2 gap-0.5">
                         {navGroups.map((group) => (
                             <div key={group.heading} className="flex flex-col gap-0.5 mb-1">
-                                <div className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                                <div className="mx-3 pt-2 pb-1.5 mb-1 border-b border-border/40 text-xs font-semibold uppercase tracking-wider text-foreground/80">
                                     {group.heading}
                                 </div>
                                 {group.items.map((item) => (

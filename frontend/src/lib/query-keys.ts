@@ -103,6 +103,7 @@ export const queryKeys = {
             [...queryKeys.admin.all, "user-moderates", ident] as const,
         userAwards: (ident: string) =>
             [...queryKeys.admin.all, "user-awards", ident] as const,
+        navbar: () => [...queryKeys.admin.all, "navbar"] as const,
     },
 
     tags: {

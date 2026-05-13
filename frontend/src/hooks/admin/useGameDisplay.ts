@@ -6,6 +6,7 @@ import {
 import { toast } from "sonner"
 
 import { queryKeys } from "@/lib/query-keys"
+import { reorderArrayByIds } from "@/lib/reorder-utils"
 import { getErrorMessage } from "@/lib/utils"
 import type {
     GameDisplayResponse,
@@ -25,23 +26,6 @@ export function useGameDisplay(gameId: string | undefined) {
         enabled: Boolean(gameId),
         staleTime: 60 * 1000,
     })
-}
-
-const reorderArrayByIds = <T extends { id: string }>(
-    items: T[],
-    orderedIds: string[],
-): T[] => {
-    const lookup = new Map(items.map((item) => [item.id, item]))
-    const orderedSet = new Set(orderedIds)
-    const result: T[] = []
-    for (const id of orderedIds) {
-        const item = lookup.get(id)
-        if (item) result.push(item)
-    }
-    for (const item of items) {
-        if (!orderedSet.has(item.id)) result.push(item)
-    }
-    return result
 }
 
 export function useReorderDisplayItems(gameId: string) {
