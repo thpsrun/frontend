@@ -1,13 +1,20 @@
 import { useState } from "react"
+import type { SyntheticEvent } from "react"
 import { useNavigate, Navigate, Link, useLocation } from "react-router"
 import { useSession } from "@/hooks/auth/useSession"
 import { useLogin, useSubmitTotp } from "@/hooks/auth/useLogin"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
 import { FormField } from "@/components/profile/form-field"
 import { OAuthProviderButton } from "@/components/auth/oauth-provider-button"
 import { PasskeyLoginButton } from "@/components/auth/passkey-login-button"
+import {
+    peekRememberMeStash,
+    stashRememberMe,
+} from "@/lib/remember-me"
 
 type LoginStep = "login" | "totp" | "email-verification"
 
@@ -38,6 +45,9 @@ export function LoginPage() {
     const [loginValue, setLoginValue] = useState("")
     const [password, setPassword] = useState("")
     const [totpCode, setTotpCode] = useState("")
+    const [rememberMe, setRememberMe] = useState<boolean>(() =>
+        peekRememberMeStash(),
+    )
     const [step, setStep] = useState<LoginStep>("login")
     const [error, setError] = useState<string | null>(null)
 
@@ -45,14 +55,14 @@ export function LoginPage() {
         return <Navigate to={returnTo} replace />
     }
 
-    const handleLogin = async (e: React.SyntheticEvent) => {
+    const handleLogin = async (e: SyntheticEvent) => {
         e.preventDefault()
         setError(null)
 
         try {
             const result = await login.mutateAsync({
-                username: loginValue,
-                password,
+                data: { username: loginValue, password },
+                options: { rememberMe },
             })
             if (result.mfaRequired) {
                 setStep("totp")
@@ -70,7 +80,7 @@ export function LoginPage() {
         }
     }
 
-    const handleTotp = async (e: React.SyntheticEvent) => {
+    const handleTotp = async (e: SyntheticEvent) => {
         e.preventDefault()
         setError(null)
 
@@ -84,6 +94,11 @@ export function LoginPage() {
                     : "An unexpected error occurred.",
             )
         }
+    }
+
+    const handleRememberMeChange = (checked: boolean) => {
+        setRememberMe(checked)
+        stashRememberMe(checked)
     }
 
     const titles: Record<LoginStep, string> = {
@@ -186,6 +201,21 @@ export function LoginPage() {
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
+                                <div className="flex items-center gap-2">
+                                    <Checkbox
+                                        id="remember-me"
+                                        checked={rememberMe}
+                                        onCheckedChange={(value) =>
+                                            handleRememberMeChange(value === true)
+                                        }
+                                    />
+                                    <Label
+                                        htmlFor="remember-me"
+                                        className="cursor-pointer"
+                                    >
+                                        Log In For 30 Days
+                                    </Label>
+                                </div>
                                 <Button
                                     type="submit"
                                     disabled={
@@ -199,11 +229,12 @@ export function LoginPage() {
                             </form>
 
                             <div className="flex flex-col gap-2">
-                                <PasskeyLoginButton />
+                                <PasskeyLoginButton rememberMe={rememberMe} />
                                 <OAuthProviderButton
                                     provider="discord"
                                     process="login"
                                     callbackPath="/oauth/callback"
+                                    rememberMe={rememberMe}
                                     fullWidth
                                 >
                                     Sign in with Discord
@@ -212,6 +243,7 @@ export function LoginPage() {
                                     provider="twitch"
                                     process="login"
                                     callbackPath="/oauth/callback"
+                                    rememberMe={rememberMe}
                                     fullWidth
                                 >
                                     Sign in with Twitch

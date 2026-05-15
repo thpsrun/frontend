@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { Link } from "react-router"
-import { ExternalLink, Inbox } from "lucide-react"
+import { ExternalLink, Inbox, Pencil } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import {
     buildLeaderboardPath, getRankBackground, StreakDagger,
@@ -15,12 +15,14 @@ import {
     Table, TableBody, TableCell, TableHead,
     TableHeader, TableRow,
 } from "@/components/ui/table"
+import { EditRunDialog } from "@/components/submissions/edit-run-dialog"
 import { cn } from "@/lib/utils"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useAllRunsPaginated } from "@/hooks/runs/useRuns"
 import type {
     Run, RunCategoryEmbed, RunGameEmbed, RunLevelEmbed, RunVariableEmbedEntry,
 } from "@/types/runs"
+import type { PendingRun } from "@/types/submissions"
 
 interface GameGroup {
     name: string
@@ -55,7 +57,45 @@ function buildRunLeaderboardPath(run: Run): string | null {
     )
 }
 
+function runToPendingRun(run: Run): PendingRun {
+    const game = isGameEmbed(run.game)
+        ? { name: run.game.name, slug: run.game.slug }
+        : { name: "", slug: "" }
+    const category = isCategoryEmbed(run.category)
+        ? { name: run.category.name, slug: run.category.slug }
+        : { name: "", slug: "" }
+    const level = isLevelEmbed(run.level)
+        ? { name: run.level.name, slug: run.level.slug }
+        : null
+    return {
+        id: run.id,
+        runtype: run.runtype,
+        place: run.place,
+        points: run.points,
+        obsolete: run.obsolete,
+        arch_video: run.arch_video,
+        subcategory: run.subcategory ?? "",
+        times: run.times,
+        video: run.video,
+        date: run.date,
+        v_date: run.v_date,
+        url: run.url,
+        game,
+        category,
+        level,
+        players: run.players.map((p) => ({
+            id: p.id,
+            name: p.name,
+            countrycode: p.country,
+        })),
+        vid_status: "",
+        description: run.description,
+        src_sync: [],
+    }
+}
+
 function RunRow({ run, idx }: { run: Run; idx: number }) {
+    const [editOpen, setEditOpen] = useState(false)
     const stop = (e: React.SyntheticEvent) => e.stopPropagation()
     const time = run.times.p_time && run.times.p_time !== "0"
         ? run.times.p_time
@@ -65,6 +105,7 @@ function RunRow({ run, idx }: { run: Run; idx: number }) {
     const categoryLabel = run.subcategory ?? "-"
 
     return (
+        <>
         <TableRow
             className={cn(
                 "transition",
@@ -144,6 +185,22 @@ function RunRow({ run, idx }: { run: Run; idx: number }) {
                         "justify-center gap-2",
                     )}
                 >
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            stop(e)
+                            setEditOpen(true)
+                        }}
+                        className={cn(
+                            "inline-flex items-center",
+                            "gap-1 text-xs",
+                            "text-link hover:underline",
+                            "cursor-pointer",
+                        )}
+                    >
+                        <Pencil className="size-3" />
+                        Edit
+                    </button>
                     {videoHref && (
                         <a
                             href={videoHref}
@@ -179,6 +236,12 @@ function RunRow({ run, idx }: { run: Run; idx: number }) {
                 </div>
             </TableCell>
         </TableRow>
+        <EditRunDialog
+            run={runToPendingRun(run)}
+            open={editOpen}
+            onOpenChange={setEditOpen}
+        />
+        </>
     )
 }
 
@@ -312,7 +375,7 @@ export function RunsSection() {
                                                 <TableHead className="w-20 text-center">Place</TableHead>
                                                 <TableHead className="w-24 text-center">Points</TableHead>
                                                 <TableHead className="w-28 text-center">Verified</TableHead>
-                                                <TableHead className="w-32 text-center">Links</TableHead>
+                                                <TableHead className="w-44 text-center">Links</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>

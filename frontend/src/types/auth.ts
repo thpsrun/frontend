@@ -129,6 +129,13 @@ export interface SessionState {
     user?: AllauthUser
 }
 
+export interface RememberMeOption {
+    rememberMe: boolean
+}
+
+export type LoginOptions = RememberMeOption
+export type PasskeyLoginOptions = RememberMeOption
+
 export interface LinkedProvider {
     uid: string
     display: string

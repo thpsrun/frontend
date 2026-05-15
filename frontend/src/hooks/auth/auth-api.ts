@@ -13,6 +13,7 @@ import type {
     ProfileBgResponse,
     Country,
     SRCKeyStatusResponse,
+    LoginOptions,
 } from "@/types/auth"
 
 export interface LoginResult {
@@ -42,11 +43,19 @@ export const fetchProfile = (signal?: AbortSignal): Promise<AuthMe> =>
 export const fetchCountries = (signal?: AbortSignal): Promise<Country[]> =>
     apiFetch<Country[]>("/countries", { signal })
 
-export async function loginFn(data: LoginRequest): Promise<LoginResult> {
+export async function loginFn(
+    data: LoginRequest,
+    options: LoginOptions = { rememberMe: false },
+): Promise<LoginResult> {
     try {
         await apiFetch<AllauthSessionResponse>(
             "/auth/login",
-            { base: "allauth", method: "POST", json: data },
+            {
+                base: "allauth",
+                method: "POST",
+                json: data,
+                rememberMe: options.rememberMe,
+            },
         )
         return {
             success: true,

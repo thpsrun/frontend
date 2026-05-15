@@ -1,8 +1,3 @@
-// EXCEPTION TO THE `apiFetch`-ONLY RULE: OAuth requires a full browser navigation
-// to the provider's authorize page (cross-origin), which fetch() cannot perform.
-// We submit a real HTML form to allauth's redirect endpoint, which 302s the
-// browser to the provider. CSRF token is read from the cookie and submitted as
-// a hidden field (same source apiFetch uses for the X-CSRFToken header).
 import type { ComponentProps, ReactNode } from "react"
 import { SiDiscord, SiTwitch } from "@icons-pack/react-simple-icons"
 import { useQueryClient } from "@tanstack/react-query"
@@ -10,6 +5,7 @@ import { ALLAUTH_API_URL } from "@/constants"
 import { Button } from "@/components/ui/button"
 import { getCsrfToken } from "@/lib/api-client"
 import { stashConnectPreState } from "@/lib/oauth-flow"
+import { stashRememberMe } from "@/lib/remember-me"
 import { cn } from "@/lib/utils"
 
 type Provider = "discord" | "twitch"
@@ -32,6 +28,7 @@ interface Props {
     children: ReactNode
     size?: ComponentProps<typeof Button>["size"]
     fullWidth?: boolean
+    rememberMe?: boolean
 }
 
 function buildCallbackUrl(callbackPath: string, process: Process): string {
@@ -47,17 +44,17 @@ export function OAuthProviderButton({
     children,
     size,
     fullWidth = false,
+    rememberMe = false,
 }: Props) {
     const qc = useQueryClient()
     const action = `${ALLAUTH_API_URL}/auth/provider/redirect`
-    // Encode the process into the callback URL so the callback page can
-    // distinguish login vs connect on the success path. On the error path,
-    // allauth also adds `?error=...&error_process=...` query params, so the
-    // callback page reads either source.
     const callbackUrl = buildCallbackUrl(callbackPath, process)
     const Icon = PROVIDER_ICON[provider]
 
     const handleSubmit = () => {
+        if (rememberMe) {
+            stashRememberMe(true)
+        }
         if (process === "connect") {
             stashConnectPreState(qc)
         }

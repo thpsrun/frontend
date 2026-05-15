@@ -21,12 +21,12 @@ export function useUpdateRun() {
     return useMutation({
         mutationFn: (vars: { runId: string; data: RunUpdateRequest }) =>
             updateRun(vars.runId, vars.data),
-        onSuccess: (_data, vars) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: queryKeys.submissions.all,
             })
             queryClient.invalidateQueries({
-                queryKey: queryKeys.runs.detail(vars.runId),
+                queryKey: queryKeys.runs.all,
             })
         },
     })

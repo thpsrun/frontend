@@ -8,6 +8,7 @@ type ApiFetchOptions = Omit<RequestInit, "body" | "headers"> & {
     body?: BodyInit | null
     headers?: HeadersInit
     signal?: AbortSignal
+    rememberMe?: boolean
 }
 
 export class ApiError extends Error {
@@ -65,6 +66,7 @@ function buildHeaders(
     init: HeadersInit | undefined,
     hasJsonBody: boolean,
     needsCsrf: boolean,
+    rememberMe: boolean,
 ): Headers {
     const headers = new Headers(init)
     if (!headers.has("Accept")) {
@@ -75,6 +77,9 @@ function buildHeaders(
     }
     if (needsCsrf && !headers.has("X-CSRFToken")) {
         headers.set("X-CSRFToken", getCsrfToken())
+    }
+    if (rememberMe && !headers.has("X-Remember-Me")) {
+        headers.set("X-Remember-Me", "1")
     }
     return headers
 }
@@ -99,11 +104,20 @@ export async function apiFetch<T = unknown>(
     path: string,
     options: ApiFetchOptions = {},
 ): Promise<T> {
-    const { base = "api", json, body, headers, signal, method, ...rest } = options
+    const {
+        base = "api",
+        json,
+        body,
+        headers,
+        signal,
+        method,
+        rememberMe = false,
+        ...rest
+    } = options
 
     const mutation = isMutation(method)
     const hasJsonBody = json !== undefined
-    const finalHeaders = buildHeaders(headers, hasJsonBody, mutation)
+    const finalHeaders = buildHeaders(headers, hasJsonBody, mutation, rememberMe)
 
     const url = path.startsWith("http") ? path : `${resolveBase(base)}${path}`
 
