@@ -1,7 +1,4 @@
-// Mirrors the OpenAPI schemas under "Auth - Reconcile" at
-// /api/v1/auth/admin/reconcile.
-
-export type ReconcileScope = "RUN" | "LEADERBOARD" | "GAME"
+export type ReconcileScope = "RUN" | "LEADERBOARD" | "GAME" | "SERIES"
 
 export type SourceOfTruth = "SRC" | "THPS_RUN"
 
@@ -13,10 +10,13 @@ export type ReconcileStatus =
     | "CANCELLED"
     | "CANCELLING"
 
+export type ReconcilePhase = "P1" | "P2" | "P3"
+
 export type ReconcileItemAction =
     | "created"
     | "updated"
     | "skipped"
+    | "skipped_no_change"
     | "failed"
 
 export const STATUS_LABEL: Record<ReconcileStatus, string> = {
@@ -32,6 +32,7 @@ export const SCOPE_LABEL: Record<ReconcileScope, string> = {
     GAME: "Game",
     LEADERBOARD: "Leaderboard",
     RUN: "Run",
+    SERIES: "Series",
 }
 
 export const SOURCE_LABEL: Record<SourceOfTruth, string> = {
@@ -70,6 +71,7 @@ export interface ReconcileJob {
     target_descriptor: Record<string, unknown> | null
     source_of_truth: SourceOfTruth
     status: ReconcileStatus
+    phase?: ReconcilePhase | null
     counts: ReconcileCounts
     requested_by: string | null
     created_at: string
@@ -79,12 +81,23 @@ export interface ReconcileJob {
     celery_task_id: string
 }
 
+// A change-set entry can be either the legacy {old, new} diff shape
+// (used by run/leaderboard items) or a flat primitive (used by series_game
+// items, where changes is metadata about the imported game).
+export type ReconcileChangeValue =
+    | { old?: unknown; new?: unknown }
+    | string
+    | number
+    | boolean
+    | null
+
 // ItemSummary - included in JobDetailOut.recent_items
 export interface ReconcileItemSummary {
     record_type: string
     record_id: string
     action: ReconcileItemAction
-    changes?: Record<string, { old?: unknown; new?: unknown }>
+    phase?: ReconcilePhase | null
+    changes?: Record<string, ReconcileChangeValue>
     error?: string
 }
 
@@ -97,6 +110,7 @@ export interface ReconcileItemDetail extends ReconcileItemSummary {
 // JobDetailOut
 export interface ReconcileJobDetail extends ReconcileJob {
     recent_items?: ReconcileItemSummary[]
+    breakdown?: Record<string, ReconcileCounts>
 }
 
 // JobListOut
@@ -105,16 +119,17 @@ export interface ReconcileJobList {
     total: number
 }
 
+// 409 response body from POST /admin/reconcile when a job is already running
+// for the same lock key (per-target for GAME/RUN/LEADERBOARD, global for SERIES).
+export interface ConflictOut {
+    error?: string
+    existing_job_id: string
+}
+
 // ItemListOut
 export interface ReconcileItemList {
     items: ReconcileItemDetail[]
     total: number
-}
-
-// ConflictOut - returned on 409 from POST /reconcile and POST /cancel
-export interface ReconcileConflict {
-    detail: string
-    existing_job_id: string
 }
 
 export interface ReconcileJobsParams {

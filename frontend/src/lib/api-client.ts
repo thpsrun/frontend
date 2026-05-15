@@ -1,8 +1,8 @@
 import { API_BASE_URL, ALLAUTH_API_URL } from "@/constants"
 
-export type ApiBase = "api" | "allauth"
+type ApiBase = "api" | "allauth"
 
-export type ApiFetchOptions = Omit<RequestInit, "body" | "headers"> & {
+type ApiFetchOptions = Omit<RequestInit, "body" | "headers"> & {
     base?: ApiBase
     json?: unknown
     body?: BodyInit | null

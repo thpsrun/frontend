@@ -122,6 +122,29 @@ export interface ApiResponse {
     records?: RecordRun[]
 }
 
+// Utilized on /api/v1/streams/live
+export interface StreamPlayer {
+    id: string
+    name: string
+    twitch?: string | null
+    pfp?: string | null
+    gradients?: Gradients | null
+}
+
+export interface StreamGame {
+    id: string
+    name: string
+    slug?: string
+}
+
+export interface Stream {
+    player: StreamPlayer
+    game: StreamGame | null
+    title: string
+    offline_ct: number
+    stream_time: string | null
+}
+
 // Utilized on /api/v1/players/{playerName}?embed=country,awards,profile,stats
 export interface PlayerAward {
     name: string
@@ -296,10 +319,6 @@ export interface RankingsEntry {
     fg_points: number
     il_points: number
 }
-
-// Utilized on /api/v1/website/pointslb
-// The series-wide endpoint returns a bare array of entries.
-export type OverallRankingsResponse = RankingsEntry[]
 
 // Utilized on /api/v1/website/pointslb/{gameSlug}?embed=oldest-runs
 // One entry from the oldest-runs embed: an IL world record sorted by submission age.

@@ -6,7 +6,6 @@ import {
     CommandEmpty as CommandEmptyPrimitive,
     CommandGroup as CommandGroupPrimitive,
     CommandItem as CommandItemPrimitive,
-    CommandSeparator as CommandSeparatorPrimitive,
 } from "cmdk"
 import { Search } from "lucide-react"
 
@@ -52,7 +51,7 @@ function CommandList({
     return (
         <CommandListPrimitive
             className={cn(
-                "max-h-[300px] overflow-x-hidden overflow-y-auto",
+                "max-h-75 overflow-x-hidden overflow-y-auto",
                 className,
             )}
             {...props}
@@ -78,7 +77,7 @@ function CommandGroup({
     return (
         <CommandGroupPrimitive
             className={cn(
-                "text-foreground [&_[cmdk-group-heading]]:text-muted-foreground overflow-hidden p-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium",
+                "text-foreground **:[[cmdk-group-heading]]:text-muted-foreground overflow-hidden p-1 **:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:py-1.5 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-medium",
                 className,
             )}
             {...props}
@@ -101,18 +100,6 @@ function CommandItem({
     )
 }
 
-function CommandSeparator({
-    className,
-    ...props
-}: React.ComponentProps<typeof CommandSeparatorPrimitive>) {
-    return (
-        <CommandSeparatorPrimitive
-            className={cn("bg-border -mx-1 h-px", className)}
-            {...props}
-        />
-    )
-}
-
 export {
     Command,
     CommandInput,
@@ -120,5 +107,4 @@ export {
     CommandEmpty,
     CommandGroup,
     CommandItem,
-    CommandSeparator,
 }

@@ -1,7 +1,6 @@
 import { useMutation } from "@tanstack/react-query"
 import { loginFn, submitTotpFn } from "./auth-api"
 import { useInvalidateAuth } from "./useSession"
-export type { LoginResult } from "./auth-api"
 
 export function useLogin() {
     const invalidateAuth = useInvalidateAuth()

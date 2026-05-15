@@ -20,7 +20,7 @@ import {
 import type { RankingsEntry } from "@/types/api"
 
 
-export type RankingsMetric = "total" | "fg" | "il"
+type RankingsMetric = "total" | "fg" | "il"
 
 const METRIC_FIELD: Record<RankingsMetric, keyof RankingsEntry> = {
     total: "total_points",

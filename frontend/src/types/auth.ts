@@ -5,7 +5,7 @@ import type {
     Socials,
 } from "./shared"
 
-export type { Country, ModeratedGame } from "./shared"
+export type { Country } from "./shared"
 
 export interface PlayerEmbed {
     username: string

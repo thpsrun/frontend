@@ -3,7 +3,7 @@ import type { ApiResponse } from "@/types/api"
 import { apiFetch } from "@/lib/api-client"
 import { queryKeys } from "@/lib/query-keys"
 
-export const useTHPSData = () => {
+const useTHPSData = () => {
     return useQuery({
         queryKey: queryKeys.home.thpsData(),
         queryFn: ({ signal }) =>

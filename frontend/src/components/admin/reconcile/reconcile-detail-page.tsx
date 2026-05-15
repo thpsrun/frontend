@@ -41,9 +41,11 @@ import {
 import { JobStatusBadge } from "./job-status-badge"
 import { describeTarget } from "./format-target"
 import { cn, formatDate } from "@/lib/utils"
-import type {
-    ReconcileItemDetail,
-    ReconcileItemsParams,
+import {
+    SCOPE_LABEL,
+    type ReconcileChangeValue,
+    type ReconcileItemDetail,
+    type ReconcileItemsParams,
 } from "@/types/reconcile"
 
 const PAGE_SIZE = 50
@@ -53,8 +55,28 @@ const ACTION_FILTERS: { value: "all" | string; label: string }[] = [
     { value: "created", label: "Created" },
     { value: "updated", label: "Updated" },
     { value: "skipped", label: "Skipped" },
+    { value: "skipped_no_change", label: "Skipped (No Change)" },
     { value: "failed", label: "Failed" },
 ]
+
+function isDiffShape(
+    value: ReconcileChangeValue,
+): value is { old?: unknown; new?: unknown } {
+    return (
+        value !== null
+        && typeof value === "object"
+        && ("old" in value || "new" in value)
+    )
+}
+
+function formatChangeEntry(key: string, value: ReconcileChangeValue): string {
+    if (isDiffShape(value)) {
+        const oldV = JSON.stringify(value.old ?? null)
+        const newV = JSON.stringify(value.new ?? null)
+        return `${key}: ${oldV} -> ${newV}`
+    }
+    return `${key}: ${JSON.stringify(value)}`
+}
 
 function CountTile({
     label,
@@ -90,7 +112,7 @@ function CountTile({
 function ChangesSummary({
     changes,
 }: {
-    changes?: Record<string, { old?: unknown; new?: unknown }>
+    changes?: Record<string, ReconcileChangeValue>
 }) {
     if (!changes || Object.keys(changes).length === 0) {
         return <span className="text-muted-foreground">-</span>
@@ -99,12 +121,7 @@ function ChangesSummary({
     const summary = fields.slice(0, 3).join(", ")
     const more = fields.length > 3 ? ` +${fields.length - 3}` : ""
     const tooltip = fields
-        .map((f) => {
-            const diff = changes[f]
-            const oldV = JSON.stringify(diff?.old ?? null)
-            const newV = JSON.stringify(diff?.new ?? null)
-            return `${f}: ${oldV} -> ${newV}`
-        })
+        .map((f) => formatChangeEntry(f, changes[f] ?? null))
         .join("\n")
     return (
         <span
@@ -192,6 +209,18 @@ export function ReconcileDetailPage() {
         offset: 0,
     })
 
+    const [defaultedForJobId, setDefaultedForJobId] = useState<string | null>(null)
+    if (job && jobId && defaultedForJobId !== jobId) {
+        setDefaultedForJobId(jobId)
+        if (job.scope === "SERIES" && itemsFilters.record_type === undefined) {
+            setItemsFilters((prev) => ({
+                ...prev,
+                record_type: "series_game",
+                offset: 0,
+            }))
+        }
+    }
+
     const itemsQuery = useReconcileItems(jobId, itemsFilters)
     const items = itemsQuery.data
 
@@ -255,6 +284,18 @@ export function ReconcileDetailPage() {
                     </div>
                     <div className="flex items-center gap-2">
                         {job && <JobStatusBadge status={job.status} />}
+                        {job?.phase && (
+                            <span
+                                className={cn(
+                                    "text-[10px] font-mono uppercase tracking-wider",
+                                    "border border-border/50 bg-muted/30 text-muted-foreground",
+                                    "px-1.5 py-0.5 rounded",
+                                )}
+                                title="Reconciliation phase"
+                            >
+                                {job.phase}
+                            </span>
+                        )}
                         <Button
                             size="sm"
                             variant="ghost"
@@ -311,7 +352,7 @@ export function ReconcileDetailPage() {
                     <Panel className="p-5">
                         <h3 className="text-base font-semibold mb-3">Overview</h3>
                         <div className="space-y-0">
-                            <MetaRow label="Scope">{job.scope}</MetaRow>
+                            <MetaRow label="Scope">{SCOPE_LABEL[job.scope]}</MetaRow>
                             <MetaRow label="Target">
                                 <span className="font-mono text-xs">
                                     {describeTarget(job)}
@@ -367,6 +408,83 @@ export function ReconcileDetailPage() {
                     </Panel>
                 </div>
             ) : null}
+
+            {job?.scope === "SERIES" && job.breakdown && (
+                <Panel className="p-5">
+                    <h3 className="text-base font-semibold mb-3">
+                        Sweep Summary
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                        <CountTile
+                            label="Imported (new games)"
+                            value={job.breakdown.series_game?.created ?? 0}
+                            tone="good"
+                        />
+                        <CountTile
+                            label="Skipped (already in DB)"
+                            value={job.breakdown.series_game?.skipped ?? 0}
+                            tone="warn"
+                        />
+                        <CountTile
+                            label="Failed (per-game)"
+                            value={job.breakdown.series_game?.failed ?? 0}
+                            tone="bad"
+                        />
+                        <CountTile
+                            label="Series refreshed"
+                            value={
+                                (job.breakdown.series?.created ?? 0)
+                                + (job.breakdown.series?.updated ?? 0)
+                            }
+                            tone="neutral"
+                        />
+                        <CountTile
+                            label="Series fetch failures"
+                            value={job.breakdown.series?.failed ?? 0}
+                            tone="bad"
+                        />
+                    </div>
+                </Panel>
+            )}
+
+            {job?.breakdown && Object.keys(job.breakdown).length > 0 && (
+                <Panel className="p-5">
+                    <h3 className="text-base font-semibold mb-3">
+                        Breakdown by Record Type
+                    </h3>
+                    <div className="space-y-4">
+                        {Object.entries(job.breakdown).map(([recordType, counts]) => (
+                            <div key={recordType} className="space-y-2">
+                                <div className="text-xs font-mono text-muted-foreground uppercase tracking-wide">
+                                    {recordType}
+                                </div>
+                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                                    <CountTile
+                                        label="Created"
+                                        value={counts.created ?? 0}
+                                        tone="good"
+                                    />
+                                    <CountTile
+                                        label="Updated"
+                                        value={counts.updated ?? 0}
+                                        tone="neutral"
+                                    />
+                                    <CountTile
+                                        label="Skipped"
+                                        value={counts.skipped ?? 0}
+                                        tone="warn"
+                                    />
+                                    <CountTile
+                                        label="Failed"
+                                        value={counts.failed ?? 0}
+                                        tone="bad"
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Panel>
+            )}
 
             <Panel className="p-5">
                 <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
@@ -483,7 +601,7 @@ export function ReconcileDetailPage() {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Cancel this job?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            The reconciliation will stop as soon as the worker checks in. Items already processed remain.
+                            The reconciliation will stop as soon as the Celery worker checks in. Items already processed remain.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

@@ -42,7 +42,7 @@ const STATUS_FILTER_OPTIONS: ReconcileStatus[] = [
     "CANCELLED",
 ]
 
-const SCOPE_FILTER_OPTIONS: ReconcileScope[] = ["GAME", "LEADERBOARD", "RUN"]
+const SCOPE_FILTER_OPTIONS: ReconcileScope[] = ["GAME", "LEADERBOARD", "RUN", "SERIES"]
 
 function formatDuration(start: string | null, end: string | null): string {
     if (!start) return "-"
@@ -98,7 +98,7 @@ function JobRow({ job, idx }: { job: ReconcileJob; idx: number }) {
                 {shortId(job.id)}
             </TableCell>
             <TableCell className="text-center text-xs">
-                {job.scope}
+                {SCOPE_LABEL[job.scope]}
             </TableCell>
             <TableCell className="text-xs">
                 {describeTarget(job)}

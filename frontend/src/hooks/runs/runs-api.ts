@@ -13,15 +13,6 @@ const buildQuery = (params: AllRunsParams): string => {
     return search.toString()
 }
 
-export const fetchAllRuns = async (
-    params: AllRunsParams,
-    signal?: AbortSignal,
-): Promise<Run[]> => {
-    const qs = buildQuery(params)
-    const path = qs ? `/runs/all?${qs}` : "/runs/all"
-    return apiFetch<Run[]>(path, { signal })
-}
-
 export const fetchAllRunsPaginated = async (
     params: Omit<AllRunsParams, "limit" | "offset">,
     signal?: AbortSignal,

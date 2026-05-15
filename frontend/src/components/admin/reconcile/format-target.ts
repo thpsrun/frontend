@@ -1,6 +1,7 @@
-import type { LeaderboardTarget } from "@/types/reconcile"
+import type { LeaderboardTarget, ReconcileScope } from "@/types/reconcile"
 
 interface TargetLike {
+    scope?: ReconcileScope
     target_id: string | null
     target_descriptor: Record<string, unknown> | null
 }
@@ -14,6 +15,7 @@ function asLeaderboardTarget(
 }
 
 export function describeTarget(input: TargetLike): string {
+    if (input.scope === "SERIES") return "(all series)"
     if (input.target_id) return input.target_id
     const target = input.target_descriptor && asLeaderboardTarget(input.target_descriptor)
     if (target) {

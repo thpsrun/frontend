@@ -3,6 +3,7 @@ export const queryKeys = {
         all: ["home"] as const,
         thpsData: () => [...queryKeys.home.all, "thps-data"] as const,
         navbar: () => [...queryKeys.home.all, "navbar"] as const,
+        liveStreams: () => [...queryKeys.home.all, "live-streams"] as const,
     },
 
     games: {
@@ -42,10 +43,6 @@ export const queryKeys = {
     runs: {
         all: ["runs"] as const,
         detail: (id: string) => [...queryKeys.runs.all, "detail", id] as const,
-        list: <T extends object>(params?: T) =>
-            params === undefined
-                ? ([...queryKeys.runs.all, "list"] as const)
-                : ([...queryKeys.runs.all, "list", params] as const),
         listPaginated: <T extends object>(params: T) =>
             [...queryKeys.runs.all, "list-paginated", params] as const,
     },
@@ -109,7 +106,5 @@ export const queryKeys = {
     tags: {
         all: ["tags"] as const,
         list: () => [...queryKeys.tags.all, "list"] as const,
-        detail: (slug: string) =>
-            [...queryKeys.tags.all, "detail", slug] as const,
     },
 } as const

@@ -8,12 +8,6 @@ import type {
 export const listTagsFn = (signal?: AbortSignal): Promise<Tag[]> =>
     apiFetch<Tag[]>("/tags/all", { signal })
 
-export const getTagFn = (
-    slug: string,
-    signal?: AbortSignal,
-): Promise<Tag> =>
-    apiFetch<Tag>(`/tags/${encodeURIComponent(slug)}`, { signal })
-
 export const createTagFn = (data: TagCreateInput): Promise<Tag> =>
     apiFetch<Tag>("/tags/", { method: "POST", json: data })
 

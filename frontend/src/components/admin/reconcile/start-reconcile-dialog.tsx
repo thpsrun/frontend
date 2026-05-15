@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react"
+import { Link } from "react-router"
 import {
     Dialog,
     DialogContent,
@@ -20,6 +21,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { useStartReconcile } from "@/hooks/admin/useReconcile"
+import { ApiError } from "@/lib/api-client"
 import { getErrorMessage } from "@/lib/utils"
 import { GamePicker } from "./game-picker"
 import {
@@ -30,6 +32,7 @@ import { ConfirmStartReconcileDialog } from "./confirm-start-reconcile-dialog"
 import {
     SCOPE_LABEL,
     SOURCE_LABEL,
+    type ConflictOut,
     type ReconcileScope,
     type SourceOfTruth,
     type ReconcileRequest,
@@ -46,13 +49,32 @@ const SCOPE_HINT: Record<ReconcileScope, string> = {
     GAME: "Reconciles all leaderboards under a game.",
     LEADERBOARD: "Reconciles a single leaderboard (category, optional level + variables).",
     RUN: "Reconciles a single run by ID.",
+    SERIES: "Scans every series in the database for newly added games on Speedrun.com. Existing games are skipped, refresh those with the GAME scope.",
 }
 
-const SCOPE_OPTIONS: ReconcileScope[] = ["GAME", "LEADERBOARD", "RUN"]
+const SCOPE_OPTIONS: ReconcileScope[] = ["GAME", "LEADERBOARD", "RUN", "SERIES"]
 const SOURCE_OPTIONS: SourceOfTruth[] = ["SRC", "THPS_RUN"]
 
 function otherSide(source: SourceOfTruth): string {
     return source === "SRC" ? SOURCE_LABEL.THPS_RUN : SOURCE_LABEL.SRC
+}
+
+function conflictCopy(scope: ReconcileScope): string {
+    switch (scope) {
+        case "SERIES":
+            return "A series reconciliation is already running!"
+        case "GAME":
+            return "A reconciliation for this game is already running!"
+        case "RUN":
+            return "A reconciliation for this run is already running!"
+        case "LEADERBOARD":
+            return "A reconciliation for this leaderboard is already running!"
+    }
+}
+
+interface ConflictState {
+    scope: ReconcileScope
+    existingJobId: string
 }
 
 export function StartReconcileDialog({ open, onOpenChange, onCreated }: Props) {
@@ -89,6 +111,7 @@ function StartReconcileForm({
     })
 
     const [topError, setTopError] = useState<string | null>(null)
+    const [conflict, setConflict] = useState<ConflictState | null>(null)
     const [fieldError, setFieldError] = useState<string | null>(null)
 
     const [pendingBody, setPendingBody] = useState<ReconcileRequest | null>(null)
@@ -100,6 +123,7 @@ function StartReconcileForm({
     function onClickStart(e: React.SyntheticEvent<HTMLFormElement>) {
         e.preventDefault()
         setTopError(null)
+        setConflict(null)
         setFieldError(null)
 
         if (scope === "GAME") {
@@ -137,7 +161,16 @@ function StartReconcileForm({
             return
         }
 
-        // LEADERBOARD
+        if (scope === "SERIES") {
+            const body: ReconcileRequest = {
+                scope: "SERIES",
+                source_of_truth: sourceOfTruth,
+            }
+            setPendingBody(body)
+            setPendingSummary(<SummarySeries />)
+            return
+        }
+
         const { game, category, level, variableValues } = builder
         if (!game || !category) {
             setFieldError("Pick a game and a category.")
@@ -166,6 +199,7 @@ function StartReconcileForm({
 
     async function handleConfirm() {
         if (!pendingBody) return
+        const submittedScope = pendingBody.scope
         try {
             const job = await start.mutateAsync(pendingBody)
             setPendingBody(null)
@@ -175,6 +209,16 @@ function StartReconcileForm({
         } catch (err) {
             setPendingBody(null)
             setPendingSummary(null)
+            if (err instanceof ApiError && err.status === 409) {
+                const body = err.body as ConflictOut | undefined
+                if (body && typeof body.existing_job_id === "string") {
+                    setConflict({
+                        scope: submittedScope,
+                        existingJobId: body.existing_job_id,
+                    })
+                    return
+                }
+            }
             setTopError(getErrorMessage(err, "Failed to start reconciliation."))
         }
     }
@@ -182,8 +226,9 @@ function StartReconcileForm({
     const submitDisabled = isPending || (
         scope === "GAME" ? !selectedGame
             : scope === "RUN" ? !runIdInput.trim()
-                : !builder.game || !builder.category
-                    || (builder.category.type === "per-level" && !builder.level)
+                : scope === "SERIES" ? false
+                    : !builder.game || !builder.category
+                        || (builder.category.type === "per-level" && !builder.level)
     )
 
     return (
@@ -196,6 +241,21 @@ function StartReconcileForm({
                     </DialogDescription>
                 </DialogHeader>
 
+                {conflict && (
+                    <AlertBanner variant="error">
+                        <div className="flex flex-col gap-1.5">
+                            <span>{conflictCopy(conflict.scope)}</span>
+                            <Link
+                                to={`/admin/reconcile/${conflict.existingJobId}`}
+                                className="text-xs underline underline-offset-2"
+                                onClick={onClose}
+                            >
+                                View running job
+                            </Link>
+                        </div>
+                    </AlertBanner>
+                )}
+
                 {topError && (
                     <AlertBanner variant="error">{topError}</AlertBanner>
                 )}
@@ -207,6 +267,7 @@ function StartReconcileForm({
                             value={scope}
                             onValueChange={(v) => {
                                 setFieldError(null)
+                                setConflict(null)
                                 setScope(v as ReconcileScope)
                             }}
                             disabled={isPending}
@@ -346,6 +407,15 @@ function SummaryRun({ runId }: { runId: string }) {
             <MetaRow dense label="Run ID">
                 <span className="font-mono text-xs">{runId}</span>
             </MetaRow>
+        </div>
+    )
+}
+
+function SummarySeries() {
+    return (
+        <div className="space-y-1.5">
+            <MetaRow dense label="Scope">{SCOPE_LABEL.SERIES}</MetaRow>
+            <MetaRow dense label="Target">All Series in Database</MetaRow>
         </div>
     )
 }
