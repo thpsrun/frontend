@@ -116,7 +116,7 @@ export interface ProfileBgResponse {
 }
 
 export interface ChangePasswordRequest {
-    current_password: string
+    current_password?: string
     new_password: string
 }
 
@@ -149,3 +149,54 @@ export interface Authenticator {
     last_used_at: number | null
     created_at: number
 }
+
+export type AuthProvider = "discord" | "twitch"
+
+export interface AuthMethodsSocialAccount {
+    provider: AuthProvider
+    uid: string
+    username: string | null
+    last_login: string | null
+}
+
+export interface AuthMethodsAuthenticator {
+    type: "webauthn" | "totp"
+    id: number
+    name: string | null
+    added_at: string
+}
+
+export interface AuthMethodsSummary {
+    has_usable_password: boolean
+    social_accounts: AuthMethodsSocialAccount[]
+    authenticators: AuthMethodsAuthenticator[]
+}
+
+export type DeletePasswordBody =
+    | { password: string }
+    | { mfa_code: string }
+
+export interface OauthSignupDraft {
+    username: string
+    email: string
+    src_api_key: string
+    save_key: boolean
+    provider: AuthProvider
+}
+
+export interface OauthSignupRequest {
+    username: string
+    email: string
+    src_api_key: string
+}
+
+export type OauthSignupErrorCode =
+    | "src_invalid"
+    | "src_unreachable"
+    | "username_taken"
+    | "email_taken"
+    | "discord_handle_taken"
+    | "twitch_handle_taken"
+    | "src_player_not_found"
+    | "src_player_already_claimed"
+    | "no_verified_run"

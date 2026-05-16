@@ -1,14 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/lib/query-keys"
-import { changePasswordFn } from "./auth-api"
+import { deletePasswordFn } from "./auth-methods-api"
 
-export function useChangePassword() {
+export function useDeletePassword() {
     const qc = useQueryClient()
     return useMutation({
-        mutationFn: changePasswordFn,
+        mutationFn: deletePasswordFn,
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: queryKeys.auth.methods() })
             qc.invalidateQueries({ queryKey: queryKeys.auth.session() })
+            qc.invalidateQueries({ queryKey: queryKeys.auth.me() })
         },
     })
 }

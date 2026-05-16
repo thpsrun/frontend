@@ -1,9 +1,10 @@
 import { useState } from "react"
 import { Fingerprint } from "lucide-react"
-import { usePasskeys } from "@/hooks/auth/usePasskeys"
+import { useAuthMethods } from "@/hooks/auth/useAuthMethods"
 import { useEnrollPasskey } from "@/hooks/auth/useEnrollPasskey"
 import { useDeletePasskey } from "@/hooks/auth/useDeletePasskey"
-import type { Authenticator } from "@/types/auth"
+import { canRemovePasskey } from "@/lib/auth-methods"
+import type { AuthMethodsAuthenticator } from "@/types/auth"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { SectionPanel } from "@/components/profile/section-panel"
@@ -19,8 +20,8 @@ const ROW_CLASS = cn(
     "px-4 py-3",
 )
 
-function formatDate(epochSeconds: number): string {
-    return new Date(epochSeconds * 1000).toLocaleDateString(undefined, {
+function formatAddedAt(iso: string): string {
+    return new Date(iso).toLocaleDateString(undefined, {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -28,11 +29,14 @@ function formatDate(epochSeconds: number): string {
 }
 
 export function PasskeysSection() {
-    const { data: passkeys = [] } = usePasskeys()
+    const { data: methods } = useAuthMethods()
+    const passkeys = (methods?.authenticators ?? []).filter(
+        (a): a is AuthMethodsAuthenticator => a.type === "webauthn",
+    )
     const enroll = useEnrollPasskey()
     const remove = useDeletePasskey()
     const [enrollOpen, setEnrollOpen] = useState(false)
-    const [removing, setRemoving] = useState<Authenticator | null>(null)
+    const [removing, setRemoving] = useState<AuthMethodsAuthenticator | null>(null)
 
     const handleEnroll = (name: string, password: string) => {
         enroll.mutate({ name, password }, {
@@ -42,7 +46,7 @@ export function PasskeysSection() {
 
     const handleRemove = (password: string) => {
         if (!removing) return
-        remove.mutate({ id: removing.id, password }, {
+        remove.mutate({ id: String(removing.id), password }, {
             onSuccess: () => setRemoving(null),
         })
     }
@@ -61,26 +65,38 @@ export function PasskeysSection() {
                         description="Add one to sign in without your password!"
                     />
                 )}
-                {passkeys.map((pk) => (
-                    <div key={pk.id} className={ROW_CLASS}>
-                        <div>
-                            <div className="text-sm font-medium">{pk.name}</div>
-                            <div className="text-xs text-muted-foreground">
-                                Added {formatDate(pk.created_at)}
-                                {pk.last_used_at &&
-                                    ` (last used ${formatDate(pk.last_used_at)})`}
+                {passkeys.map((pk) => {
+                    const canRemoveThis = methods
+                        ? canRemovePasskey(methods, pk.id)
+                        : false
+                    return (
+                        <div key={pk.id} className="flex flex-col gap-1">
+                            <div className={ROW_CLASS}>
+                                <div>
+                                    <div className="text-sm font-medium">
+                                        {pk.name ?? "Passkey"}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                        Added {formatAddedAt(pk.added_at)}
+                                    </div>
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={remove.isPending || !canRemoveThis}
+                                    onClick={() => setRemoving(pk)}
+                                >
+                                    Remove
+                                </Button>
                             </div>
+                            {!canRemoveThis && (
+                                <p className="px-1 text-xs text-muted-foreground">
+                                    Add another sign-in method first.
+                                </p>
+                            )}
                         </div>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={remove.isPending}
-                            onClick={() => setRemoving(pk)}
-                        >
-                            Remove
-                        </Button>
-                    </div>
-                ))}
+                    )
+                })}
                 <Button
                     variant="outline"
                     onClick={() => setEnrollOpen(true)}
@@ -102,7 +118,7 @@ export function PasskeysSection() {
                 }}
                 onConfirm={handleRemove}
                 isPending={remove.isPending}
-                passkeyName={removing?.name ?? ""}
+                passkeyName={removing?.name ?? "Passkey"}
             />
         </SectionPanel>
     )

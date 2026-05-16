@@ -18,6 +18,7 @@ import {
     validatePassword,
     validateEmail,
 } from "@/lib/validation"
+import { OAuthProviderButton } from "@/components/auth/oauth-provider-button"
 
 function getReturnTo(state: unknown): string {
     if (
@@ -54,6 +55,25 @@ export function RegisterPage() {
 
     if (isAuthenticated) {
         return <Navigate to={returnTo} replace />
+    }
+
+    const validateSharedFields = (): boolean => {
+        const errors: Record<string, string> = {}
+        const usernameErr = validateUsername(username)
+        if (usernameErr) errors.username = usernameErr
+        const emailErr = validateEmail(email)
+        if (emailErr) errors.email = emailErr
+        if (!srcApiKey.trim()) {
+            errors.srcApiKey = "SRC API key is required..."
+        }
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors)
+            setError("Fill in the required fields before signing up with Discord or Twitch.")
+            return false
+        }
+        setFieldErrors({})
+        setError(null)
+        return true
     }
 
     const handleRegister = async (e: React.ChangeEvent<HTMLFormElement>) => {
@@ -279,6 +299,37 @@ export function RegisterPage() {
                             </Link>
                         </p>
                     </form>
+
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-background px-2 text-muted-foreground">Or</span>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        {(["discord", "twitch"] as const).map((p) => (
+                            <OAuthProviderButton
+                                key={p}
+                                provider={p}
+                                process="signup"
+                                callbackPath="/oauth/callback"
+                                fullWidth
+                                signupDraft={{
+                                    username,
+                                    email,
+                                    src_api_key: srcApiKey,
+                                    save_key: saveKey,
+                                    provider: p,
+                                }}
+                                onBeforeSubmit={() => validateSharedFields()}
+                            >
+                                Sign Up With {p === "discord" ? "Discord" : "Twitch"}
+                            </OAuthProviderButton>
+                        ))}
+                    </div>
                 </CardContent>
             </Card>
         </div>

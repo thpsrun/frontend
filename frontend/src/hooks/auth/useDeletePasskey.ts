@@ -14,13 +14,11 @@ export function useDeletePasskey() {
     const qc = useQueryClient()
     return useMutation({
         mutationFn: async ({ id, password }: DeleteArgs) => {
-            // Removing a passkey is a sensitive operation; allauth requires
-            // recent (re)authentication.
             await reauthenticateFn(password)
             await deletePasskey(id)
         },
         onSuccess: () => {
-            qc.invalidateQueries({ queryKey: queryKeys.auth.passkeys() })
+            qc.invalidateQueries({ queryKey: queryKeys.auth.methods() })
             toast.success("Passkey removed.")
         },
         onError: (err) => {

@@ -1,32 +1,57 @@
-// The OAuth round-trip wipes the in-memory QueryClient (full page navigation
-// to the provider and back). To verify on return that linking actually
-// happened, we stash the pre-flow provider list in sessionStorage before
-// the redirect and compare against the post-flow list on the callback.
-// The presence of the stash also doubles as proof the user reached the
-// callback through our button rather than via a spoofed URL.
 import type { QueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/lib/query-keys"
-import type { LinkedProvider } from "@/types/auth"
+import type {
+    AuthMethodsSocialAccount,
+    AuthMethodsSummary,
+    OauthSignupDraft,
+} from "@/types/auth"
 
-const OAUTH_CONNECT_STASH_KEY = "oauth.connect.preProviders"
+const OAUTH_CONNECT_STASH_KEY = "oauth.connect.preSocialAccounts"
 
 export function stashConnectPreState(qc: QueryClient): void {
-    const linked = qc.getQueryData<LinkedProvider[]>(
-        queryKeys.auth.linkedProviders(),
+    const methods = qc.getQueryData<AuthMethodsSummary>(
+        queryKeys.auth.methods(),
     )
     sessionStorage.setItem(
         OAUTH_CONNECT_STASH_KEY,
-        JSON.stringify(linked ?? []),
+        JSON.stringify(methods?.social_accounts ?? []),
     )
 }
 
-export function consumeConnectStash(): LinkedProvider[] | null {
+export function consumeConnectStash(): AuthMethodsSocialAccount[] | null {
     const raw = sessionStorage.getItem(OAUTH_CONNECT_STASH_KEY)
     if (raw === null) return null
     sessionStorage.removeItem(OAUTH_CONNECT_STASH_KEY)
     try {
-        return JSON.parse(raw) as LinkedProvider[]
+        return JSON.parse(raw) as AuthMethodsSocialAccount[]
     } catch {
         return null
     }
+}
+
+const OAUTH_SIGNUP_STASH_KEY = "oauth.signup.draft"
+
+export function stashSignupDraft(draft: OauthSignupDraft): void {
+    sessionStorage.setItem(
+        OAUTH_SIGNUP_STASH_KEY,
+        JSON.stringify(draft),
+    )
+}
+
+export function peekSignupDraft(): OauthSignupDraft | null {
+    const raw = sessionStorage.getItem(OAUTH_SIGNUP_STASH_KEY)
+    if (raw === null) return null
+    try {
+        return JSON.parse(raw) as OauthSignupDraft
+    } catch {
+        return null
+    }
+}
+
+export function consumeSignupDraft(): OauthSignupDraft | null {
+    const draft = peekSignupDraft()
+    if (draft !== null) {
+        sessionStorage.removeItem(OAUTH_SIGNUP_STASH_KEY)
+    }
+    return draft
 }

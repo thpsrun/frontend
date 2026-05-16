@@ -3,38 +3,45 @@ import { useNavigate, useSearchParams } from "react-router"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { queryKeys } from "@/lib/query-keys"
-import { listLinkedProviders } from "@/hooks/auth/social-api"
 import { checkSession } from "@/hooks/auth/auth-api"
+import { fetchAuthMethodsFn } from "@/hooks/auth/auth-methods-api"
 import { consumeConnectStash } from "@/lib/oauth-flow"
 import { consumeRememberMeStash } from "@/lib/remember-me"
-import type { LinkedProvider } from "@/types/auth"
+import { CompleteSignupCard } from "@/components/auth/complete-signup-card"
+import type { AuthMethodsSocialAccount, AuthProvider } from "@/types/auth"
 
-function providerKey(p: LinkedProvider): string {
-    return `${p.provider.id}:${p.uid}`
+function socialKey(s: AuthMethodsSocialAccount): string {
+    return `${s.provider}:${s.uid}`
+}
+
+const PROVIDER_LABEL: Record<AuthProvider, string> = {
+    discord: "Discord",
+    twitch: "Twitch",
 }
 
 export function OAuthCallbackPage() {
     const [params] = useSearchParams()
     const navigate = useNavigate()
     const qc = useQueryClient()
+    const proc = params.get("proc") ?? params.get("error_process") ?? "login"
+    const errorParam = params.get("error")
+    const isSignup = proc === "signup" && !errorParam
 
     useEffect(() => {
+        if (isSignup) return
         let cancelled = false
         const run = async () => {
             consumeRememberMeStash()
 
-            const error = params.get("error")
-            const proc = params.get("proc") ?? params.get("error_process") ?? "login"
-
-            if (error === "cancelled") {
+            if (errorParam === "cancelled") {
                 navigate("/login/cancelled", { replace: true })
                 return
             }
-            if (error === "signup_closed") {
+            if (errorParam === "signup_closed") {
                 navigate("/login/no-link", { replace: true })
                 return
             }
-            if (error) {
+            if (errorParam) {
                 navigate("/login/error", { replace: true })
                 return
             }
@@ -62,21 +69,24 @@ export function OAuthCallbackPage() {
 
             const stash = consumeConnectStash()
             if (stash === null) {
+                qc.invalidateQueries({ queryKey: queryKeys.auth.methods() })
                 navigate("/profile/settings/security", { replace: true })
                 return
             }
 
-            const beforeKeys = new Set(stash.map(providerKey))
+            const beforeKeys = new Set(stash.map(socialKey))
             try {
                 const after = await qc.fetchQuery({
-                    queryKey: queryKeys.auth.linkedProviders(),
-                    queryFn: ({ signal }) => listLinkedProviders(signal),
+                    queryKey: queryKeys.auth.methods(),
+                    queryFn: ({ signal }) => fetchAuthMethodsFn(signal),
                     staleTime: 0,
                 })
                 if (cancelled) return
-                const added = after.find((p) => !beforeKeys.has(providerKey(p)))
+                const added = after.social_accounts.find(
+                    (s) => !beforeKeys.has(socialKey(s)),
+                )
                 if (added) {
-                    toast.success(`Connected ${added.provider.name}.`)
+                    toast.success(`Connected ${PROVIDER_LABEL[added.provider]}.`)
                 }
             } catch {
             }
@@ -86,7 +96,15 @@ export function OAuthCallbackPage() {
         run()
 
         return () => { cancelled = true }
-    }, [params, navigate, qc])
+    }, [errorParam, isSignup, params, navigate, qc, proc])
+
+    if (isSignup) {
+        return (
+            <div className="mx-auto max-w-md py-12">
+                <CompleteSignupCard />
+            </div>
+        )
+    }
 
     return (
         <div className="text-center text-sm text-muted-foreground">

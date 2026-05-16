@@ -68,8 +68,7 @@ export const queryKeys = {
         countries: () => ["countries"] as const,
         apiKeys: () => [...queryKeys.auth.all, "api-keys"] as const,
         capabilities: () => [...queryKeys.auth.all, "capabilities"] as const,
-        linkedProviders: () => [...queryKeys.auth.all, "linked-providers"] as const,
-        passkeys: () => [...queryKeys.auth.all, "passkeys"] as const,
+        methods: () => [...queryKeys.auth.all, "methods"] as const,
     },
 
     submissions: {

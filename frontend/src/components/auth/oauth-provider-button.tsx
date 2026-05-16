@@ -4,31 +4,37 @@ import { useQueryClient } from "@tanstack/react-query"
 import { ALLAUTH_API_URL } from "@/constants"
 import { Button } from "@/components/ui/button"
 import { getCsrfToken } from "@/lib/api-client"
-import { stashConnectPreState } from "@/lib/oauth-flow"
+import { stashConnectPreState, stashSignupDraft } from "@/lib/oauth-flow"
 import { stashRememberMe } from "@/lib/remember-me"
 import { cn } from "@/lib/utils"
+import type { AuthProvider, OauthSignupDraft } from "@/types/auth"
 
-type Provider = "discord" | "twitch"
-type Process = "login" | "connect"
+type Process = "login" | "connect" | "signup"
 
-const PROVIDER_ICON: Record<Provider, typeof SiDiscord> = {
+const PROVIDER_ICON: Record<AuthProvider, typeof SiDiscord> = {
     discord: SiDiscord,
     twitch: SiTwitch,
 }
 
-const PROVIDER_BRAND: Record<Provider, string> = {
+const PROVIDER_BRAND: Record<AuthProvider, string> = {
     discord: "#5865F2",
     twitch: "#9146FF",
 }
 
 interface Props {
-    provider: Provider
+    provider: AuthProvider
     process: Process
     callbackPath: string
     children: ReactNode
     size?: ComponentProps<typeof Button>["size"]
     fullWidth?: boolean
     rememberMe?: boolean
+    signupDraft?: OauthSignupDraft
+    onBeforeSubmit?: () => boolean
+}
+
+function resolveBackendProcess(p: Process): "login" | "connect" {
+    return p === "connect" ? "connect" : "login"
 }
 
 function buildCallbackUrl(callbackPath: string, process: Process): string {
@@ -45,18 +51,32 @@ export function OAuthProviderButton({
     size,
     fullWidth = false,
     rememberMe = false,
+    signupDraft,
+    onBeforeSubmit,
 }: Props) {
     const qc = useQueryClient()
     const action = `${ALLAUTH_API_URL}/auth/provider/redirect`
     const callbackUrl = buildCallbackUrl(callbackPath, process)
+    const backendProcess = resolveBackendProcess(process)
     const Icon = PROVIDER_ICON[provider]
 
-    const handleSubmit = () => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        if (onBeforeSubmit && !onBeforeSubmit()) {
+            e.preventDefault()
+            return
+        }
         if (rememberMe) {
             stashRememberMe(true)
         }
         if (process === "connect") {
             stashConnectPreState(qc)
+        }
+        if (process === "signup") {
+            if (!signupDraft) {
+                e.preventDefault()
+                return
+            }
+            stashSignupDraft(signupDraft)
         }
     }
 
@@ -68,7 +88,7 @@ export function OAuthProviderButton({
             onSubmit={handleSubmit}
         >
             <input type="hidden" name="provider" value={provider} />
-            <input type="hidden" name="process" value={process} />
+            <input type="hidden" name="process" value={backendProcess} />
             <input type="hidden" name="callback_url" value={callbackUrl} />
             <input
                 type="hidden"
