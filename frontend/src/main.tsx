@@ -33,6 +33,7 @@ import { GeneralSection } from "./components/profile/sections/general-section.ts
 import { SocialSection } from "./components/profile/sections/social-section.tsx"
 import { CustomizationSection } from "./components/profile/sections/customization-section.tsx"
 import { SecuritySection } from "./components/profile/sections/security-section.tsx"
+import { SrcApiSection } from "./components/profile/sections/src-api-section.tsx"
 import { ApiKeysSection } from "./components/profile/sections/api-keys-section.tsx"
 import { DangerSection } from "./components/profile/sections/danger-section.tsx"
 import { HistoricalRankingsPage } from "./components/rankings/historical-rankings-page.tsx"
@@ -162,10 +163,18 @@ const router = createBrowserRouter([
                         Component: ProfileSettingsLayout,
                         children: [
                             { index: true, element: null },
-                            { path: "general", Component: GeneralSection },
-                            { path: "customization", Component: CustomizationSection },
+                            {
+                                path: "general",
+                                element: (
+                                    <div className="flex flex-col gap-6">
+                                        <GeneralSection />
+                                        <CustomizationSection />
+                                    </div>
+                                ),
+                            },
                             { path: "social", Component: SocialSection },
                             { path: "security", Component: SecuritySection },
+                            { path: "src-api", Component: SrcApiSection },
                             { path: "api-keys", Component: ApiKeysSection },
                             { path: "danger", Component: DangerSection },
                         ],

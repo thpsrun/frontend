@@ -91,7 +91,6 @@ export interface PlayerUpdateEmbed {
 }
 
 export interface SocialsUpdateEmbed {
-    twitch?: string | null
     youtube?: string | null
     twitter?: string | null
     bluesky?: string | null

@@ -2,7 +2,6 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useChangePassword } from "@/hooks/auth/useChangePassword"
-import { useSetSrcKey, useDeleteSrcKey } from "@/hooks/auth/useSrcKey"
 import { useAuthMethods } from "@/hooks/auth/useAuthMethods"
 import { canRemovePassword } from "@/lib/auth-methods"
 import { AlertBanner } from "@/components/ui/alert-banner"
@@ -12,9 +11,6 @@ import { SectionPanel } from "@/components/profile/section-panel"
 import { RemovePasswordDialog } from "@/components/auth/remove-password-dialog"
 import { Button } from "@/components/ui/button"
 import { validatePassword } from "@/lib/validation"
-import {
-    ModerationSettings,
-} from "@/components/profile/moderation-settings"
 import type { StatusMsg } from "@/types/shared"
 import { getErrorMessage } from "@/lib/utils"
 import { ConnectedAccountsSection } from "./connected-accounts-section"
@@ -29,8 +25,6 @@ interface PasswordFormValues {
 export function SecuritySection() {
     const { player } = useCurrentPlayer()
     const changePassword = useChangePassword()
-    const setSrcKey = useSetSrcKey()
-    const deleteSrcKey = useDeleteSrcKey()
     const { data: methods } = useAuthMethods()
 
     const passwordForm = useForm<PasswordFormValues>({
@@ -181,12 +175,6 @@ export function SecuritySection() {
                     </>
                 )}
             </SectionPanel>
-
-            <ModerationSettings
-                player={player}
-                setSrcKey={setSrcKey}
-                deleteSrcKey={deleteSrcKey}
-            />
 
             <ConnectedAccountsSection />
             <PasskeysSection />

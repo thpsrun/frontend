@@ -16,7 +16,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
 import { SectionDivider } from "@/components/ui/section-divider"
 import { AvatarCropDialog } from "@/components/profile/avatar-crop-dialog"
 import { FormField } from "@/components/profile/form-field"
@@ -25,7 +24,7 @@ import { SectionPanel } from "@/components/profile/section-panel"
 import {
     UnsavedChangesGuard,
 } from "@/components/profile/unsaved-changes-guard"
-import { UserIcon, Info } from "lucide-react"
+import { UserIcon } from "lucide-react"
 import {
     CountryFlag,
     type CountryCode,
@@ -48,8 +47,6 @@ export function GeneralSection() {
     const [selectedCountry, setSelectedCountry] = useState("")
     const [initialCountry, setInitialCountry] = useState("")
     const [countryReady, setCountryReady] = useState(false)
-    const [exStream, setExStream] = useState(false)
-    const [initialExStream, setInitialExStream] = useState(false)
 
     const [statusMsg, setStatusMsg] = useState<StatusMsg>(null)
 
@@ -81,9 +78,6 @@ export function GeneralSection() {
         const countryId = player.player.country?.id ?? ""
         setSelectedCountry(countryId)
         setInitialCountry(countryId)
-        const exStreamVal = player.player.ex_stream ?? false
-        setExStream(exStreamVal)
-        setInitialExStream(exStreamVal)
         setCountryReady(true)
     }, [player, profileForm])
 
@@ -98,11 +92,9 @@ export function GeneralSection() {
 
     const countryChanged =
         selectedCountry !== initialCountry
-    const exStreamChanged = exStream !== initialExStream
     const isDirty =
         profileForm.formState.isDirty
         || countryChanged
-        || exStreamChanged
         || !!pendingPfpFile
 
     const handleSaveProfile = useCallback(async () => {
@@ -116,7 +108,6 @@ export function GeneralSection() {
                     nickname: data.nickname || null,
                     pronouns: data.pronouns || null,
                     country: selectedCountry || undefined,
-                    ex_stream: exStream,
                 },
             })
 
@@ -142,7 +133,6 @@ export function GeneralSection() {
         updateProfile,
         uploadPfp,
         selectedCountry,
-        exStream,
         pendingPfpFile,
         pfpPreviewUrl,
     ])
@@ -157,9 +147,6 @@ export function GeneralSection() {
         const countryId = player.player.country?.id ?? ""
         setSelectedCountry(countryId)
         setInitialCountry(countryId)
-        const exStreamVal = player.player.ex_stream ?? false
-        setExStream(exStreamVal)
-        setInitialExStream(exStreamVal)
         setPendingPfpFile(null)
         if (pfpPreviewUrl) {
             URL.revokeObjectURL(pfpPreviewUrl)
@@ -376,41 +363,6 @@ export function GeneralSection() {
                             </Select>
                         </div>
                     </div>
-
-                    <SectionDivider>
-                        <p className={cn(
-                            "text-sm font-medium mb-3",
-                        )}>
-                            Preferences
-                        </p>
-                        <div className={cn(
-                            "flex items-center gap-2",
-                        )}>
-                            <Checkbox
-                                id="ex_stream"
-                                checked={exStream}
-                                onCheckedChange={(
-                                    checked,
-                                ) =>
-                                    setExStream(
-                                        checked === true,
-                                    )
-                                }
-                            />
-                            <Label
-                                htmlFor="ex_stream"
-                                className="cursor-pointer"
-                            >
-                                Exclude from Streams
-                            </Label>
-                            <span title="When checked, you will not appear on the website's streams page and not appear on the livestream channel in the Discord server.">
-                                <Info className={cn(
-                                    "size-4",
-                                    "text-muted-foreground",
-                                )} />
-                            </span>
-                        </div>
-                    </SectionDivider>
 
                     <SectionDivider>
                         <FormField

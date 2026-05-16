@@ -4,6 +4,8 @@ import { toast } from "sonner"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useUpdateProfile } from "@/hooks/auth/useUpdateProfile"
 import { AlertBanner } from "@/components/ui/alert-banner"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
 import { SectionDivider } from "@/components/ui/section-divider"
 import { FormField } from "@/components/profile/form-field"
 import { SaveButton } from "@/components/profile/save-button"
@@ -16,7 +18,6 @@ import type { StatusMsg } from "@/types/shared"
 import { cn, getErrorMessage } from "@/lib/utils"
 
 interface SocialFormValues {
-    twitch: string
     youtube: string
     twitter: string
     bluesky: string
@@ -28,10 +29,29 @@ export function SocialSection() {
     const updateProfile = useUpdateProfile()
 
     const [statusMsg, setStatusMsg] = useState<StatusMsg>(null)
+    const [exStream, setExStream] = useState(false)
+
+    useEffect(() => {
+        if (player) {
+            setExStream(player.player.ex_stream ?? false)
+        }
+    }, [player])
+
+    const handleExStreamToggle = async (checked: boolean) => {
+        setExStream(checked)
+        try {
+            await updateProfile.mutateAsync({
+                player: { ex_stream: checked },
+            })
+            toast.success("Preferences Updated!")
+        } catch (err) {
+            setExStream(!checked)
+            toast.error(getErrorMessage(err, "Update Failed..."))
+        }
+    }
 
     const socialForm = useForm<SocialFormValues>({
         defaultValues: {
-            twitch: "",
             youtube: "",
             twitter: "",
             bluesky: "",
@@ -43,7 +63,6 @@ export function SocialSection() {
     useEffect(() => {
         if (!player) return
         socialForm.reset({
-            twitch: player.socials.twitch ?? "",
             youtube: player.socials.youtube ?? "",
             twitter: player.socials.twitter ?? "",
             bluesky: player.socials.bluesky ?? "",
@@ -58,7 +77,6 @@ export function SocialSection() {
         try {
             await updateProfile.mutateAsync({
                 socials: {
-                    twitch: data.twitch || null,
                     youtube: data.youtube || null,
                     twitter: data.twitter || null,
                     bluesky: data.bluesky || null,
@@ -78,7 +96,6 @@ export function SocialSection() {
     const handleDiscard = useCallback(() => {
         if (!player) return
         socialForm.reset({
-            twitch: player.socials.twitch ?? "",
             youtube: player.socials.youtube ?? "",
             twitter: player.socials.twitter ?? "",
             bluesky: player.socials.bluesky ?? "",
@@ -88,6 +105,11 @@ export function SocialSection() {
     }, [player, socialForm])
 
     if (!player) return null
+
+    const twitchHandle = player.socials.twitch
+        ? player.socials.twitch.match(/twitch\.tv\/([^/?#]+)/i)?.[1]
+            ?? player.socials.twitch
+        : null
 
     const onSubmit = socialForm.handleSubmit(async () => {
         await handleSaveSocials()
@@ -104,13 +126,6 @@ export function SocialSection() {
                     className="flex flex-col gap-4"
                 >
                     <div className="flex flex-col gap-3">
-                        <FormField
-                            label="Twitch"
-                            id="twitch"
-                            type="url"
-                            placeholder="https://twitch.tv/..."
-                            {...socialForm.register("twitch")}
-                        />
                         <FormField
                             label="YouTube"
                             id="youtube"
@@ -141,7 +156,7 @@ export function SocialSection() {
                         />
                     </div>
 
-                    <SectionDivider>
+                    <SectionDivider className="flex flex-col gap-3">
                         <FormField
                             label="Discord"
                             id="discord"
@@ -160,6 +175,21 @@ export function SocialSection() {
                                 </span>
                             }
                         />
+                        <FormField
+                            label="Twitch"
+                            id="twitch"
+                            value={twitchHandle ?? "Not linked"}
+                            disabled
+                            className="opacity-60"
+                            description={
+                                <span className={cn(
+                                    "flex items-center gap-1",
+                                )}>
+                                    <Info className="size-3" />
+                                    Twitch can be linked from the Security section.
+                                </span>
+                            }
+                        />
                     </SectionDivider>
 
                     {statusMsg && (
@@ -174,6 +204,28 @@ export function SocialSection() {
                         isPending={updateProfile.isPending}
                     />
                 </form>
+            </SectionPanel>
+
+            <SectionPanel title="Preferences">
+                <div className="flex items-center gap-2">
+                    <Checkbox
+                        id="ex_stream"
+                        checked={exStream}
+                        disabled={updateProfile.isPending}
+                        onCheckedChange={(checked) =>
+                            handleExStreamToggle(checked === true)
+                        }
+                    />
+                    <Label htmlFor="ex_stream" className="cursor-pointer">
+                        Exclude from Streams
+                    </Label>
+                    <span title="When checked, you will not appear on the website's streams page and not appear on the livestream channel in the Discord server.">
+                        <Info className={cn(
+                            "size-4",
+                            "text-muted-foreground",
+                        )} />
+                    </span>
+                </div>
             </SectionPanel>
 
             <UnsavedChangesGuard
