@@ -32,9 +32,10 @@ interface Props {
     navGroups: ReadonlyArray<NavGroup>
     indexPath: string
     redirectTo: string
-    maxWidth: "max-w-200" | "max-w-300" | "max-w-5xl"
+    maxWidth: "max-w-200" | "max-w-300" | "max-w-400" | "max-w-5xl"
     mobileExtras?: ReactNode
     desktopExtras?: ReactNode
+    rightSidebar?: ReactNode
 }
 
 const linkBase = cn(
@@ -113,6 +114,7 @@ export function SidebarLayout({
     maxWidth,
     mobileExtras,
     desktopExtras,
+    rightSidebar,
 }: Props) {
     const location = useLocation()
 
@@ -126,7 +128,7 @@ export function SidebarLayout({
     }))
 
     return (
-        <div className="flex justify-center px-4">
+        <div className="flex justify-center">
             <div className={cn(
                 "w-full",
                 maxWidth,
@@ -165,9 +167,20 @@ export function SidebarLayout({
                     </Panel>
                 </nav>
 
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 flex flex-col gap-6">
+                    {rightSidebar && (
+                        <div className="lg:hidden">
+                            {rightSidebar}
+                        </div>
+                    )}
                     <Outlet />
                 </div>
+
+                {rightSidebar && (
+                    <aside className="hidden lg:block lg:w-80 lg:sticky lg:top-6 lg:self-start shrink-0">
+                        {rightSidebar}
+                    </aside>
+                )}
             </div>
         </div>
     )

@@ -41,7 +41,7 @@ import {
     validateGuideShortDescription,
     validateGuideContent,
 } from "@/lib/validation"
-import { ApiError } from "@/lib/api-client"
+import { applyValidationErrors } from "@/lib/validation-errors"
 import { buildGuideUrl, resolveGuideTags } from "@/lib/guide-urls"
 import type { Guide } from "@/types/guides"
 import { UnsavedChangesDialog } from "@/components/profile/unsaved-changes-dialog"
@@ -175,33 +175,13 @@ function GuideFormInner({ mode, guide }: Props) {
                 navigate(buildGuideUrl(updated))
             }
         } catch (e) {
-            if (e instanceof ApiError) {
-                const body = e.body as
-                    | { errors?: Array<{ loc?: string[]; msg?: string }> }
-                    | null
-                const errors = body?.errors
-                if (Array.isArray(errors) && errors.length > 0) {
-                    let mappedAny = false
-                    for (const item of errors) {
-                        const field = item.loc?.[item.loc.length - 1]
-                        if (
-                            field === "title"
-                            || field === "short_description"
-                            || field === "content"
-                            || field === "game_id"
-                            || field === "tag_ids"
-                        ) {
-                            form.setError(field, { message: item.msg ?? "Invalid." })
-                            mappedAny = true
-                        }
-                    }
-                    if (!mappedAny) setTopError(e.message)
-                } else {
-                    setTopError(e.message)
-                }
-            } else {
-                setTopError(e instanceof Error ? e.message : "Save failed.")
-            }
+            setTopError(applyValidationErrors(e, form, [
+                "title",
+                "short_description",
+                "content",
+                "game_id",
+                "tag_ids",
+            ]))
         }
     }
 

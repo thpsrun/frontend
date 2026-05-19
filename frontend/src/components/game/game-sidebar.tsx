@@ -3,6 +3,7 @@ import { useNavigate } from "react-router"
 import { Badge } from "@/components/ui/badge"
 import { Panel } from "@/components/ui/panel"
 
+import { ManageButton } from "@/components/manage/manage-button"
 import { RecentRunItem } from "@/components/leaderboard/leaderboard-table"
 
 import { cn } from "@/lib/utils"
@@ -57,6 +58,7 @@ interface GameCardPanelProps {
     gameLoading: boolean
     isILView: boolean
     isGuidesView?: boolean
+    isManageView?: boolean
     className?: string
 }
 
@@ -66,6 +68,7 @@ export const GameCardPanel = ({
     gameLoading,
     isILView,
     isGuidesView = false,
+    isManageView = false,
     className,
 }: GameCardPanelProps) => {
     const navigate = useNavigate()
@@ -114,7 +117,7 @@ export const GameCardPanel = ({
                                     "flex-1 px-3 py-1.5",
                                     "text-xs font-semibold",
                                     "rounded-md transition",
-                                    !isILView && !isGuidesView
+                                    !isILView && !isGuidesView && !isManageView
                                         ? "bg-blue-600 text-white shadow-sm"
                                         : "text-muted-foreground hover:text-white hover:bg-muted/40",
                                 )}
@@ -156,6 +159,10 @@ export const GameCardPanel = ({
                 >
                     Guides
                 </button>
+                <ManageButton
+                    gameSlug={gameSlug}
+                    isActive={isManageView}
+                />
             </div>
             <div className="p-4 space-y-2 text-center">
                 <h2 className={cn(

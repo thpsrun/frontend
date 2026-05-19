@@ -1,3 +1,5 @@
+import type { TimingMethodType } from "./shared"
+
 // Utilized on /api/v1/auth/submissions
 export interface SubmissionTimes {
     time: string
@@ -8,6 +10,9 @@ export interface SubmissionTimes {
     timeigt_secs: number | null
     p_time: string
     p_time_secs: number
+    primary_method_override: TimingMethodType | null
+    resolved_primary_method: TimingMethodType
+    resolved_required_methods: TimingMethodType[]
 }
 
 // Utilized on /api/v1/auth/submissions
@@ -205,6 +210,7 @@ export interface RunUpdateRequest {
     date?: string | null
     url?: string | null
     variable_values?: Record<string, string> | null
+    primary_method_override?: TimingMethodType | null
 }
 
 // Utilized on PUT /api/v1/runs/{id}

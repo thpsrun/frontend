@@ -2,7 +2,6 @@ import { useState } from "react"
 import { SiDiscord, SiTwitch } from "@icons-pack/react-simple-icons"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useAuthMethods } from "@/hooks/auth/useAuthMethods"
-import { useDisconnectSocialAccount } from "@/hooks/auth/useDisconnectSocialAccount"
 import { canDisconnectSocial } from "@/lib/auth-methods"
 import { OAuthProviderButton } from "@/components/auth/oauth-provider-button"
 import { Button } from "@/components/ui/button"
@@ -42,7 +41,6 @@ function rowLabel(
 export function ConnectedAccountsSection() {
     const { player } = useCurrentPlayer()
     const { data: methods } = useAuthMethods()
-    const disconnect = useDisconnectSocialAccount()
     const [target, setTarget] = useState<{
         providerId: AuthProvider
         label: string
@@ -50,13 +48,6 @@ export function ConnectedAccountsSection() {
 
     const linked = methods?.social_accounts ?? []
     const socials = player?.socials
-
-    const handleConfirm = () => {
-        if (!target) return
-        disconnect.mutate(target.providerId, {
-            onSuccess: () => setTarget(null),
-        })
-    }
 
     return (
         <SectionPanel
@@ -90,10 +81,7 @@ export function ConnectedAccountsSection() {
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        disabled={
-                                            disconnect.isPending
-                                            || !canDisconnect
-                                        }
+                                        disabled={!canDisconnect}
                                         onClick={() =>
                                             setTarget({ providerId: id, label })
                                         }
@@ -121,13 +109,8 @@ export function ConnectedAccountsSection() {
                 })}
             </div>
             <DisconnectProviderDialog
-                open={target !== null}
-                onOpenChange={(open) => {
-                    if (!open) setTarget(null)
-                }}
-                onConfirm={handleConfirm}
-                isPending={disconnect.isPending}
-                providerLabel={target?.label ?? ""}
+                target={target}
+                onClose={() => setTarget(null)}
             />
         </SectionPanel>
     )

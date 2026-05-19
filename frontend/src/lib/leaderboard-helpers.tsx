@@ -234,20 +234,27 @@ export const RunPlayers = ({
                 />
             )}
             {players.map((p, i) => {
-                const display = p.name ? (
+                const name = p.name
+                if (!name || name === "Anonymous") {
+                    return (
+                        <span key={`anon-${i}`}>
+                            {i > 0 && separator}
+                            Anonymous
+                        </span>
+                    )
+                }
+                const display = (
                     <GradientUsername
-                        name={p.nickname || p.name}
+                        name={p.nickname || name}
                         gradients={p.gradients ?? null}
                     />
-                ) : (
-                    "Anonymous"
                 )
                 return (
-                    <span key={p.name ?? `anon-${i}`}>
+                    <span key={name}>
                         {i > 0 && separator}
-                        {asLink && p.name ? (
+                        {asLink ? (
                             <Link
-                                to={`/player/${p.name}`}
+                                to={`/player/${name}`}
                                 className="text-link hover:underline"
                             >
                                 {display}

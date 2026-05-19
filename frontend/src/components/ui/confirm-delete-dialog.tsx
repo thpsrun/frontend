@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react"
+import { useState, type ReactNode, type SyntheticEvent } from "react"
 import {
     Dialog,
     DialogContent,
@@ -52,7 +52,7 @@ export function ConfirmDeleteDialog({
 
     const matches = phrase.trim() === confirmPhrase.trim()
 
-    const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (!matches || isPending) return
         setError(null)

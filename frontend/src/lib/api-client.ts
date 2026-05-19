@@ -15,13 +15,21 @@ export class ApiError extends Error {
     readonly status: number
     readonly code: string | null
     readonly body: unknown
+    readonly retryAfter: number | null
 
-    constructor(status: number, message: string, code: string | null, body: unknown) {
+    constructor(
+        status: number,
+        message: string,
+        code: string | null,
+        body: unknown,
+        retryAfter: number | null = null,
+    ) {
         super(message)
         this.name = "ApiError"
         this.status = status
         this.code = code
         this.body = body
+        this.retryAfter = retryAfter
     }
 
     get isAuthRequired(): boolean {
@@ -84,12 +92,37 @@ function buildHeaders(
     return headers
 }
 
+function parseRetryAfter(header: string | null): number | null {
+    if (!header) return null
+    const n = Number(header)
+    if (Number.isFinite(n) && n >= 0) return Math.round(n)
+    const httpDate = Date.parse(header)
+    if (!Number.isNaN(httpDate)) {
+        const diff = Math.ceil((httpDate - Date.now()) / 1000)
+        return diff > 0 ? diff : 0
+    }
+    return null
+}
+
 async function parseError(res: Response): Promise<ApiError> {
+    const retryAfter = parseRetryAfter(res.headers.get("Retry-After"))
     if (res.status === 429) {
-        return new ApiError(429, "Too many attempts. Please wait and try again.", "rate_limited", null)
+        return new ApiError(
+            429,
+            "Too many attempts. Please wait and try again.",
+            "rate_limited",
+            null,
+            retryAfter,
+        )
     }
     const body = await res.json().catch(() => null)
-    const code = typeof body?.code === "string" ? body.code : null
+    // Backend ErrorResponse uses `error` for the slug (e.g. "reauth_required").
+    // Prefer an explicit `code` if present, otherwise fall back to `error`.
+    const code = typeof body?.code === "string"
+        ? body.code
+        : typeof body?.error === "string"
+            ? body.error
+            : null
     const message = typeof body?.error === "string"
         ? body.error
         : typeof body?.detail === "string"
@@ -97,7 +130,7 @@ async function parseError(res: Response): Promise<ApiError> {
             : typeof body?.errors?.[0]?.message === "string"
                 ? body.errors[0].message
                 : `Request failed: ${res.status}`
-    return new ApiError(res.status, message, code, body)
+    return new ApiError(res.status, message, code, body, retryAfter)
 }
 
 export async function apiFetch<T = unknown>(
@@ -140,7 +173,12 @@ export async function apiFetch<T = unknown>(
                 bannedRedirected = true
                 window.location.assign("/login/banned")
             }
-        } else if (error.status === 401 && base === "api" && authLostHandler) {
+        } else if (
+            error.status === 401
+            && base === "api"
+            && error.code !== "reauth_required"
+            && authLostHandler
+        ) {
             authLostHandler()
         }
         throw error

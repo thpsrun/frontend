@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import type { SyntheticEvent } from "react"
 import { toast } from "sonner"
 import {
     Dialog,
@@ -44,7 +45,7 @@ export function TagFormDialog({ open, onOpenChange, mode, tag }: Props) {
         }
     }, [open, tag])
 
-    async function onSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+    async function onSubmit(e: SyntheticEvent<HTMLFormElement>) {
         e.preventDefault()
         const nameErr = validateTagName(name)
         const descErr = validateTagDescription(description)

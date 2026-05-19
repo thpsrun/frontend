@@ -101,7 +101,7 @@ export function SecuritySection() {
                     {!hasPassword && (
                         <p className="text-sm text-muted-foreground">
                             You do not have a password on this account and will login with
-                            OAuth (Discord/Twitch) or Passkeyes. You can set a brand new password
+                            OAuth (Discord/Twitch) or Passkeys. You can set a brand new password
                             to login to your account above.
                         </p>
                     )}

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import type { SyntheticEvent } from "react"
 import { Link } from "react-router"
 import { ExternalLink, Inbox, Pencil } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -96,7 +97,7 @@ function runToPendingRun(run: Run): PendingRun {
 
 function RunRow({ run, idx }: { run: Run; idx: number }) {
     const [editOpen, setEditOpen] = useState(false)
-    const stop = (e: React.SyntheticEvent) => e.stopPropagation()
+    const stop = (e: SyntheticEvent) => e.stopPropagation()
     const time = run.times.p_time && run.times.p_time !== "0"
         ? run.times.p_time
         : run.times.time

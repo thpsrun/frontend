@@ -2,7 +2,6 @@ import { apiFetch } from "@/lib/api-client"
 import type {
     AuthMethodsSummary,
     AuthProvider,
-    DeletePasswordBody,
     OauthSignupRequest,
 } from "@/types/auth"
 
@@ -19,10 +18,10 @@ export const disconnectSocialAccountFn = (
         { method: "DELETE" },
     )
 
-export const deletePasswordFn = (body: DeletePasswordBody): Promise<void> =>
+export const deletePasswordFn = (): Promise<void> =>
     apiFetch<void>(
         "/auth/me/auth/password",
-        { method: "DELETE", json: body },
+        { method: "DELETE" },
     )
 
 export const finalizeOauthSignupFn = (

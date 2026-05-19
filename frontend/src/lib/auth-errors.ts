@@ -1,20 +1,19 @@
-export type DeletePasswordMode = "password" | "mfa"
-
-export function mapDeletePasswordError(
-    code: string | null,
-    mode: DeletePasswordMode,
-): string {
+export function mapDeletePasswordError(code: string | null): string {
     switch (code) {
-        case "reauth_required":
-            return mode === "password"
-                ? "Wrong password. Try again."
-                : "That code didn't work. Try again."
         case "no_alternative_auth":
             return "You need another sign-in method first. Add a passkey or link Discord/Twitch."
-        case "webauthn_reauth_not_implemented":
-            return "WebAuthn re-authentication isn't available yet."
         default:
             return "Couldn't remove password. Please try again."
+    }
+}
+
+export function mapReauthError(code: string | null): string {
+    switch (code) {
+        case "invalid_password":
+        case "invalid":
+            return "Wrong password. Try again."
+        default:
+            return "Re-authentication failed. Please try again."
     }
 }
 

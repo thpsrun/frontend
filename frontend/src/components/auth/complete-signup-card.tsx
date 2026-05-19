@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import type { SyntheticEvent } from "react"
 import { useNavigate } from "react-router"
 import { SiDiscord, SiTwitch } from "@icons-pack/react-simple-icons"
 import { ApiError } from "@/lib/api-client"
@@ -82,7 +83,7 @@ export function CompleteSignupCard() {
         )
     }, [])
 
-    const handleResubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleResubmit = (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (!draft) return
 

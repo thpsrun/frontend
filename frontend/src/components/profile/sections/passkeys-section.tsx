@@ -1,10 +1,11 @@
 import { useState } from "react"
 import { Fingerprint } from "lucide-react"
 import { useAuthMethods } from "@/hooks/auth/useAuthMethods"
+import { useAuthenticators } from "@/hooks/auth/useAuthenticators"
 import { useEnrollPasskey } from "@/hooks/auth/useEnrollPasskey"
 import { useDeletePasskey } from "@/hooks/auth/useDeletePasskey"
 import { canRemovePasskey } from "@/lib/auth-methods"
-import type { AuthMethodsAuthenticator } from "@/types/auth"
+import type { Authenticator } from "@/types/auth"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { SectionPanel } from "@/components/profile/section-panel"
@@ -20,8 +21,8 @@ const ROW_CLASS = cn(
     "px-4 py-3",
 )
 
-function formatAddedAt(iso: string): string {
-    return new Date(iso).toLocaleDateString(undefined, {
+function formatAddedAt(epochSeconds: number): string {
+    return new Date(epochSeconds * 1000).toLocaleDateString(undefined, {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -30,13 +31,14 @@ function formatAddedAt(iso: string): string {
 
 export function PasskeysSection() {
     const { data: methods } = useAuthMethods()
-    const passkeys = (methods?.authenticators ?? []).filter(
-        (a): a is AuthMethodsAuthenticator => a.type === "webauthn",
+    const { data: authenticators } = useAuthenticators()
+    const passkeys = (authenticators ?? []).filter(
+        (a): a is Authenticator => a.type === "webauthn",
     )
     const enroll = useEnrollPasskey()
     const remove = useDeletePasskey()
     const [enrollOpen, setEnrollOpen] = useState(false)
-    const [removing, setRemoving] = useState<AuthMethodsAuthenticator | null>(null)
+    const [removing, setRemoving] = useState<Authenticator | null>(null)
 
     const handleEnroll = (name: string, password: string) => {
         enroll.mutate({ name, password }, {
@@ -46,7 +48,7 @@ export function PasskeysSection() {
 
     const handleRemove = (password: string) => {
         if (!removing) return
-        remove.mutate({ id: String(removing.id), password }, {
+        remove.mutate({ id: removing.id, password }, {
             onSuccess: () => setRemoving(null),
         })
     }
@@ -67,7 +69,7 @@ export function PasskeysSection() {
                 )}
                 {passkeys.map((pk) => {
                     const canRemoveThis = methods
-                        ? canRemovePasskey(methods, pk.id)
+                        ? canRemovePasskey(methods, passkeys, pk.id)
                         : false
                     return (
                         <div key={pk.id} className="flex flex-col gap-1">
@@ -77,7 +79,7 @@ export function PasskeysSection() {
                                         {pk.name ?? "Passkey"}
                                     </div>
                                     <div className="text-xs text-muted-foreground">
-                                        Added {formatAddedAt(pk.added_at)}
+                                        Added {formatAddedAt(pk.created_at)}
                                     </div>
                                 </div>
                                 <Button

@@ -8,21 +8,26 @@ export const MainPage = () => {
     const { data: latestRuns } = useTHPSNewRuns()
 
     return (
-        <div className="w-full h-full flex flex-col gap-4 xl:flex-row min-w-0">
-            <div className="xl:flex-2 min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
+        <div
+            className={[
+                "w-full h-full flex flex-col gap-4 min-w-0",
+                "xl:grid xl:grid-cols-[2fr_1fr] xl:grid-rows-[auto_1fr_1fr]",
+            ].join(" ")}
+        >
+            <div className="order-first min-w-0 xl:order-0 xl:col-start-2 xl:row-start-1">
+                <LiveStreams />
+            </div>
+
+            <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex xl:col-start-1 xl:row-span-3">
                 <CurrentRecords />
             </div>
 
-            <div className="xl:flex-1 min-w-0 flex flex-col gap-4">
-                <LiveStreams />
+            <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex xl:col-start-2 xl:row-start-2">
+                <LatestRuns title="Latest Records" data={latestRecords} />
+            </div>
 
-                <div className="flex-1 min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
-                    <LatestRuns title="Latest Records" data={latestRecords} />
-                </div>
-
-                <div className="flex-1 min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
-                    <LatestRuns title="Latest Runs" data={latestRuns} />
-                </div>
+            <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex xl:col-start-2 xl:row-start-3">
+                <LatestRuns title="Latest Runs" data={latestRuns} />
             </div>
         </div>
     )

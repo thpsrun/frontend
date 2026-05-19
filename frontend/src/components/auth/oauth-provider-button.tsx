@@ -1,4 +1,4 @@
-import type { ComponentProps, ReactNode } from "react"
+import type { ComponentProps, ReactNode, SyntheticEvent } from "react"
 import { SiDiscord, SiTwitch } from "@icons-pack/react-simple-icons"
 import { useQueryClient } from "@tanstack/react-query"
 import { ALLAUTH_API_URL } from "@/constants"
@@ -60,7 +60,7 @@ export function OAuthProviderButton({
     const backendProcess = resolveBackendProcess(process)
     const Icon = PROVIDER_ICON[provider]
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
         if (onBeforeSubmit && !onBeforeSubmit()) {
             e.preventDefault()
             return

@@ -1,4 +1,5 @@
 import { useState } from "react"
+import type { SyntheticEvent } from "react"
 import {
     Dialog,
     DialogContent,
@@ -31,7 +32,7 @@ export function RemovePasskeyDialog({
         onOpenChange(next)
     }
 
-    const handleConfirm = (e: React.SyntheticEvent<HTMLFormElement>) => {
+    const handleConfirm = (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (!password) return
         onConfirm(password)

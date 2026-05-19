@@ -41,6 +41,15 @@ import { RankingsRedirect } from "./components/rankings/rankings-redirect.tsx"
 import { ProfileContentLayout } from "./components/profile/profile-content-layout.tsx"
 import { AdminLayout } from "./components/admin/admin-layout.tsx"
 import { SuperuserRoute } from "./components/routing/SuperuserRoute.tsx"
+import { GameManageLayout } from "./components/manage/game-manage-layout.tsx"
+import { TimingSection } from "./components/manage/sections/timing-section.tsx"
+import { CategoriesSection } from "./components/manage/sections/categories-section.tsx"
+import { VariablesSection } from "./components/manage/sections/variables-section.tsx"
+import { DisplayOrderSection } from "./components/manage/sections/display-order-section.tsx"
+import { AuditSection } from "./components/manage/sections/audit-section.tsx"
+import { GeneralSection as GameGeneralSection } from "./components/manage/sections/general-section.tsx"
+import { ModeratorsSection } from "./components/manage/sections/moderators-section.tsx"
+import { Navigate } from "react-router"
 
 // Defaults for how the application should handle web requests.
 // 4xx errors will not retry, since there is an issue that may not be resolvable.
@@ -193,6 +202,23 @@ const router = createBrowserRouter([
                     {
                         path: "guides/:gameSlug/:guideSlug/edit",
                         lazy: lazyGuideForm("edit"),
+                    },
+                    {
+                        path: ":gameSlug/manage",
+                        Component: GameManageLayout,
+                        children: [
+                            {
+                                index: true,
+                                element: <Navigate to="timing" replace />,
+                            },
+                            { path: "general", Component: GameGeneralSection },
+                            { path: "timing", Component: TimingSection },
+                            { path: "categories", Component: CategoriesSection },
+                            { path: "variables", Component: VariablesSection },
+                            { path: "audit", Component: AuditSection },
+                            { path: "moderators", Component: ModeratorsSection },
+                            { path: "display-order", Component: DisplayOrderSection },
+                        ],
                     },
                 ],
             },

@@ -5,7 +5,7 @@ import { deletePasswordFn } from "./auth-methods-api"
 export function useDeletePassword() {
     const qc = useQueryClient()
     return useMutation({
-        mutationFn: deletePasswordFn,
+        mutationFn: () => deletePasswordFn(),
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: queryKeys.auth.methods() })
             qc.invalidateQueries({ queryKey: queryKeys.auth.session() })

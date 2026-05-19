@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
+import type { SyntheticEvent } from "react"
 import {
     Dialog,
     DialogContent,
@@ -84,7 +85,7 @@ export function SocialFormDialog({
         }))
     }, [existingPlatforms, mode, link])
 
-    async function onSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+    async function onSubmit(e: SyntheticEvent<HTMLFormElement>) {
         e.preventDefault()
         const platformErr = platform.trim().length === 0
             ? "Platform is required."

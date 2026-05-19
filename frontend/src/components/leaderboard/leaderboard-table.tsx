@@ -25,16 +25,36 @@ import {
     formatLongDate,
 } from "@/lib/leaderboard-helpers"
 
+import {
+    timeForMethod,
+    timeSecsForMethod,
+} from "@/lib/timing-inheritance"
+
 import type {
     LbsRun,
     LbsRecentRun,
 } from "@/types/api"
+import type { TimingMethodType } from "@/types/shared"
+import { ALL_TIMING_METHODS } from "@/types/shared"
+
+const METHOD_COLUMN_LABEL: Record<TimingMethodType, string> = {
+    rta: "RTA",
+    lrt: "LRT",
+    igt: "IGT",
+}
 
 
 export const LeaderboardTable = (
-    { runs, expectedPlayers }: {
+    {
+        runs,
+        expectedPlayers,
+        requiredMethods,
+        primaryMethod,
+    }: {
         runs: LbsRun[];
         expectedPlayers?: number;
+        requiredMethods: TimingMethodType[];
+        primaryMethod: TimingMethodType;
     },
 ) => {
     if (runs.length === 0) {
@@ -46,6 +66,10 @@ export const LeaderboardTable = (
             />
         )
     }
+
+    const methodColumns = ALL_TIMING_METHODS.filter(
+        (m) => requiredMethods.includes(m),
+    )
 
     return (
         <div className={cn(
@@ -61,9 +85,19 @@ export const LeaderboardTable = (
                         <TableHead className="w-40">
                             Player
                         </TableHead>
-                        <TableHead className="text-center">
-                            Time
-                        </TableHead>
+                        {methodColumns.map((method) => (
+                            <TableHead
+                                key={method}
+                                className={cn(
+                                    "text-center whitespace-nowrap",
+                                    method === primaryMethod
+                                        ? "text-foreground font-semibold"
+                                        : "text-muted-foreground/70 font-normal",
+                                )}
+                            >
+                                {METHOD_COLUMN_LABEL[method]}
+                            </TableHead>
+                        ))}
                         <TableHead className="text-center">
                             Points
                         </TableHead>
@@ -84,6 +118,8 @@ export const LeaderboardTable = (
                             expectedPlayers={
                                 expectedPlayers
                             }
+                            methodColumns={methodColumns}
+                            primaryMethod={primaryMethod}
                         />
                     ))}
                 </TableBody>
@@ -94,10 +130,18 @@ export const LeaderboardTable = (
 
 
 const LeaderboardRow = (
-    { run: r, idx, expectedPlayers }: {
+    {
+        run: r,
+        idx,
+        expectedPlayers,
+        methodColumns,
+        primaryMethod,
+    }: {
         run: LbsRun;
         idx: number;
         expectedPlayers?: number;
+        methodColumns: TimingMethodType[];
+        primaryMethod: TimingMethodType;
     },
 ) => {
     // place = 0 means unranked/obsolete; fall back to table position
@@ -124,31 +168,49 @@ const LeaderboardRow = (
                     expectedPlayers={expectedPlayers}
                 />
             </TableCell>
-            <TableCell className={cn(
-                "text-center font-mono",
-                "tabular-nums tracking-tight",
-                "text-sm",
-            )}>
-                {r.url ? (
-                    <a
-                        href={r.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+            {methodColumns.map((method) => {
+                const isPrimary = method === primaryMethod
+                const timeValue = timeForMethod(r.times, method)
+                const timeSecs = timeSecsForMethod(r.times, method)
+                const hasTime = timeSecs != null && timeSecs > 0
+                const display = hasTime && timeValue ? timeValue : "-"
+                const linkUrl = hasTime && isPrimary ? r.url : null
+                return (
+                    <TableCell
+                        key={method}
                         className={cn(
-                            "text-link",
-                            "hover:underline",
+                            "text-center font-mono",
+                            "tabular-nums tracking-tight",
+                            "text-sm whitespace-nowrap",
+                            isPrimary
+                                ? "text-foreground"
+                                : "text-muted-foreground/60",
                         )}
                     >
-                        {r.times.p_time}
-                    </a>
-                ) : r.times.p_time}
-            </TableCell>
+                        {linkUrl ? (
+                            <a
+                                href={linkUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={cn(
+                                    "text-link",
+                                    "hover:underline",
+                                )}
+                            >
+                                {display}
+                            </a>
+                        ) : (
+                            display
+                        )}
+                    </TableCell>
+                )
+            })}
             <TableCell className={cn(
                 "text-center font-mono",
                 "tabular-nums tracking-tight",
                 "text-sm",
             )}>
-                {r.points}
+                {r.points > 0 ? r.points : "-"}
                 <StreakDagger points={r.points} isIl={r.level !== null} />
             </TableCell>
             <TableCell className="text-center text-xs">
@@ -270,23 +332,27 @@ export const RecentRunItem = ({
                 "text-muted-foreground",
             )}>
                 <div className="flex items-center gap-1">
-                    {r.url ? (
-                        <a
-                            href={r.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={cn(
-                                "font-mono",
-                                "text-link",
-                                "hover:underline",
-                            )}
-                        >
-                            {r.p_time}
-                        </a>
+                    {r.p_time_secs > 0 ? (
+                        r.url ? (
+                            <a
+                                href={r.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={cn(
+                                    "font-mono",
+                                    "text-link",
+                                    "hover:underline",
+                                )}
+                            >
+                                {r.p_time}
+                            </a>
+                        ) : (
+                            <span className="font-mono">
+                                {r.p_time}
+                            </span>
+                        )
                     ) : (
-                        <span className="font-mono">
-                            {r.p_time}
-                        </span>
+                        <span className="font-mono">-</span>
                     )}
                     {r.video && (
                         <a
@@ -326,7 +392,7 @@ export const RecentRunItem = ({
                                 "hover:bg-muted/40",
                                 "text-muted-foreground",
                             )}
-                            title="Archive video"
+                            title="Archive Video"
                         >
                             <Cloud size={11} />
                         </a>

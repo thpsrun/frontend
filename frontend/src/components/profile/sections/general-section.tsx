@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react"
+import type { ChangeEvent } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
@@ -162,7 +163,7 @@ export function GeneralSection() {
         : null
 
     const handlePfpSelect = (
-        e: React.ChangeEvent<HTMLInputElement>,
+        e: ChangeEvent<HTMLInputElement>,
     ) => {
         const file = e.target.files?.[0]
         if (!file) return

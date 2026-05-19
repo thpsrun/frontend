@@ -1,4 +1,5 @@
 import { useState } from "react"
+import type { SyntheticEvent } from "react"
 import { useNavigate, Navigate, Link, useLocation } from "react-router"
 import { useSession } from "@/hooks/auth/useSession"
 import { useRegister } from "@/hooks/auth/useRegister"
@@ -76,7 +77,7 @@ export function RegisterPage() {
         return true
     }
 
-    const handleRegister = async (e: React.ChangeEvent<HTMLFormElement>) => {
+    const handleRegister = async (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault()
         setError(null)
         setFieldErrors({})

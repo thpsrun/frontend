@@ -34,3 +34,17 @@ export type StatusMsg = {
     type: "success" | "error"
     text: string
 } | null
+
+export type TimingMethodType = "rta" | "lrt" | "igt"
+
+export const TIMING_METHOD_LABELS: Record<TimingMethodType, string> = {
+    rta: "Real Time",
+    lrt: "Real Time (No Loads)",
+    igt: "In-Game Time",
+}
+
+export const ALL_TIMING_METHODS: readonly TimingMethodType[] = [
+    "rta",
+    "lrt",
+    "igt",
+] as const

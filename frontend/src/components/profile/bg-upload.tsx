@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react"
+import type { ChangeEvent, DragEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { AlertBanner } from "@/components/ui/alert-banner"
 import { Panel } from "@/components/ui/panel"
@@ -75,7 +76,7 @@ export function BgUpload({
     }, [onFileSelect])
 
     const handleDrop = useCallback(
-        (e: React.DragEvent) => {
+        (e: DragEvent) => {
             e.preventDefault()
             setIsDragging(false)
             const file = e.dataTransfer.files[0]
@@ -85,7 +86,7 @@ export function BgUpload({
     )
 
     const handleInputChange = (
-        e: React.ChangeEvent<HTMLInputElement>,
+        e: ChangeEvent<HTMLInputElement>,
     ) => {
         const file = e.target.files?.[0]
         if (file) handleFile(file)

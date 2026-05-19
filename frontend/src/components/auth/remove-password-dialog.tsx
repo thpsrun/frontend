@@ -1,10 +1,13 @@
 import { useState } from "react"
+import type { SyntheticEvent } from "react"
 import { toast } from "sonner"
 import { ApiError } from "@/lib/api-client"
-import { mapDeletePasswordError } from "@/lib/auth-errors"
-import type { DeletePasswordMode } from "@/lib/auth-errors"
+import {
+    mapDeletePasswordError,
+    mapReauthError,
+} from "@/lib/auth-errors"
 import { useDeletePassword } from "@/hooks/auth/useDeletePassword"
-import { useAuthMethods } from "@/hooks/auth/useAuthMethods"
+import { reauthenticateFn } from "@/hooks/auth/auth-api"
 import {
     Dialog,
     DialogContent,
@@ -20,19 +23,27 @@ interface Props {
     onOpenChange: (open: boolean) => void
 }
 
+type Step = "confirm" | "reauth"
+
+function formatRetryAfter(seconds: number): string {
+    if (seconds <= 1) return "a moment"
+    if (seconds < 60) return `${seconds} seconds`
+    const mins = Math.ceil(seconds / 60)
+    return mins === 1 ? "a minute" : `${mins} minutes`
+}
+
 export function RemovePasswordDialog({ open, onOpenChange }: Props) {
-    const { data: methods } = useAuthMethods()
     const remove = useDeletePassword()
 
-    const [mode, setMode] = useState<DeletePasswordMode>("password")
-    const [value, setValue] = useState("")
+    const [step, setStep] = useState<Step>("confirm")
+    const [reauthPassword, setReauthPassword] = useState("")
+    const [reauthing, setReauthing] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    const hasTotp = methods?.authenticators.some((a) => a.type === "totp") ?? false
-
     const reset = () => {
-        setMode("password")
-        setValue("")
+        setStep("confirm")
+        setReauthPassword("")
+        setReauthing(false)
         setError(null)
     }
 
@@ -41,14 +52,9 @@ export function RemovePasswordDialog({ open, onOpenChange }: Props) {
         onOpenChange(next)
     }
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        if (!value) return
+    const attemptDelete = () => {
         setError(null)
-        const body = mode === "password"
-            ? { password: value }
-            : { mfa_code: value }
-        remove.mutate(body, {
+        remove.mutate(undefined, {
             onSuccess: () => {
                 toast.success(
                     "Password removed. You'll sign in with OAuth or passkey next time.",
@@ -56,75 +62,83 @@ export function RemovePasswordDialog({ open, onOpenChange }: Props) {
                 handleOpenChange(false)
             },
             onError: (err) => {
+                if (
+                    err instanceof ApiError
+                    && err.status === 401
+                    && err.code === "reauth_required"
+                ) {
+                    setStep("reauth")
+                    return
+                }
+                if (err instanceof ApiError && err.status === 429) {
+                    const retry = err.retryAfter ?? 0
+                    setError(
+                        `Too many attempts. Try again in ${formatRetryAfter(retry)}.`,
+                    )
+                    return
+                }
                 const code = err instanceof ApiError ? err.code : null
-                setError(mapDeletePasswordError(code, mode))
+                setError(mapDeletePasswordError(code))
             },
         })
     }
 
+    const handleConfirm = (e: SyntheticEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        attemptDelete()
+    }
+
+    const handleReauth = async (e: SyntheticEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        if (!reauthPassword) return
+        setError(null)
+        setReauthing(true)
+        try {
+            await reauthenticateFn(reauthPassword)
+            setReauthing(false)
+            setReauthPassword("")
+            setStep("confirm")
+            attemptDelete()
+        } catch (err) {
+            setReauthing(false)
+            const code = err instanceof ApiError ? err.code : null
+            setError(mapReauthError(code))
+        }
+    }
+
+    const isReauthStep = step === "reauth"
+    const submitting = remove.isPending || reauthing
+
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent>
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <form
+                    onSubmit={isReauthStep ? handleReauth : handleConfirm}
+                    className="flex flex-col gap-4"
+                >
                     <DialogHeader>
-                        <DialogTitle>Remove password</DialogTitle>
+                        <DialogTitle>
+                            {isReauthStep ? "Verify it's you" : "Remove password"}
+                        </DialogTitle>
                     </DialogHeader>
                     <p className="text-sm text-muted-foreground">
-                        After you remove your your password, you will only be able to login with
-                        OAuth and Passkeys.
+                        {isReauthStep
+                            ? "It's been a while since you signed in. Enter your password to continue."
+                            : "After you remove your password, you'll only be able to sign in with OAuth or a passkey."}
                     </p>
                     {error && (
                         <div className="text-sm text-destructive">{error}</div>
                     )}
-                    {mode === "password" ? (
-                        <>
-                            <FormField
-                                label="Current password"
-                                id="remove-pw-password"
-                                type="password"
-                                autoComplete="current-password"
-                                value={value}
-                                onChange={(e) => setValue(e.target.value)}
-                                required
-                            />
-                            {hasTotp && (
-                                <button
-                                    type="button"
-                                    className="text-left text-sm text-muted-foreground underline-offset-2 hover:underline"
-                                    onClick={() => {
-                                        setMode("mfa")
-                                        setValue("")
-                                        setError(null)
-                                    }}
-                                >
-                                    Use authenticator code instead:
-                                </button>
-                            )}
-                        </>
-                    ) : (
-                        <>
-                            <FormField
-                                label="Authenticator code"
-                                id="remove-pw-mfa"
-                                type="text"
-                                autoComplete="one-time-code"
-                                value={value}
-                                onChange={(e) => setValue(e.target.value)}
-                                required
-                                placeholder="6-digit TOTP or 8-character recovery code"
-                            />
-                            <button
-                                type="button"
-                                className="text-left text-sm text-muted-foreground underline-offset-2 hover:underline"
-                                onClick={() => {
-                                    setMode("password")
-                                    setValue("")
-                                    setError(null)
-                                }}
-                            >
-                                : Use password instead
-                            </button>
-                        </>
+                    {isReauthStep && (
+                        <FormField
+                            label="Current password"
+                            id="reauth-password"
+                            type="password"
+                            autoComplete="current-password"
+                            value={reauthPassword}
+                            onChange={(e) => setReauthPassword(e.target.value)}
+                            required
+                        />
                     )}
                     <DialogFooter>
                         <Button
@@ -137,9 +151,14 @@ export function RemovePasswordDialog({ open, onOpenChange }: Props) {
                         <Button
                             type="submit"
                             variant="destructive"
-                            disabled={remove.isPending || !value}
+                            disabled={
+                                submitting
+                                || (isReauthStep && !reauthPassword)
+                            }
                         >
-                            {remove.isPending ? "Removing..." : "Remove password"}
+                            {isReauthStep
+                                ? (reauthing ? "Verifying..." : "Verify and remove")
+                                : (remove.isPending ? "Removing..." : "Remove password")}
                         </Button>
                     </DialogFooter>
                 </form>

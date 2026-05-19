@@ -1,4 +1,5 @@
 import { useState } from "react"
+import type { SyntheticEvent } from "react"
 import type { UseMutationResult } from "@tanstack/react-query"
 import type {
     AuthMe, VerifySrcRequest, SRCKeyStatusResponse,
@@ -31,7 +32,7 @@ export function ModerationSettings({
     const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false)
 
     const handleSaveKey = async (
-        e: React.SyntheticEvent,
+        e: SyntheticEvent,
     ) => {
         e.preventDefault()
         setMessage(null)

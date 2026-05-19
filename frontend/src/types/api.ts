@@ -4,6 +4,7 @@ import type {
     Gradients,
     ModeratedGame,
     Socials,
+    TimingMethodType,
 } from "./shared"
 
 // Utilized on /api/v1/games/all
@@ -14,10 +15,13 @@ export interface Game {
     release: string
     boxart: string
     twitch: string
-    defaulttime: string
-    idefaulttime: string
+    defaulttime: TimingMethodType
+    idefaulttime: TimingMethodType
     pointsmax: number
     ipointsmax: number
+    required_methods_fg: TimingMethodType[]
+    required_methods_il: TimingMethodType[]
+    rules: string | null
 }
 
 // Utilized on /api/v1/games/{gameSlug}?embed=categories,levels,platforms
@@ -30,6 +34,8 @@ export interface CategoryVariableValue {
     order: number
     archive: boolean
     rules: string | null
+    defaulttime: TimingMethodType | null
+    required_methods: TimingMethodType[] | null
 }
 
 // Utilized on /api/v1/games/{gameSlug}?embed=categories,levels,platforms
@@ -40,6 +46,8 @@ export interface CategoryVariable {
     scope: string
     archive: boolean
     values: CategoryVariableValue[]
+    defaulttime: TimingMethodType | null
+    required_methods: TimingMethodType[] | null
 }
 
 // Utilized on /api/v1/games/{gameSlug}?embed=categories,levels,platforms
@@ -54,6 +62,8 @@ export interface GameCategory {
     archive: boolean
     players: number
     variables: CategoryVariable[]
+    defaulttime: TimingMethodType | null
+    required_methods: TimingMethodType[] | null
 }
 
 // Utilized on /api/v1/games/{gameSlug}?embed=categories,levels,platforms
@@ -231,7 +241,16 @@ export interface LbsRun {
     video: string | null
     arch_video: string | null
     level: string | null
-    times: { p_time: string | null }
+    times: {
+        time: string
+        time_secs: number
+        timenl: string | null
+        timenl_secs: number | null
+        timeigt: string | null
+        timeigt_secs: number | null
+        p_time: string
+        p_time_secs: number
+    }
     players: LbsPlayer[]
 }
 
@@ -425,6 +444,9 @@ export interface RunDetailTimes {
     timeigt_secs: number | null
     p_time: string
     p_time_secs: number
+    primary_method_override: TimingMethodType | null
+    resolved_primary_method: TimingMethodType
+    resolved_required_methods: TimingMethodType[]
 }
 
 export interface RunDetailPlayer {

@@ -22,11 +22,12 @@ export function useEnrollPasskey() {
         },
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: queryKeys.auth.methods() })
-            toast.success("Passkey added.")
+            qc.invalidateQueries({ queryKey: queryKeys.auth.authenticators() })
+            toast.success("Passkey Added!")
         },
         onError: (err) => {
             if (err instanceof Error && err.name === "NotAllowedError") return
-            toast.error(getErrorMessage(err, "Failed to add passkey."))
+            toast.error(getErrorMessage(err, "Failed to add passkey..."))
         },
     })
 }

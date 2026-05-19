@@ -1,4 +1,5 @@
 import { useState } from "react"
+import type { SyntheticEvent } from "react"
 import { useNavigate } from "react-router"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useDeleteAccount } from "@/hooks/auth/useDeleteAccount"
@@ -41,7 +42,7 @@ export function DangerSection() {
     }
 
     const handleDeleteAccount = async (
-        e: React.SyntheticEvent<HTMLFormElement>,
+        e: SyntheticEvent<HTMLFormElement>,
     ) => {
         e.preventDefault()
         setDeleteMsg(null)

@@ -19,6 +19,7 @@ export function useDeletePasskey() {
         },
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: queryKeys.auth.methods() })
+            qc.invalidateQueries({ queryKey: queryKeys.auth.authenticators() })
             toast.success("Passkey removed.")
         },
         onError: (err) => {

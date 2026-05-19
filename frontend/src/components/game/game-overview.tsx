@@ -36,6 +36,7 @@ import {
     SkeletonRow,
     getApplicableVariables,
 } from "@/lib/leaderboard-helpers"
+import { resolveLeaderboardMethods } from "@/lib/timing-inheritance"
 
 import type {
     GameCategory,
@@ -115,6 +116,35 @@ export const GameOverview = () => {
             ? getApplicableVariables(activeCategory)
             : [],
         [activeCategory],
+    )
+
+    const variableSelections = useMemo(
+        () => applicableVariables
+            .map((variable, i) => {
+                const valueSlug = valueSlugs[i]
+                const value = variable.values.find(
+                    (v) => v.slug === valueSlug,
+                )
+                if (!value) return null
+                return { variable, value }
+            })
+            .filter(
+                (s): s is NonNullable<typeof s> => s !== null,
+            ),
+        [applicableVariables, valueSlugs],
+    )
+
+    const leaderboardMethods = useMemo(
+        () => {
+            if (!gameDetail || !activeCategory) return null
+            return resolveLeaderboardMethods({
+                scope: "fg",
+                game: gameDetail,
+                category: activeCategory,
+                selections: variableSelections,
+            })
+        },
+        [gameDetail, activeCategory, variableSelections],
     )
 
     const runs: LbsRun[] = lbData?.runs ?? []
@@ -426,11 +456,18 @@ export const GameOverview = () => {
                             </div>
                         )}
                         {!lbLoading && !lbError
-                            && categorySlug && (
+                            && categorySlug
+                            && leaderboardMethods && (
                             <LeaderboardTable
                                 runs={runs}
                                 expectedPlayers={
                                     activeCategory?.players
+                                }
+                                requiredMethods={
+                                    leaderboardMethods.requiredMethods
+                                }
+                                primaryMethod={
+                                    leaderboardMethods.primaryMethod
                                 }
                             />
                         )}

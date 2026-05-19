@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react"
+import { useState, type ReactNode, type SyntheticEvent } from "react"
 import { Link } from "react-router"
 import {
     Dialog,
@@ -9,6 +9,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AlertBanner } from "@/components/ui/alert-banner"
@@ -49,7 +50,7 @@ const SCOPE_HINT: Record<ReconcileScope, string> = {
     GAME: "Reconciles all leaderboards under a game.",
     LEADERBOARD: "Reconciles a single leaderboard (category, optional level + variables).",
     RUN: "Reconciles a single run by ID.",
-    SERIES: "Scans every series in the database for newly added games on Speedrun.com. Existing games are skipped, refresh those with the GAME scope.",
+    SERIES: "Scans a series for newly added games on Speedrun.com. Existing games are skipped, refresh those with the GAME scope.",
 }
 
 const SCOPE_OPTIONS: ReconcileScope[] = ["GAME", "LEADERBOARD", "RUN", "SERIES"]
@@ -103,6 +104,8 @@ function StartReconcileForm({
     const [sourceOfTruth, setSourceOfTruth] = useState<SourceOfTruth>("SRC")
     const [selectedGame, setSelectedGame] = useState<Game | null>(null)
     const [runIdInput, setRunIdInput] = useState("")
+    const [seriesIdInput, setSeriesIdInput] = useState("")
+    const [seriesAll, setSeriesAll] = useState(false)
     const [builder, setBuilder] = useState<BuilderValue>({
         game: null,
         category: null,
@@ -120,7 +123,7 @@ function StartReconcileForm({
     const start = useStartReconcile()
     const isPending = start.isPending
 
-    function onClickStart(e: React.SyntheticEvent<HTMLFormElement>) {
+    function onClickStart(e: SyntheticEvent<HTMLFormElement>) {
         e.preventDefault()
         setTopError(null)
         setConflict(null)
@@ -162,12 +165,19 @@ function StartReconcileForm({
         }
 
         if (scope === "SERIES") {
+            const trimmed = seriesIdInput.trim()
+            if (!seriesAll && !trimmed) {
+                setFieldError("Pick a series, or check \"All series\".")
+                return
+            }
+            const targetId = seriesAll ? "*" : trimmed
             const body: ReconcileRequest = {
                 scope: "SERIES",
                 source_of_truth: sourceOfTruth,
+                target_id: targetId,
             }
             setPendingBody(body)
-            setPendingSummary(<SummarySeries />)
+            setPendingSummary(<SummarySeries targetId={targetId} />)
             return
         }
 
@@ -219,14 +229,14 @@ function StartReconcileForm({
                     return
                 }
             }
-            setTopError(getErrorMessage(err, "Failed to start reconciliation."))
+            setTopError(getErrorMessage(err, "Failed to Start Reconciliation..."))
         }
     }
 
     const submitDisabled = isPending || (
         scope === "GAME" ? !selectedGame
             : scope === "RUN" ? !runIdInput.trim()
-                : scope === "SERIES" ? false
+                : scope === "SERIES" ? (!seriesAll && !seriesIdInput.trim())
                     : !builder.game || !builder.category
                         || (builder.category.type === "per-level" && !builder.level)
     )
@@ -250,7 +260,7 @@ function StartReconcileForm({
                                 className="text-xs underline underline-offset-2"
                                 onClick={onClose}
                             >
-                                View running job
+                                View Running Job
                             </Link>
                         </div>
                     </AlertBanner>
@@ -308,7 +318,7 @@ function StartReconcileForm({
                         </Select>
                         <p className="text-xs text-muted-foreground">
                             {SOURCE_LABEL[sourceOfTruth]} is authoritative. Differences on{" "}
-                            {otherSide(sourceOfTruth)} will be overwritten.
+                            {otherSide(sourceOfTruth)} will be overwritten!
                         </p>
                     </div>
 
@@ -335,8 +345,47 @@ function StartReconcileForm({
                                 disabled={isPending}
                             />
                             <p className="text-xs text-muted-foreground">
-                                The Speedrun.com run ID.
+                                Speedrun.com run ID.
                             </p>
+                        </div>
+                    )}
+
+                    {scope === "SERIES" && (
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    id="reconcile-series-all"
+                                    checked={seriesAll}
+                                    onCheckedChange={(value) => {
+                                        const next = value === true
+                                        setSeriesAll(next)
+                                        setFieldError(null)
+                                        if (next) setSeriesIdInput("")
+                                    }}
+                                    disabled={isPending}
+                                />
+                                <Label
+                                    htmlFor="reconcile-series-all"
+                                    className="cursor-pointer"
+                                >
+                                    Apply to All Series
+                                </Label>
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="reconcile-series-id">Series ID</Label>
+                                <Input
+                                    id="reconcile-series-id"
+                                    value={seriesIdInput}
+                                    onChange={(e) => setSeriesIdInput(e.target.value)}
+                                    placeholder="e.g. thps"
+                                    autoComplete="off"
+                                    disabled={isPending || seriesAll}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    The thps.run series ID, or check above to sweep every
+                                    series in the database.
+                                </p>
+                            </div>
                         </div>
                     )}
 
@@ -411,11 +460,17 @@ function SummaryRun({ runId }: { runId: string }) {
     )
 }
 
-function SummarySeries() {
+function SummarySeries({ targetId }: { targetId: string }) {
     return (
         <div className="space-y-1.5">
             <MetaRow dense label="Scope">{SCOPE_LABEL.SERIES}</MetaRow>
-            <MetaRow dense label="Target">All Series in Database</MetaRow>
+            <MetaRow dense label="Target">
+                {targetId === "*"
+                    ? "All Series in Database"
+                    : (
+                        <span className="font-mono text-xs">{targetId}</span>
+                    )}
+            </MetaRow>
         </div>
     )
 }

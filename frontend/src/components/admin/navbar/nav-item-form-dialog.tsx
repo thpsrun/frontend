@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
+import type { SyntheticEvent } from "react"
 import {
     Dialog,
     DialogContent,
@@ -126,7 +127,7 @@ export function NavItemFormDialog({
             }))
     }, [items, item, mode])
 
-    async function onSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+    async function onSubmit(e: SyntheticEvent<HTMLFormElement>) {
         e.preventDefault()
         const nameErr = validateNavItemName(name)
         const urlErr = validateNavUrl(url)

@@ -234,7 +234,6 @@ export function LoginPage() {
                                     provider="discord"
                                     process="login"
                                     callbackPath="/oauth/callback"
-                                    rememberMe={rememberMe}
                                     fullWidth
                                 >
                                     Sign in with Discord
@@ -243,11 +242,13 @@ export function LoginPage() {
                                     provider="twitch"
                                     process="login"
                                     callbackPath="/oauth/callback"
-                                    rememberMe={rememberMe}
                                     fullWidth
                                 >
                                     Sign in with Twitch
                                 </OAuthProviderButton>
+                                <p className="text-xs text-muted-foreground">
+                                    Discord and Twitch sign-ins stay signed in for 7 days.
+                                </p>
                             </div>
 
                             <p className="text-center text-sm text-muted-foreground">

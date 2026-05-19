@@ -1,3 +1,5 @@
+import type { TimingMethodType } from "./shared"
+
 // Utilized on /api/v1/runs/all and /api/v1/runs/{id}
 export interface RunTimes {
     time: string
@@ -8,6 +10,9 @@ export interface RunTimes {
     timeigt_secs: number | null
     p_time: string
     p_time_secs: number
+    primary_method_override: TimingMethodType | null
+    resolved_primary_method: TimingMethodType
+    resolved_required_methods: TimingMethodType[]
 }
 
 // Embedded shapes returned when ?embed=game,category,level is used.
@@ -18,10 +23,12 @@ export interface RunGameEmbed {
     release: string | null
     boxart: string | null
     twitch: string | null
-    defaulttime: string | null
-    idefaulttime: string | null
+    defaulttime: TimingMethodType | null
+    idefaulttime: TimingMethodType | null
     pointsmax: number
     ipointsmax: number
+    required_methods_fg: TimingMethodType[]
+    required_methods_il: TimingMethodType[]
 }
 
 export interface RunCategoryEmbed {

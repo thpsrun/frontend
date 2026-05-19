@@ -10,6 +10,15 @@ export const queryKeys = {
         all: ["games"] as const,
         list: () => [...queryKeys.games.all, "list"] as const,
         detail: (gameSlug: string) => [...queryKeys.games.all, "detail", gameSlug] as const,
+        manage: (gameSlug: string) =>
+            [...queryKeys.games.all, "detail", gameSlug, "manage"] as const,
+        auditList: <T extends object>(gameSlug: string, params: T) =>
+            [...queryKeys.games.all, "audit", gameSlug, "list", params] as const,
+        auditEntry: (gameSlug: string, auditId: number) =>
+            [...queryKeys.games.all, "audit", gameSlug, "entry", auditId] as const,
+        moderators: (gameSlug: string) =>
+            [...queryKeys.games.all, "moderators", gameSlug] as const,
+        platforms: () => [...queryKeys.games.all, "platforms"] as const,
     },
 
     guides: {
@@ -69,6 +78,7 @@ export const queryKeys = {
         apiKeys: () => [...queryKeys.auth.all, "api-keys"] as const,
         capabilities: () => [...queryKeys.auth.all, "capabilities"] as const,
         methods: () => [...queryKeys.auth.all, "methods"] as const,
+        authenticators: () => [...queryKeys.auth.all, "authenticators"] as const,
     },
 
     submissions: {

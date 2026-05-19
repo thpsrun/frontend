@@ -1,4 +1,5 @@
 import { useRef } from "react"
+import type { KeyboardEvent } from "react"
 import {
     Tabs,
     TabsList,
@@ -18,7 +19,7 @@ interface Props {
 export function GuideMarkdownEditor({ value, onChange, placeholder }: Props) {
     const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
-    function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
         if (!(e.ctrlKey || e.metaKey)) return
         const ta = textareaRef.current
         if (!ta) return

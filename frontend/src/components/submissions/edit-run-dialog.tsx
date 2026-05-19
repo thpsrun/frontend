@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { AlertBanner } from "@/components/ui/alert-banner"
+import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { Loader2, Users } from "lucide-react"
@@ -23,6 +24,11 @@ import { useRun } from "@/hooks/runs/useRun"
 import { useUpdateRun } from "@/hooks/submissions/useUpdateRun"
 import { useSubmissions } from "@/hooks/submissions/useSubmissions"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
+import { useHasCapability } from "@/hooks/auth/useHasCapability"
+import { parseValidationErrors } from "@/lib/validation-errors"
+import { OverrideMethodField } from "@/components/manage/override-method-field"
+import { TIMING_METHOD_LABELS } from "@/types/shared"
+import type { TimingMethodType } from "@/types/shared"
 import {
     TimeRow, type TimeFields,
     assembleTime, parseTimeSecs, isValidYouTubeUrl,
@@ -198,6 +204,15 @@ function EditRunForm({
         ) ?? false,
         [player, run.game.slug],
     )
+    const canEditAny = useHasCapability("runs.edit_any", gameDetail.id)
+    const [primaryOverride, setPrimaryOverride] =
+        useState<TimingMethodType | null>(
+            detail.times.primary_method_override ?? null,
+        )
+    const resolvedRequired = detail.times.resolved_required_methods
+        ?? ["rta", "lrt", "igt"] as const
+    const resolvedPrimary: TimingMethodType =
+        detail.times.resolved_primary_method ?? "rta"
 
     type RunStatusChoice = "unchanged" | "verified" | "rejected"
     const [runStatus, setRunStatus] = useState<RunStatusChoice>("unchanged")
@@ -294,6 +309,19 @@ function EditRunForm({
             variable_values: Object.keys(variableValues).length > 0
                 ? variableValues
                 : null,
+            ...(canEditAny
+                ? { primary_method_override: primaryOverride }
+                : {}),
+        }
+
+        const formatErr = (err: unknown): string => {
+            const parsed = parseValidationErrors(err)
+            if (parsed) {
+                const firstField = Object.values(parsed.fieldErrors)[0]
+                return parsed.formError ?? firstField ?? "Save Failed..."
+            }
+            if (err instanceof Error) return err.message
+            return "Save Failed..."
         }
 
         updateRun.mutate(
@@ -324,11 +352,11 @@ function EditRunForm({
                                 )
                                 onClose()
                             },
-                            onError: (err) => setError(err.message),
+                            onError: (err) => setError(formatErr(err)),
                         },
                     )
                 },
-                onError: (err) => setError(err.message),
+                onError: (err) => setError(formatErr(err)),
             },
         )
     }
@@ -424,10 +452,38 @@ function EditRunForm({
                     <Divider />
 
                     <div className="space-y-3">
-                        <SectionLabel>Timing</SectionLabel>
-                        <TimeRow label="Real Time (RTA)" fields={rta} onChange={setRta} />
-                        <TimeRow label="Loads Removed (LRT)" fields={nl} onChange={setNl} />
-                        <TimeRow label="In-Game Time (IGT)" fields={igt} onChange={setIgt} />
+                        <div className="flex items-center justify-between gap-2">
+                            <SectionLabel>Timing</SectionLabel>
+                            {detail.times.primary_method_override && (
+                                <Badge variant="outline" className="text-[10px]">
+                                    Primary overridden:{" "}
+                                    {TIMING_METHOD_LABELS[
+                                        detail.times.primary_method_override
+                                    ]}
+                                </Badge>
+                            )}
+                        </div>
+                        {resolvedRequired.includes("rta") && (
+                            <TimeRow
+                                label="Real Time (RTA)"
+                                fields={rta}
+                                onChange={setRta}
+                            />
+                        )}
+                        {resolvedRequired.includes("lrt") && (
+                            <TimeRow
+                                label="Loads Removed (LRT)"
+                                fields={nl}
+                                onChange={setNl}
+                            />
+                        )}
+                        {resolvedRequired.includes("igt") && (
+                            <TimeRow
+                                label="In-Game Time (IGT)"
+                                fields={igt}
+                                onChange={setIgt}
+                            />
+                        )}
                     </div>
 
                     <Divider />
@@ -481,7 +537,7 @@ function EditRunForm({
                                 placeholder="https://youtube.com/watch?v=..."
                             />
                             <p className="text-[10px] text-muted-foreground">
-                                YouTube links only
+                                YouTube Links Only
                             </p>
                         </div>
 
@@ -583,6 +639,16 @@ function EditRunForm({
                                                 setDenyReason(e.target.value)
                                             }
                                             placeholder="Why is this run being denied?"
+                                        />
+                                    </div>
+                                )}
+                                {canEditAny && (
+                                    <div className="pt-3">
+                                        <OverrideMethodField
+                                            value={primaryOverride}
+                                            onChange={setPrimaryOverride}
+                                            resolvedPrimary={resolvedPrimary}
+                                            requiredMethods={resolvedRequired}
                                         />
                                     </div>
                                 )}

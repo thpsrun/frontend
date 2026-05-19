@@ -1,4 +1,5 @@
 import { useState } from "react"
+import type { SyntheticEvent } from "react"
 import { toast } from "sonner"
 import {
     Dialog, DialogContent, DialogHeader,
@@ -78,7 +79,7 @@ export function ChangePlayersDialog({
         setRows((prev) => prev.filter((_, i) => i !== idx))
     }
 
-    const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
+    const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault()
         setError(null)
         const players: ChangePlayerEntry[] = rows.map((r) => ({

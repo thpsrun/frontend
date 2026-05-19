@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import type { SyntheticEvent } from "react"
 import { Link } from "react-router"
 import { useSubmissions } from "@/hooks/submissions/useSubmissions"
 import { Badge } from "@/components/ui/badge"
@@ -38,7 +39,7 @@ function PendingRunRow({
     const [editOpen, setEditOpen] = useState(false)
     const [playersOpen, setPlayersOpen] = useState(false)
 
-    const stop = (e: React.SyntheticEvent) => e.stopPropagation()
+    const stop = (e: SyntheticEvent) => e.stopPropagation()
 
     return (
         <>

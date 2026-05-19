@@ -160,7 +160,7 @@ export interface AuthMethodsSocialAccount {
 
 export interface AuthMethodsAuthenticator {
     type: "webauthn" | "totp"
-    id: number
+    id: string
     name: string | null
     added_at: string
 }
@@ -170,10 +170,6 @@ export interface AuthMethodsSummary {
     social_accounts: AuthMethodsSocialAccount[]
     authenticators: AuthMethodsAuthenticator[]
 }
-
-export type DeletePasswordBody =
-    | { password: string }
-    | { mfa_code: string }
 
 export interface OauthSignupDraft {
     username: string

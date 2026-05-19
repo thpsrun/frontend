@@ -16,7 +16,7 @@ import {
 import { Inbox } from "lucide-react"
 
 import { EmptyState } from "@/components/ui/empty-state"
-import { Panel } from "@/components/ui/panel"
+import { SectionPanel } from "@/components/profile/section-panel"
 import type {
     DisplayItem,
     VisibilityTargetType,
@@ -71,16 +71,7 @@ export function SortableSection({
     }
 
     return (
-        <Panel className="p-5">
-            <div className="mb-3">
-                <h3 className="text-base font-semibold">{title}</h3>
-                {description && (
-                    <p className="text-xs text-muted-foreground">
-                        {description}
-                    </p>
-                )}
-            </div>
-
+        <SectionPanel title={title} description={description}>
             {items.length === 0 ? (
                 <EmptyState
                     inset
@@ -112,6 +103,6 @@ export function SortableSection({
                     </SortableContext>
                 </DndContext>
             )}
-        </Panel>
+        </SectionPanel>
     )
 }
