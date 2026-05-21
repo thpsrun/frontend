@@ -1,5 +1,5 @@
 import { RotateCcw } from "lucide-react"
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import { Button } from "@/components/ui/button"
 
 interface Props {

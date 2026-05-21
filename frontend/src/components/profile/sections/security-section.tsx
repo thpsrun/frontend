@@ -1,33 +1,32 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useChangePassword } from "@/hooks/auth/useChangePassword"
 import { useAuthMethods } from "@/hooks/auth/useAuthMethods"
 import { canRemovePassword } from "@/lib/auth-methods"
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import { FormField } from "@/components/profile/form-field"
 import { SaveButton } from "@/components/profile/save-button"
 import { SectionPanel } from "@/components/profile/section-panel"
 import { RemovePasswordDialog } from "@/components/auth/remove-password-dialog"
 import { Button } from "@/components/ui/button"
-import { validatePassword } from "@/lib/validation"
+import {
+    passwordChangeSchema,
+    type PasswordChangeForm,
+} from "@/lib/schemas"
 import type { StatusMsg } from "@/types/shared"
 import { getErrorMessage } from "@/lib/utils"
 import { ConnectedAccountsSection } from "./connected-accounts-section"
 import { PasskeysSection } from "./passkeys-section"
-
-interface PasswordFormValues {
-    currentPassword: string
-    newPassword: string
-    confirmNewPassword: string
-}
 
 export function SecuritySection() {
     const { player } = useCurrentPlayer()
     const changePassword = useChangePassword()
     const { data: methods } = useAuthMethods()
 
-    const passwordForm = useForm<PasswordFormValues>({
+    const passwordForm = useForm<PasswordChangeForm>({
+        resolver: zodResolver(passwordChangeSchema),
         defaultValues: {
             currentPassword: "",
             newPassword: "",
@@ -42,54 +41,38 @@ export function SecuritySection() {
 
     const hasPassword = methods?.has_usable_password ?? true
 
-    const handleChangePassword = passwordForm.handleSubmit(
-        async (data) => {
-            setPasswordMsg(null)
-
-            if (data.newPassword !== data.confirmNewPassword) {
-                setPasswordMsg({
-                    type: "error",
-                    text: "New passwords do not match.",
-                })
-                return
-            }
-
-            const pwError = validatePassword(data.newPassword)
-            if (pwError) {
-                setPasswordMsg({ type: "error", text: pwError })
-                return
-            }
-
-            try {
-                await changePassword.mutateAsync(
+    const handleChangePassword = passwordForm.handleSubmit(async (data) => {
+        setPasswordMsg(null)
+        try {
+            await changePassword.mutateAsync(
+                hasPassword
+                    ? {
+                        current_password: data.currentPassword,
+                        new_password: data.newPassword,
+                    }
+                    : { new_password: data.newPassword },
+            )
+            setPasswordMsg({
+                type: "success",
+                text: hasPassword ? "Password changed." : "Password set.",
+            })
+            passwordForm.reset()
+        } catch (err) {
+            setPasswordMsg({
+                type: "error",
+                text: getErrorMessage(
+                    err,
                     hasPassword
-                        ? {
-                            current_password: data.currentPassword,
-                            new_password: data.newPassword,
-                        }
-                        : { new_password: data.newPassword },
-                )
-                setPasswordMsg({
-                    type: "success",
-                    text: hasPassword ? "Password changed." : "Password set.",
-                })
-                passwordForm.reset()
-            } catch (err) {
-                setPasswordMsg({
-                    type: "error",
-                    text: getErrorMessage(
-                        err,
-                        hasPassword
-                            ? "Password change failed."
-                            : "Setting password failed.",
-                    ),
-                })
-            }
-        },
-    )
+                        ? "Password change failed."
+                        : "Setting password failed.",
+                ),
+            })
+        }
+    })
 
     const showRemoveBlock = hasPassword
     const removeEnabled = methods ? canRemovePassword(methods) : false
+    const fieldErrors = passwordForm.formState.errors
 
     return (
         <div className="flex flex-col gap-6">
@@ -112,6 +95,7 @@ export function SecuritySection() {
                             type="password"
                             autoComplete="current-password"
                             required
+                            error={fieldErrors.currentPassword?.message}
                             {...passwordForm.register("currentPassword")}
                         />
                     )}
@@ -121,6 +105,7 @@ export function SecuritySection() {
                         type="password"
                         autoComplete="new-password"
                         required
+                        error={fieldErrors.newPassword?.message}
                         {...passwordForm.register("newPassword")}
                     />
                     <FormField
@@ -129,6 +114,7 @@ export function SecuritySection() {
                         type="password"
                         autoComplete="new-password"
                         required
+                        error={fieldErrors.confirmNewPassword?.message}
                         {...passwordForm.register("confirmNewPassword")}
                     />
 

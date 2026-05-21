@@ -29,7 +29,7 @@ const fetchPlayerProfile = async (
     try {
         return await apiFetch<PlayerResponse>(path, { signal })
     } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
+        if (err instanceof ApiError && err.isNotFound) {
             throw new PlayerNotFoundError(err)
         }
         throw err

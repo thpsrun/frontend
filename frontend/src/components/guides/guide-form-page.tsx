@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router"
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import { Button } from "@/components/ui/button"
 import { Panel } from "@/components/ui/panel"
 import { Skeleton } from "@/components/ui/skeleton"

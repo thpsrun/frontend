@@ -3,7 +3,7 @@ import { useParams } from "react-router"
 import { useForm, Controller } from "react-hook-form"
 import { toast } from "sonner"
 
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import { SectionDivider } from "@/components/ui/section-divider"
 import { SectionPanel } from "@/components/profile/section-panel"
 import { SaveButton } from "@/components/profile/save-button"
@@ -92,6 +92,7 @@ export function TimingSection() {
         try {
             await handleSave()
         } catch {
+            // handleSave already surfaces errors via toast/topError.
         }
     })
 

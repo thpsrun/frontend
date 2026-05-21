@@ -4,11 +4,11 @@ import { Link } from "react-router"
 
 import { useGames } from "@/hooks/game/useGames"
 import { Button } from "@/components/ui/button"
-import { EmptyState } from "@/components/ui/empty-state"
+import { EmptyState } from "@/components/common/empty-state"
 import { Input } from "@/components/ui/input"
 import { Panel } from "@/components/ui/panel"
-import { QueryErrorBanner } from "@/components/ui/query-error-banner"
-import { TableSkeleton } from "@/components/ui/table-skeleton"
+import { QueryErrorBanner } from "@/components/common/query-error-banner"
+import { TableSkeleton } from "@/components/common/table-skeleton"
 import {
     Table,
     TableBody,

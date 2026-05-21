@@ -17,7 +17,7 @@ import { useTags } from "@/hooks/guides/useTags"
 import type { GuideListItem, Tag } from "@/types/guides"
 import { GuideTableSkeleton } from "./guide-table-skeleton"
 import { GradientUsername } from "@/components/profile/gradient-username"
-import { EmptyState } from "@/components/ui/empty-state"
+import { EmptyState } from "@/components/common/empty-state"
 import { buildGuideUrl, resolveGuideTags } from "@/lib/guide-urls"
 import { cn, truncate } from "@/lib/utils"
 

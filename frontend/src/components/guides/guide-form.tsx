@@ -28,7 +28,7 @@ import {
     CommandList,
 } from "@/components/ui/command"
 import { Badge } from "@/components/ui/badge"
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import { ChevronsUpDown, Trash2 } from "lucide-react"
 import { useGames } from "@/hooks/game/useGames"
 import { useTags } from "@/hooks/guides/useTags"

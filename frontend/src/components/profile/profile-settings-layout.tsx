@@ -7,6 +7,7 @@ const NAV_GROUPS: ReadonlyArray<NavGroup> = [
         heading: "Account",
         items: [
             { label: "General", to: "/profile/settings/general" },
+            { label: "Notifications", to: "/profile/settings/notifications" },
             { label: "Social Media", to: "/profile/settings/social" },
             { label: "Security", to: "/profile/settings/security" },
             { label: "SRC API", to: "/profile/settings/src-api" },

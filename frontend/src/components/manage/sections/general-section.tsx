@@ -3,7 +3,7 @@ import { useParams } from "react-router"
 import { useForm, Controller } from "react-hook-form"
 import { toast } from "sonner"
 
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
@@ -74,6 +74,7 @@ export function GeneralSection() {
         try {
             await handleSave()
         } catch {
+            // handleSave already surfaces errors via toast/topError.
         }
     })
 

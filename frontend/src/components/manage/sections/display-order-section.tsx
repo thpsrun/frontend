@@ -3,7 +3,7 @@ import { Navigate, useParams } from "react-router"
 import { useGameDetail } from "@/hooks/game/useGameDetail"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { GameDisplayEditor } from "@/components/admin/game-display/game-display-editor"
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import { SectionPanel } from "@/components/profile/section-panel"
 
 export function DisplayOrderSection() {

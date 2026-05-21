@@ -24,7 +24,12 @@ export function assembleTime(fields: TimeFields): string | null {
     const s = parseInt(fields.sec) || 0
     const ms = parseInt(fields.ms) || 0
     if (h === 0 && m === 0 && s === 0 && ms === 0) return null
-    return `${h}h ${m}m ${s}s ${ms}ms`
+    const parts: string[] = []
+    if (h > 0) parts.push(`${h}h`)
+    parts.push(`${m}m`)
+    parts.push(`${String(s).padStart(2, "0")}s`)
+    if (ms > 0) parts.push(`${String(ms).padStart(3, "0")}ms`)
+    return parts.join(" ")
 }
 
 // Splits a numeric time_secs (e.g. 754.567) into the discrete TimeFields

@@ -1,6 +1,6 @@
 import {
     ConfirmDeleteDialog,
-} from "@/components/ui/confirm-delete-dialog"
+} from "@/components/common/confirm-delete-dialog"
 
 interface Props {
     open: boolean

@@ -10,16 +10,16 @@ import {
     useCancelReconcile,
     isJobActive,
 } from "@/hooks/admin/useReconcile"
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import { Button } from "@/components/ui/button"
-import { MetaRow } from "@/components/ui/meta-row"
+import { MetaRow } from "@/components/common/meta-row"
 import { Pagination } from "@/components/ui/pagination"
 import { Panel } from "@/components/ui/panel"
-import { QueryErrorBanner } from "@/components/ui/query-error-banner"
+import { QueryErrorBanner } from "@/components/common/query-error-banner"
 import { Skeleton } from "@/components/ui/skeleton"
-import { TableSkeleton } from "@/components/ui/table-skeleton"
-import { TextFilterField } from "@/components/ui/text-filter-field"
-import { EmptyState } from "@/components/ui/empty-state"
+import { TableSkeleton } from "@/components/common/table-skeleton"
+import { TextFilterField } from "@/components/common/text-filter-field"
+import { EmptyState } from "@/components/common/empty-state"
 import {
     Table, TableBody, TableCell, TableHead,
     TableHeader, TableRow,

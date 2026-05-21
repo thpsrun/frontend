@@ -15,7 +15,7 @@ import {
 } from "@dnd-kit/sortable"
 import { Inbox } from "lucide-react"
 
-import { EmptyState } from "@/components/ui/empty-state"
+import { EmptyState } from "@/components/common/empty-state"
 import { SectionPanel } from "@/components/profile/section-panel"
 import type {
     DisplayItem,

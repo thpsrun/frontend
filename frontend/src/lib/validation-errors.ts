@@ -26,7 +26,7 @@ function friendly(message: string): string {
 export function parseValidationErrors(
     err: unknown,
 ): ParsedValidationErrors | null {
-    if (!(err instanceof ApiError) || err.status !== 422) return null
+    if (!(err instanceof ApiError) || !err.isValidation) return null
     const body = (err.body ?? {}) as Record<string, unknown>
     const result: ParsedValidationErrors = {
         fieldErrors: {},

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Panel } from "@/components/ui/panel"
 import { Pagination } from "@/components/ui/pagination"
-import { QueryErrorBanner } from "@/components/ui/query-error-banner"
+import { QueryErrorBanner } from "@/components/common/query-error-banner"
 import {
     Select, SelectContent, SelectItem,
     SelectTrigger, SelectValue,
@@ -13,7 +13,7 @@ import {
     Table, TableBody, TableCell, TableHead,
     TableHeader, TableRow,
 } from "@/components/ui/table"
-import { TableSkeleton } from "@/components/ui/table-skeleton"
+import { TableSkeleton } from "@/components/common/table-skeleton"
 import {
     Loader2, RotateCcw, ExternalLink,
 } from "lucide-react"

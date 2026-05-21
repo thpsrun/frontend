@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Plus, Tag as TagIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { EmptyState } from "@/components/ui/empty-state"
+import { EmptyState } from "@/components/common/empty-state"
 import { Panel } from "@/components/ui/panel"
 import { useTags } from "@/hooks/guides/useTags"
 import type { Tag } from "@/types/guides"

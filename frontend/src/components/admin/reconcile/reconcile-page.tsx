@@ -7,10 +7,10 @@ import { useReconcileJobs } from "@/hooks/admin/useReconcile"
 import { Button } from "@/components/ui/button"
 import { Pagination } from "@/components/ui/pagination"
 import { Panel } from "@/components/ui/panel"
-import { QueryErrorBanner } from "@/components/ui/query-error-banner"
-import { TableSkeleton } from "@/components/ui/table-skeleton"
-import { TextFilterField } from "@/components/ui/text-filter-field"
-import { EmptyState } from "@/components/ui/empty-state"
+import { QueryErrorBanner } from "@/components/common/query-error-banner"
+import { TableSkeleton } from "@/components/common/table-skeleton"
+import { TextFilterField } from "@/components/common/text-filter-field"
+import { EmptyState } from "@/components/common/empty-state"
 import {
     Table, TableBody, TableCell, TableHead,
     TableHeader, TableRow,

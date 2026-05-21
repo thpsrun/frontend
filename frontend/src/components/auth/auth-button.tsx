@@ -1,12 +1,15 @@
+import { useState } from "react"
 import { Link, useNavigate } from "react-router"
 import { toast } from "sonner"
 import { useSession } from "@/hooks/auth/useSession"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useLogout } from "@/hooks/auth/useLogout"
+import { useUnreadCount } from "@/hooks/notifications/useUnreadCount"
 import { BACKEND_URL } from "@/constants"
 import { cn, getErrorMessage } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { GradientUsername } from "@/components/profile/gradient-username"
+import { NotificationsMenu } from "@/components/notifications/notifications-menu"
 import {
     DropdownMenu,
     DropdownMenuTrigger,
@@ -21,6 +24,8 @@ export function AuthButton() {
     const { player } = useCurrentPlayer()
     const logout = useLogout()
     const navigate = useNavigate()
+    const unread = useUnreadCount().data?.count ?? 0
+    const [menuOpen, setMenuOpen] = useState(false)
 
     if (isLoading) return null
 
@@ -51,22 +56,33 @@ export function AuthButton() {
     }
 
     return (
-        <DropdownMenu>
+        <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
             <DropdownMenuTrigger asChild>
                 <button className={cn(
                     "flex items-center gap-2 rounded-md",
                     "px-2 py-1 hover:bg-accent",
                     "transition-colors",
                 )}>
-                    {avatarUrl ? (
-                        <img
-                            src={avatarUrl}
-                            alt={displayName}
-                            className="size-6 rounded-full object-cover"
-                        />
-                    ) : (
-                        <UserIcon className="size-6 text-muted-foreground" />
-                    )}
+                    <span className="relative inline-flex">
+                        {avatarUrl ? (
+                            <img
+                                src={avatarUrl}
+                                alt={displayName}
+                                className="size-6 rounded-full object-cover"
+                            />
+                        ) : (
+                            <UserIcon className="size-6 text-muted-foreground" />
+                        )}
+                        {unread > 0 && (
+                            <span
+                                aria-label={`${unread} unread notifications`}
+                                className={cn(
+                                    "absolute -top-0.5 -right-0.5 size-2",
+                                    "rounded-full bg-red-500 ring-2 ring-background",
+                                )}
+                            />
+                        )}
+                    </span>
                     <GradientUsername
                         name={displayName}
                         gradients={player?.customizations ?? null}
@@ -75,7 +91,7 @@ export function AuthButton() {
                 </button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem asChild>
                     <Link to={playerProfile}>
                         Player Profile
@@ -91,6 +107,7 @@ export function AuthButton() {
                         My Guides & Runs
                     </Link>
                 </DropdownMenuItem>
+                <NotificationsMenu onItemSelected={() => setMenuOpen(false)} />
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                     <Link to="/submissions" className="flex items-center gap-2">

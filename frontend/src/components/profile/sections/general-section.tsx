@@ -7,7 +7,7 @@ import { useCountries } from "@/hooks/auth/useCountries"
 import { useUpdateProfile } from "@/hooks/auth/useUpdateProfile"
 import { useUploadPfp } from "@/hooks/auth/useUploadPfp"
 import { BACKEND_URL } from "@/constants"
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import {

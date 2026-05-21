@@ -74,7 +74,7 @@ export const queryKeys = {
         all: ["auth"] as const,
         session: () => [...queryKeys.auth.all, "session"] as const,
         me: () => [...queryKeys.auth.all, "me"] as const,
-        countries: () => ["countries"] as const,
+        countries: () => [...queryKeys.auth.all, "countries"] as const,
         apiKeys: () => [...queryKeys.auth.all, "api-keys"] as const,
         capabilities: () => [...queryKeys.auth.all, "capabilities"] as const,
         methods: () => [...queryKeys.auth.all, "methods"] as const,
@@ -115,5 +115,17 @@ export const queryKeys = {
     tags: {
         all: ["tags"] as const,
         list: () => [...queryKeys.tags.all, "list"] as const,
+    },
+
+    notifications: {
+        all: ["notifications"] as const,
+        list: (params: Record<string, unknown>) =>
+            [...queryKeys.notifications.all, "list", params] as const,
+        unreadCount: () =>
+            [...queryKeys.notifications.all, "unread-count"] as const,
+        preferences: () =>
+            [...queryKeys.notifications.all, "preferences"] as const,
+        kinds: () =>
+            [...queryKeys.notifications.all, "kinds"] as const,
     },
 } as const

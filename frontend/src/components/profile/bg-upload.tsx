@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react"
 import type { ChangeEvent, DragEvent } from "react"
 import { Button } from "@/components/ui/button"
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import { Panel } from "@/components/ui/panel"
 import { ImageIcon, X } from "lucide-react"
 import { BACKEND_URL } from "@/constants"

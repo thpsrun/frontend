@@ -27,6 +27,7 @@ import { ApiError } from "@/lib/api-client"
 
 import { useSession } from "@/hooks/auth/useSession"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
+import { useReadByTarget } from "@/hooks/notifications/useReadByTarget"
 import { SubmitRunDialog } from "@/components/submissions/submit-run-dialog"
 
 import { cn } from "@/lib/utils"
@@ -49,6 +50,8 @@ export const GameOverview = () => {
     const { gameSlug, "*": splat } = useParams()
     const navigate = useNavigate()
     const safeGameSlug = gameSlug || ""
+
+    useReadByTarget("game", safeGameSlug || null)
 
     // URLs within the project are formatted based on the type of run it is.
     // Full-Game -> /:gameSlug:/:categorySlug:/:val1:/:val2:
@@ -267,7 +270,7 @@ export const GameOverview = () => {
 
     if (!gameSlug) return <Navigate to="/" replace />
 
-    if (gameError instanceof ApiError && gameError.status === 404) {
+    if (gameError instanceof ApiError && gameError.isNotFound) {
         return <Navigate to="/" replace />
     }
 

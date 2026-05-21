@@ -15,7 +15,7 @@ import {
 } from "@/lib/validation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import { FormField } from "@/components/profile/form-field"
 import type { OauthSignupDraft, AuthProvider } from "@/types/auth"
 

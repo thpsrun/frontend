@@ -3,7 +3,7 @@ import { useParams } from "react-router"
 import { useForm, Controller, useFieldArray } from "react-hook-form"
 import { toast } from "sonner"
 
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { SectionDivider } from "@/components/ui/section-divider"

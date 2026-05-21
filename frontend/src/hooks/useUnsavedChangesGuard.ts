@@ -39,6 +39,7 @@ export function useUnsavedChangesGuard({
                 blocker.proceed()
             }
         } catch {
+            //
         }
     }, [onSave, blocker])
 

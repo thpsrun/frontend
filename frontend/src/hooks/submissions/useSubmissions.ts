@@ -35,8 +35,12 @@ const changeRunPlayers = (
 export function useSubmissions() {
     const queryClient = useQueryClient()
 
-    const invalidate = () =>
+    const invalidate = () => {
         queryClient.invalidateQueries({ queryKey: queryKeys.submissions.all })
+        queryClient.invalidateQueries({ queryKey: queryKeys.runs.all })
+        queryClient.invalidateQueries({ queryKey: queryKeys.player.all })
+        queryClient.invalidateQueries({ queryKey: queryKeys.leaderboard.all })
+    }
 
     const submissionsQuery = useQuery({
         queryKey: queryKeys.submissions.list(),

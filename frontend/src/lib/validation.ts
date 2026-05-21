@@ -1,105 +1,60 @@
-export function validateUsername(value: string): string | null {
-    if (value.length < 3 || value.length > 20) {
-        return "Usernames must be between 3 and 20 characters."
-    }
-    if (!/^[\w.@+-]+$/.test(value)) {
-        return "Username can only contain letters, digits, and @/./+/-/_ characters."
-    }
-    return null
+import type { ZodType } from "zod"
+import {
+    apiKeyLabelSchema,
+    emailSchema,
+    guideContentSchema,
+    guideShortDescriptionSchema,
+    guideTitleSchema,
+    navItemNameSchema,
+    navUrlSchema,
+    passwordSchema,
+    reviewNotesSchema,
+    socialUrlSchema,
+    tagDescriptionSchema,
+    tagNameSchema,
+    usernameSchema,
+} from "@/lib/schemas"
+
+function firstError<T>(schema: ZodType<T>, value: unknown): string | null {
+    const result = schema.safeParse(value)
+    return result.success ? null : (result.error.issues[0]?.message ?? "Invalid value.")
 }
 
-// Printable ASCII range (\x20-\x7E) covers space through tilde;
-// control characters and non-ASCII unicode are rejected.
-export function validatePassword(value: string): string | null {
-    if (value.length < 8 || value.length > 64) {
-        return "Password must be 8-64 characters."
-    }
-    if (!/^[\x20-\x7E]+$/.test(value)) {
-        return "Password can only contain printable ASCII characters."
-    }
-    return null
-}
+export const validateUsername = (v: string): string | null =>
+    firstError(usernameSchema, v)
 
-export function validateApiKeyLabel(value: string): string | null {
-    const trimmed = value.trim()
-    if (trimmed.length === 0) {
-        return "Label is required."
-    }
-    if (trimmed.length > 100) {
-        return "Label must be 100 characters or fewer."
-    }
-    return null
-}
+export const validatePassword = (v: string): string | null =>
+    firstError(passwordSchema, v)
 
-export function validateEmail(value: string): string | null {
-    if (!value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-        return "Please enter a valid email address."
-    }
-    return null
-}
+export const validateApiKeyLabel = (v: string): string | null =>
+    firstError(apiKeyLabelSchema, v)
 
-export function validateGuideTitle(value: string): string | null {
-    const trimmed = value.trim()
-    if (trimmed.length === 0) return "Title is required."
-    if (trimmed.length > 200) return "Title must be 200 characters or fewer."
-    return null
-}
+export const validateEmail = (v: string): string | null =>
+    firstError(emailSchema, v)
 
-export function validateGuideShortDescription(value: string): string | null {
-    const trimmed = value.trim()
-    if (trimmed.length === 0) return "Short description is required."
-    if (trimmed.length > 500) return "Short description must be 500 characters or fewer."
-    return null
-}
+export const validateGuideTitle = (v: string): string | null =>
+    firstError(guideTitleSchema, v)
 
-export function validateGuideContent(value: string): string | null {
-    if (value.length === 0) return "Content is required."
-    if (value.length > 50_000) return "Content must be 50,000 characters or fewer."
-    return null
-}
+export const validateGuideShortDescription = (v: string): string | null =>
+    firstError(guideShortDescriptionSchema, v)
 
-export function validateTagName(value: string): string | null {
-    const trimmed = value.trim()
-    if (trimmed.length === 0) return "Tag name is required."
-    if (trimmed.length > 100) return "Tag name must be 100 characters or fewer."
-    return null
-}
+export const validateGuideContent = (v: string): string | null =>
+    firstError(guideContentSchema, v)
 
-export function validateTagDescription(value: string): string | null {
-    const trimmed = value.trim()
-    if (trimmed.length === 0) return "Tag description is required."
-    if (trimmed.length > 500) return "Tag description must be 500 characters or fewer."
-    return null
-}
+export const validateTagName = (v: string): string | null =>
+    firstError(tagNameSchema, v)
 
-export function validateNavItemName(value: string): string | null {
-    const trimmed = value.trim()
-    if (trimmed.length === 0) return "Name is required."
-    if (trimmed.length > 100) return "Name must be 100 characters or fewer."
-    return null
-}
+export const validateTagDescription = (v: string): string | null =>
+    firstError(tagDescriptionSchema, v)
 
-// Control characters to remove some potential parsing tricks
-const URL_CONTROL_CHARS = /[\x00-\x1F\x7F]/
+export const validateNavItemName = (v: string): string | null =>
+    firstError(navItemNameSchema, v)
 
-// Requires HTTP(s) and rejects JavaScript and other crap.
-export function validateNavUrl(value: string): string | null {
-    const trimmed = value.trim()
-    if (trimmed.length === 0) return null
-    if (trimmed.length > 500) return "URL must be 500 characters or fewer."
-    if (URL_CONTROL_CHARS.test(trimmed)) return "URL contains invalid characters."
-    if (trimmed.startsWith("/")) return null
-    if (/^https?:\/\//i.test(trimmed)) return null
-    return "URL must start with /, http://, or https://."
-}
+export const validateNavUrl = (v: string): string | null =>
+    firstError(navUrlSchema, v)
 
-export function validateSocialUrl(value: string): string | null {
-    const trimmed = value.trim()
-    if (trimmed.length === 0) return "URL is required."
-    if (trimmed.length > 500) return "URL must be 500 characters or fewer."
-    if (URL_CONTROL_CHARS.test(trimmed)) return "URL contains invalid characters."
-    if (!/^https?:\/\//i.test(trimmed)) {
-        return "URL must start with http:// or https://."
-    }
-    return null
-}
+export const validateSocialUrl = (v: string): string | null =>
+    firstError(socialUrlSchema, v)
+
+export const validateReviewNotes = (v: string): string | null =>
+    firstError(reviewNotesSchema, v)

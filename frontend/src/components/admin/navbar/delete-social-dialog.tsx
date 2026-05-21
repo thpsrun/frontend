@@ -1,4 +1,4 @@
-import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog"
+import { ConfirmDeleteDialog } from "@/components/common/confirm-delete-dialog"
 import { useDeleteSocial } from "@/hooks/admin/useNavbarAdmin"
 import type { NavbarAdminSocial } from "@/types/admin-navbar"
 

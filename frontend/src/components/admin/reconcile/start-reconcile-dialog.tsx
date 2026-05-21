@@ -12,8 +12,8 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { AlertBanner } from "@/components/ui/alert-banner"
-import { MetaRow } from "@/components/ui/meta-row"
+import { AlertBanner } from "@/components/common/alert-banner"
+import { MetaRow } from "@/components/common/meta-row"
 import {
     Select,
     SelectContent,
@@ -219,7 +219,7 @@ function StartReconcileForm({
         } catch (err) {
             setPendingBody(null)
             setPendingSummary(null)
-            if (err instanceof ApiError && err.status === 409) {
+            if (err instanceof ApiError && err.isConflict) {
                 const body = err.body as ConflictOut | undefined
                 if (body && typeof body.existing_job_id === "string") {
                     setConflict({

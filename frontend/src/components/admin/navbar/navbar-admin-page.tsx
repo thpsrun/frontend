@@ -2,9 +2,9 @@ import { useState } from "react"
 import { Inbox, Plus, RefreshCw } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { EmptyState } from "@/components/ui/empty-state"
+import { EmptyState } from "@/components/common/empty-state"
 import { Panel } from "@/components/ui/panel"
-import { QueryErrorBanner } from "@/components/ui/query-error-banner"
+import { QueryErrorBanner } from "@/components/common/query-error-banner"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import {

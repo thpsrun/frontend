@@ -3,7 +3,7 @@ import { useParams, Navigate } from "react-router"
 import { toast } from "sonner"
 import { UserIcon } from "lucide-react"
 
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"

@@ -1,7 +1,7 @@
 import { toast } from "sonner"
 import {
     ConfirmDeleteDialog,
-} from "@/components/ui/confirm-delete-dialog"
+} from "@/components/common/confirm-delete-dialog"
 import { useDeleteTag } from "@/hooks/guides/useDeleteTag"
 import type { Tag } from "@/types/guides"
 

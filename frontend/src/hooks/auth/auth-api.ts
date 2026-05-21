@@ -30,7 +30,7 @@ export async function checkSession(signal?: AbortSignal): Promise<SessionState> 
         )
         return { isAuthenticated: true, user: body.data.user }
     } catch (err) {
-        if (err instanceof ApiError && err.status === 401) {
+        if (err instanceof ApiError && err.isAuthRequired) {
             return { isAuthenticated: false }
         }
         throw err
@@ -64,7 +64,7 @@ export async function loginFn(
         }
     } catch (err) {
         if (!(err instanceof ApiError)) throw err
-        if (err.status !== 401) throw err
+        if (!err.isAuthRequired) throw err
 
         const body = err.body as AllauthSessionResponse | null
         const hasMfa = body?.data?.flows?.some((f) => f.id === "mfa_authenticate")
@@ -85,7 +85,7 @@ export async function loginFn(
                 emailVerificationRequired: true,
             }
         }
-        throw new Error("Invalid credentials. Please try again.")
+        throw new Error("Invalid credentials. Please try again.", { cause: err })
     }
 }
 
@@ -96,10 +96,10 @@ export async function submitTotpFn(code: string): Promise<void> {
             { base: "allauth", method: "POST", json: { code } },
         )
     } catch (err) {
-        if (err instanceof ApiError && err.status === 429) {
-            throw new Error("Too many attempts. Please wait and try again.")
+        if (err instanceof ApiError && err.isRateLimited) {
+            throw new Error("Too many attempts. Please wait and try again.", { cause: err })
         }
-        throw new Error("Invalid code. Please try again.")
+        throw new Error("Invalid code. Please try again.", { cause: err })
     }
 }
 
@@ -110,7 +110,7 @@ export async function logoutFn(): Promise<void> {
             { base: "allauth", method: "DELETE" },
         )
     } catch (err) {
-        if (err instanceof ApiError && err.status === 401) return
+        if (err instanceof ApiError && err.isAuthRequired) return
         throw err
     }
 }

@@ -10,7 +10,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import { ApiError } from "@/lib/api-client"
 import { validateApiKeyLabel } from "@/lib/validation"
 import { usePatchApiKey } from "@/hooks/auth/usePatchApiKey"
@@ -86,7 +86,7 @@ function EditApiKeyDialogBody({
             toast.success("Key updated.")
             onOpenChange(false)
         } catch (err) {
-            if (err instanceof ApiError && err.status === 404) {
+            if (err instanceof ApiError && err.isNotFound) {
                 toast.info("Key was already revoked.")
                 onOpenChange(false)
                 return

@@ -60,8 +60,6 @@ export interface RunPlayer {
     bluesky: string | null
 }
 
-export type RunType = "main" | "il"
-export type RunStatus = "verified" | "new" | "rejected"
 
 export interface RunVariableEmbedEntry {
     variable: {
@@ -78,6 +76,7 @@ export interface RunVariableEmbedEntry {
 }
 
 // Utilized on /api/v1/runs/all
+export type RunType = "main" | "il"
 export interface Run {
     id: string
     runtype: RunType
@@ -103,6 +102,7 @@ export interface Run {
 }
 
 // Utilized on /api/v1/runs/all
+export type RunStatus = "verified" | "new" | "rejected" | "review"
 export interface AllRunsParams {
     game_id?: string
     category_id?: string

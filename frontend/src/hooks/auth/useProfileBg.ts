@@ -1,19 +1,19 @@
+import { useMutation } from "@tanstack/react-query"
 import { uploadProfileBgFn, deleteProfileBgFn } from "./auth-api"
 import { useInvalidateCurrentPlayer } from "./useSession"
-import {
-    useInvalidatingMutation,
-} from "@/hooks/use-invalidating-mutation"
 
 export function useUploadProfileBg() {
-    return useInvalidatingMutation(
-        uploadProfileBgFn,
-        useInvalidateCurrentPlayer(),
-    )
+    const invalidate = useInvalidateCurrentPlayer()
+    return useMutation({
+        mutationFn: uploadProfileBgFn,
+        onSuccess: () => invalidate(),
+    })
 }
 
 export function useDeleteProfileBg() {
-    return useInvalidatingMutation(
-        deleteProfileBgFn,
-        useInvalidateCurrentPlayer(),
-    )
+    const invalidate = useInvalidateCurrentPlayer()
+    return useMutation({
+        mutationFn: deleteProfileBgFn,
+        onSuccess: () => invalidate(),
+    })
 }

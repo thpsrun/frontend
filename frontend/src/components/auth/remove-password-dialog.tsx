@@ -64,13 +64,13 @@ export function RemovePasswordDialog({ open, onOpenChange }: Props) {
             onError: (err) => {
                 if (
                     err instanceof ApiError
-                    && err.status === 401
+                    && err.isAuthRequired
                     && err.code === "reauth_required"
                 ) {
                     setStep("reauth")
                     return
                 }
-                if (err instanceof ApiError && err.status === 429) {
+                if (err instanceof ApiError && err.isRateLimited) {
                     const retry = err.retryAfter ?? 0
                     setError(
                         `Too many attempts. Try again in ${formatRetryAfter(retry)}.`,

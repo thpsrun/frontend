@@ -89,6 +89,7 @@ export function OAuthCallbackPage() {
                     toast.success(`Connected ${PROVIDER_LABEL[added.provider]}.`)
                 }
             } catch {
+                // OAuth already succeeded; the refresh-and-toast is best-effort.
             }
             navigate("/profile/settings/security", { replace: true })
         }

@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Panel } from "@/components/ui/panel"
-import { QueryErrorBanner } from "@/components/ui/query-error-banner"
+import { QueryErrorBanner } from "@/components/common/query-error-banner"
 import { SkeletonRow } from "@/lib/leaderboard-helpers"
 import { ApiError } from "@/lib/api-client"
 import { useGames } from "@/hooks/game/useGames"
@@ -134,7 +134,7 @@ export const HistoricalRankingsPage = () => {
 
     if (
         error instanceof ApiError
-        && error.status === 404
+        && error.isNotFound
         && safeGameSlug
     ) {
         return (

@@ -4,7 +4,7 @@ import { Link, useParams } from "react-router"
 import { useGameDisplay } from "@/hooks/admin/useGameDisplay"
 import { Button } from "@/components/ui/button"
 import { Panel } from "@/components/ui/panel"
-import { QueryErrorBanner } from "@/components/ui/query-error-banner"
+import { QueryErrorBanner } from "@/components/common/query-error-banner"
 import { cn } from "@/lib/utils"
 
 import { GameDisplayEditor } from "./game-display-editor"

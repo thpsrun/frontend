@@ -59,7 +59,7 @@ export function RevokeApiKeyDialog({
             toast.success("Key Revoked!")
             onOpenChange(false)
         } catch (err) {
-            if (err instanceof ApiError && err.status === 404) {
+            if (err instanceof ApiError && err.isNotFound) {
                 toast.info("Key Already Revoked!")
                 onOpenChange(false)
                 return

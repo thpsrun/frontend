@@ -4,10 +4,10 @@ import type { UseMutationResult } from "@tanstack/react-query"
 import type {
     AuthMe, VerifySrcRequest, SRCKeyStatusResponse,
 } from "@/types/auth"
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import {
     ConfirmDeleteDialog,
-} from "@/components/ui/confirm-delete-dialog"
+} from "@/components/common/confirm-delete-dialog"
 import { FormField } from "@/components/profile/form-field"
 import { SaveButton } from "@/components/profile/save-button"
 import { SectionPanel } from "@/components/profile/section-panel"

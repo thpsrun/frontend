@@ -3,10 +3,11 @@ import { Link } from "react-router"
 import { Plus, KeyRound } from "lucide-react"
 import { API_BASE_URL } from "@/constants"
 import { Button } from "@/components/ui/button"
-import { AlertBanner } from "@/components/ui/alert-banner"
-import { EmptyState } from "@/components/ui/empty-state"
+import { AlertBanner } from "@/components/common/alert-banner"
+import { EmptyState } from "@/components/common/empty-state"
 import { SectionPanel } from "@/components/profile/section-panel"
 import { useApiKeys } from "@/hooks/auth/useApiKeys"
+import { ApiKeysReadOnView } from "@/components/notifications/api-keys-read-on-view"
 import { ApiKeysTable } from "@/components/profile/api-keys/api-keys-table"
 import { RevokedKeysAccordion } from "@/components/profile/api-keys/revoked-keys-accordion"
 import { CreateApiKeyDialog } from "@/components/profile/api-keys/create-api-key-dialog"
@@ -54,6 +55,7 @@ export function ApiKeysSection() {
 
     return (
         <div className="flex flex-col gap-6">
+            <ApiKeysReadOnView keys={keysQuery.data ?? []} />
             <SectionPanel title="API Keys" description={description}>
                 <div className="flex flex-col gap-4">
                     <Button

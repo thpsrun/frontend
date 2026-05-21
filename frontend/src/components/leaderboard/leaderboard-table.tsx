@@ -4,7 +4,7 @@ import {
     FaYoutube,
 } from "react-icons/fa"
 import { Cloud, Play, Trophy } from "lucide-react"
-import { EmptyState } from "@/components/ui/empty-state"
+import { EmptyState } from "@/components/common/empty-state"
 
 import {
     Table,

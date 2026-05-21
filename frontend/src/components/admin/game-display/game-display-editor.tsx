@@ -1,5 +1,5 @@
 import { Panel } from "@/components/ui/panel"
-import { QueryErrorBanner } from "@/components/ui/query-error-banner"
+import { QueryErrorBanner } from "@/components/common/query-error-banner"
 import { Skeleton } from "@/components/ui/skeleton"
 
 import {

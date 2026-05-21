@@ -9,21 +9,24 @@ import {
 import { Label } from "@/components/ui/label"
 import { Panel } from "@/components/ui/panel"
 import { Switch } from "@/components/ui/switch"
-import { EmptyState } from "@/components/ui/empty-state"
-import { QueryErrorBanner } from "@/components/ui/query-error-banner"
-import { TableSkeleton } from "@/components/ui/table-skeleton"
+import { EmptyState } from "@/components/common/empty-state"
+import { QueryErrorBanner } from "@/components/common/query-error-banner"
+import { TableSkeleton } from "@/components/common/table-skeleton"
 import {
     Table, TableBody, TableCell, TableHead,
     TableHeader, TableRow,
 } from "@/components/ui/table"
 import { EditRunDialog } from "@/components/submissions/edit-run-dialog"
+import { VidStatusBadge } from "@/components/submissions/vid-status-badge"
 import { cn } from "@/lib/utils"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useAllRunsPaginated } from "@/hooks/runs/useRuns"
 import type {
     Run, RunCategoryEmbed, RunGameEmbed, RunLevelEmbed, RunVariableEmbedEntry,
 } from "@/types/runs"
-import type { PendingRun } from "@/types/submissions"
+import type { PendingRun, VidStatus } from "@/types/submissions"
+
+type PendingStatus = Extract<VidStatus, "new" | "review">
 
 interface GameGroup {
     name: string
@@ -58,7 +61,10 @@ function buildRunLeaderboardPath(run: Run): string | null {
     )
 }
 
-function runToPendingRun(run: Run): PendingRun {
+function runToPendingRun(
+    run: Run,
+    vidStatus: VidStatus = "verified",
+): PendingRun {
     const game = isGameEmbed(run.game)
         ? { name: run.game.name, slug: run.game.slug }
         : { name: "", slug: "" }
@@ -89,13 +95,20 @@ function runToPendingRun(run: Run): PendingRun {
             name: p.name,
             countrycode: p.country,
         })),
-        vid_status: "",
+        vid_status: vidStatus,
+        review_notes: "",
         description: run.description,
         src_sync: [],
     }
 }
 
-function RunRow({ run, idx }: { run: Run; idx: number }) {
+function RunRow({
+    run, idx, pendingStatus,
+}: {
+    run: Run
+    idx: number
+    pendingStatus?: PendingStatus
+}) {
     const [editOpen, setEditOpen] = useState(false)
     const stop = (e: SyntheticEvent) => e.stopPropagation()
     const time = run.times.p_time && run.times.p_time !== "0"
@@ -104,6 +117,7 @@ function RunRow({ run, idx }: { run: Run; idx: number }) {
     const videoHref = run.arch_video ?? run.video
     const leaderboardPath = buildRunLeaderboardPath(run)
     const categoryLabel = run.subcategory ?? "-"
+    const vidStatus: VidStatus = pendingStatus ?? "verified"
 
     return (
         <>
@@ -137,7 +151,11 @@ function RunRow({ run, idx }: { run: Run; idx: number }) {
                 {time}
             </TableCell>
             <TableCell className="text-center">
-                {run.obsolete ? (
+                {pendingStatus ? (
+                    <div className="flex justify-center">
+                        <VidStatusBadge status={pendingStatus} />
+                    </div>
+                ) : run.obsolete ? (
                     <Badge variant="outline" className="text-muted-foreground">
                         Obsolete
                     </Badge>
@@ -238,11 +256,165 @@ function RunRow({ run, idx }: { run: Run; idx: number }) {
             </TableCell>
         </TableRow>
         <EditRunDialog
-            run={runToPendingRun(run)}
+            run={runToPendingRun(run, vidStatus)}
             open={editOpen}
             onOpenChange={setEditOpen}
         />
         </>
+    )
+}
+
+interface PendingRunData {
+    run: Run
+    status: PendingStatus
+}
+
+interface PendingGameGroup {
+    name: string
+    slug: string
+    items: PendingRunData[]
+}
+
+function PendingRunsPanel({ playerId }: { playerId: string | undefined }) {
+    const enabled = Boolean(playerId)
+    const newQuery = useAllRunsPaginated(
+        {
+            player_id: playerId ?? "",
+            status: "new",
+            embed: "game,category,level,variables",
+        },
+        enabled,
+    )
+    const reviewQuery = useAllRunsPaginated(
+        {
+            player_id: playerId ?? "",
+            status: "review",
+            embed: "game,category,level,variables",
+        },
+        enabled,
+    )
+
+    const isLoading = newQuery.isLoading || reviewQuery.isLoading
+    const error = newQuery.error ?? reviewQuery.error
+    const refetch = () => {
+        newQuery.refetch()
+        reviewQuery.refetch()
+    }
+
+    const groups: PendingGameGroup[] = useMemo(() => {
+        const items: PendingRunData[] = [
+            ...(newQuery.data ?? []).map(
+                (run) => ({ run, status: "new" as const }),
+            ),
+            ...(reviewQuery.data ?? []).map(
+                (run) => ({ run, status: "review" as const }),
+            ),
+        ]
+        items.sort((a, b) => {
+            const at = new Date(a.run.date).getTime()
+            const bt = new Date(b.run.date).getTime()
+            return bt - at
+        })
+        const byGame = new Map<string, PendingGameGroup>()
+        for (const item of items) {
+            if (!isGameEmbed(item.run.game)) continue
+            const slug = item.run.game.slug
+            const existing = byGame.get(slug)
+            if (existing) {
+                existing.items.push(item)
+            } else {
+                byGame.set(slug, {
+                    name: item.run.game.name,
+                    slug,
+                    items: [item],
+                })
+            }
+        }
+        return Array.from(byGame.values())
+    }, [newQuery.data, reviewQuery.data])
+
+    if (isLoading) {
+        return (
+            <Panel className="p-5">
+                <div className="flex items-center gap-3 mb-4">
+                    <h2 className="text-xl font-semibold">Pending Runs</h2>
+                </div>
+                <TableSkeleton
+                    columns={7}
+                    rows={3}
+                    headers={[
+                        "Type", "Category", "Time",
+                        "Place", "Points", "Verified", "Links",
+                    ]}
+                />
+            </Panel>
+        )
+    }
+
+    if (error) {
+        return <QueryErrorBanner error={error} onRetry={refetch} />
+    }
+
+    const totalCount = groups.reduce((acc, g) => acc + g.items.length, 0)
+    if (totalCount === 0) return null
+
+    return (
+        <Panel className="p-5">
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+                <h2 className="text-xl font-semibold">Pending Runs</h2>
+                <Badge variant="secondary">{totalCount}</Badge>
+            </div>
+            <div className="space-y-6">
+                {groups.map((group) => (
+                    <div key={group.slug} className="space-y-2">
+                        <div className="flex items-center gap-2">
+                            <Link
+                                to={`/${group.slug}`}
+                                className={cn(
+                                    "text-sm font-semibold",
+                                    "text-link hover:underline",
+                                )}
+                            >
+                                {group.name}
+                            </Link>
+                            <Badge variant="secondary">
+                                {group.items.length}
+                            </Badge>
+                        </div>
+                        <div
+                            className={cn(
+                                "rounded-md border",
+                                "border-border/40",
+                            )}
+                        >
+                            <Table className="table-fixed">
+                                <TableHeader>
+                                    <TableRow className="bg-muted/20">
+                                        <TableHead className="w-20 text-center">Type</TableHead>
+                                        <TableHead>Category</TableHead>
+                                        <TableHead className="w-28 text-center">Time</TableHead>
+                                        <TableHead className="w-32 text-center">Place</TableHead>
+                                        <TableHead className="w-24 text-center">Points</TableHead>
+                                        <TableHead className="w-28 text-center">Verified</TableHead>
+                                        <TableHead className="w-44 text-center">Links</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {group.items.map((item, idx) => (
+                                        <RunRow
+                                            key={item.run.id}
+                                            run={item.run}
+                                            idx={idx}
+                                            pendingStatus={item.status}
+                                        />
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </Panel>
     )
 }
 
@@ -291,19 +463,22 @@ export function RunsSection() {
 
     if (playerLoading || isLoading) {
         return (
-            <Panel className="p-5">
-                <div className="flex items-center gap-3 mb-4">
-                    <h2 className="text-xl font-semibold">My Runs</h2>
-                </div>
-                <TableSkeleton
-                    columns={6}
-                    rows={4}
-                    headers={[
-                        "Type", "Category", "Time",
-                        "Place", "Verified", "Links",
-                    ]}
-                />
-            </Panel>
+            <div className="space-y-4">
+                <PendingRunsPanel playerId={playerId} />
+                <Panel className="p-5">
+                    <div className="flex items-center gap-3 mb-4">
+                        <h2 className="text-xl font-semibold">My Runs</h2>
+                    </div>
+                    <TableSkeleton
+                        columns={6}
+                        rows={4}
+                        headers={[
+                            "Type", "Category", "Time",
+                            "Place", "Verified", "Links",
+                        ]}
+                    />
+                </Panel>
+            </div>
         )
     }
 
@@ -315,6 +490,7 @@ export function RunsSection() {
 
     return (
         <div className="space-y-4">
+            <PendingRunsPanel playerId={playerId} />
             <Panel className="p-5">
                 <div className="flex flex-wrap items-center gap-3 mb-4">
                     <h2 className="text-xl font-semibold">My Runs</h2>

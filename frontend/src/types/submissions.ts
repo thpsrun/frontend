@@ -31,7 +31,9 @@ export interface SrcSyncEntry {
     updated_at: string
 }
 
+
 // Utilized on /api/v1/auth/submissions
+export type VidStatus = "new" | "verified" | "rejected" | "review"
 export interface PendingRun {
     id: string
     runtype: string
@@ -49,7 +51,8 @@ export interface PendingRun {
     category: { name: string; slug: string }
     level: { name: string; slug: string } | null
     players: SubmissionPlayer[]
-    vid_status: string
+    vid_status: VidStatus
+    review_notes: string
     description: string | null
     src_sync: SrcSyncEntry[]
 }
@@ -64,10 +67,20 @@ export interface ModerationGameGroup {
 }
 
 // Utilized on /api/v1/auth/submissions
+export interface ReviewGameGroup {
+    game_id: string
+    game_name: string
+    game_slug: string
+    pending_count: number
+    pending_runs: PendingRun[]
+}
+
+// Utilized on /api/v1/auth/submissions
 export interface SubmissionsResponse {
     pending_runs: PendingRun[]
     edit_notice: string
     moderation_queue: ModerationGameGroup[] | null
+    review_groups: ReviewGameGroup[] | null
 }
 
 // Utilized on PUT /api/v1/auth/submissions/{runId}/status
@@ -100,6 +113,26 @@ export interface ChangePlayersResponse {
     run_id: string
     players: SubmissionPlayer[]
     src_sync_status: string
+    message: string
+}
+
+// Utilized on POST /api/v1/auth/submissions/{runId}/review
+export interface SendBackForReviewRequest {
+    notes: string
+}
+
+// Utilized on POST /api/v1/auth/submissions/{runId}/review
+export interface SendBackForReviewResponse {
+    run_id: string
+    vid_status: "review"
+    review_notes: string
+    message: string
+}
+
+// Utilized on POST /api/v1/auth/submissions/{runId}/resubmit
+export interface ResubmitRunResponse {
+    run_id: string
+    vid_status: "new"
     message: string
 }
 
@@ -190,16 +223,15 @@ export interface PlayerSearchResult {
 }
 
 // Utilized on PUT /api/v1/runs/{id}
+// Time fields are sent as numeric *_secs only; the backend formats the
+// display strings (time/timenl/timeigt) canonically from those.
 export interface RunUpdateRequest {
     category_id?: string
     level_id?: string | null
     runtype?: "main" | "il"
     place?: number
-    time?: string | null
     time_secs?: number | null
-    timenl?: string | null
     timenl_secs?: number | null
-    timeigt?: string | null
     timeigt_secs?: number | null
     video?: string | null
     arch_video?: string | null

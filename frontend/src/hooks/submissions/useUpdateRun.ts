@@ -28,6 +28,12 @@ export function useUpdateRun() {
             queryClient.invalidateQueries({
                 queryKey: queryKeys.runs.all,
             })
+            queryClient.invalidateQueries({
+                queryKey: queryKeys.player.all,
+            })
+            queryClient.invalidateQueries({
+                queryKey: queryKeys.leaderboard.all,
+            })
         },
     })
 }

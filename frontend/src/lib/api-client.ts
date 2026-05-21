@@ -40,19 +40,44 @@ export class ApiError extends Error {
         return this.status === 403
     }
 
+    get isNotFound(): boolean {
+        return this.status === 404
+    }
+
+    get isConflict(): boolean {
+        return this.status === 409
+    }
+
+    get isValidation(): boolean {
+        return this.status === 422
+    }
+
     get isRateLimited(): boolean {
         return this.status === 429
+    }
+
+    get isClientError(): boolean {
+        return this.status >= 400 && this.status < 500
+    }
+
+    get isServerError(): boolean {
+        return this.status >= 500
     }
 }
 
 type AuthLostHandler = () => void
+type BannedHandler = () => void
 let authLostHandler: AuthLostHandler | null = null
-let bannedRedirected = false
+let bannedHandler: BannedHandler | null = null
 
 const BANNED_DETAIL = "Account disabled"
 
 export function setAuthLostHandler(handler: AuthLostHandler | null): void {
     authLostHandler = handler
+}
+
+export function setBannedHandler(handler: BannedHandler | null): void {
+    bannedHandler = handler
 }
 
 export function getCsrfToken(): string {
@@ -169,10 +194,7 @@ export async function apiFetch<T = unknown>(
             error.status === 403
             && (error.body as { detail?: unknown } | null)?.detail === BANNED_DETAIL
         ) {
-            if (!bannedRedirected) {
-                bannedRedirected = true
-                window.location.assign("/login/banned")
-            }
+            bannedHandler?.()
         } else if (
             error.status === 401
             && base === "api"

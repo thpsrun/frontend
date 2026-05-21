@@ -4,13 +4,14 @@ import { Link } from "react-router"
 import { useSubmissions } from "@/hooks/submissions/useSubmissions"
 import { Badge } from "@/components/ui/badge"
 import { Panel } from "@/components/ui/panel"
-import { QueryErrorBanner } from "@/components/ui/query-error-banner"
+import { QueryErrorBanner } from "@/components/common/query-error-banner"
 import {
     Table, TableBody, TableCell, TableHead,
     TableHeader, TableRow,
 } from "@/components/ui/table"
-import { TableSkeleton } from "@/components/ui/table-skeleton"
-import { EmptyState } from "@/components/ui/empty-state"
+import { TableSkeleton } from "@/components/common/table-skeleton"
+import { EmptyState } from "@/components/common/empty-state"
+import { PageShell } from "@/components/common/page-shell"
 import { Info, ExternalLink, Inbox } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -20,7 +21,9 @@ import { EditRunDialog } from "@/components/submissions/edit-run-dialog"
 import {
     ChangePlayersDialog,
 } from "@/components/submissions/change-players-dialog"
-import type { PendingRun } from "@/types/submissions"
+import { ReviewGroupsSection } from "@/components/submissions/review-groups-section"
+import { VidStatusBadge } from "@/components/submissions/vid-status-badge"
+import type { PendingRun, ReviewGameGroup } from "@/types/submissions"
 
 interface RowData {
     run: PendingRun
@@ -50,13 +53,6 @@ function PendingRunRow({
                 )}
                 onClick={() => setEditOpen(true)}
             >
-                <TableCell className="text-center">
-                    {isMine ? (
-                        <Badge variant="secondary">Mine</Badge>
-                    ) : isModerating ? (
-                        <Badge>Mod</Badge>
-                    ) : null}
-                </TableCell>
                 <TableCell className="text-sm">
                     {run.subcategory}
                 </TableCell>
@@ -128,12 +124,19 @@ function PendingRunRow({
                     </div>
                 </TableCell>
                 <TableCell className="text-center">
-                    <SyncStatusBadge sync={run.src_sync} />
+                    <div className={cn(
+                        "flex flex-col items-center justify-center",
+                        "gap-1",
+                    )}>
+                        <VidStatusBadge status={run.vid_status} />
+                        <SyncStatusBadge sync={run.src_sync} />
+                    </div>
                 </TableCell>
             </TableRow>
 
             <EditRunDialog
                 run={run}
+                isMine={isMine}
                 open={editOpen}
                 onOpenChange={setEditOpen}
             />
@@ -154,96 +157,185 @@ interface GameGroup {
     rows: RowData[]
 }
 
+function groupByGame(rows: RowData[]): GameGroup[] {
+    const byGame = new Map<string, GameGroup>()
+    for (const row of rows) {
+        const slug = row.run.game.slug
+        const existing = byGame.get(slug)
+        if (existing) {
+            existing.rows.push(row)
+        } else {
+            byGame.set(slug, {
+                name: row.run.game.name,
+                slug,
+                rows: [row],
+            })
+        }
+    }
+    return Array.from(byGame.values())
+        .sort((a, b) => a.name.localeCompare(b.name))
+}
+
+function GroupedRunsPanel({
+    title, groups, totalCount,
+}: {
+    title: string
+    groups: GameGroup[]
+    totalCount: number
+}) {
+    if (groups.length === 0) return null
+    return (
+        <Panel className="p-5">
+            <div className="flex items-center gap-3 mb-4">
+                <h2 className="text-xl font-semibold">{title}</h2>
+                <Badge variant="secondary">{totalCount}</Badge>
+            </div>
+            <div className="space-y-6">
+                {groups.map((group) => (
+                    <div key={group.slug} className="space-y-2">
+                        <div className="flex items-center gap-2">
+                            <Link
+                                to={`/${group.slug}`}
+                                className={cn(
+                                    "text-sm font-semibold",
+                                    "text-link hover:underline",
+                                )}
+                            >
+                                {group.name}
+                            </Link>
+                            <Badge variant="secondary">
+                                {group.rows.length}
+                            </Badge>
+                        </div>
+                        <div className={cn(
+                            "rounded-md border overflow-x-auto",
+                            "border-border/40",
+                        )}>
+                            <Table className="table-fixed min-w-160">
+                                <TableHeader>
+                                    <TableRow className="bg-muted/20">
+                                        <TableHead className="text-center">Category</TableHead>
+                                        <TableHead className="text-center w-65">Players</TableHead>
+                                        <TableHead className="text-center w-24">Time</TableHead>
+                                        <TableHead className="text-center w-28">Date</TableHead>
+                                        <TableHead className="text-center w-28">Links</TableHead>
+                                        <TableHead className="text-center w-45">Status</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {group.rows.map((row, idx) => (
+                                        <PendingRunRow
+                                            key={row.run.id}
+                                            row={row}
+                                            idx={idx}
+                                        />
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </Panel>
+    )
+}
+
 export function SubmissionsHub() {
     const { data, isLoading, error, refetch } = useSubmissions()
 
-    const { rows, groups } = useMemo(() => {
-        if (!data) return { rows: [] as RowData[], groups: [] as GameGroup[] }
-        const byId = new Map<string, RowData>()
-
-        for (const run of data.pending_runs) {
-            byId.set(run.id, {
-                run,
-                isMine: true,
-                isModerating: false,
-            })
+    const {
+        myGroups, myCount,
+        modGroups, modCount,
+        reviewGroupsFiltered,
+    } = useMemo(() => {
+        if (!data) {
+            return {
+                myGroups: [] as GameGroup[],
+                myCount: 0,
+                modGroups: [] as GameGroup[],
+                modCount: 0,
+                reviewGroupsFiltered: [] as ReviewGameGroup[],
+            }
         }
+
+        const myRows: RowData[] = data.pending_runs.map((run) => ({
+            run,
+            isMine: true,
+            isModerating: false,
+        }))
+        const mineIds = new Set(myRows.map((r) => r.run.id))
+
         for (const group of data.moderation_queue ?? []) {
             for (const run of group.pending_runs) {
-                const existing = byId.get(run.id)
-                if (existing) {
-                    existing.isModerating = true
-                } else {
-                    byId.set(run.id, {
-                        run,
-                        isMine: false,
-                        isModerating: true,
-                    })
+                if (mineIds.has(run.id)) {
+                    const existing = myRows.find((r) => r.run.id === run.id)
+                    if (existing) existing.isModerating = true
                 }
             }
         }
 
-        const flat = Array.from(byId.values())
-
-        const byGame = new Map<string, GameGroup>()
-        for (const row of flat) {
-            const slug = row.run.game.slug
-            const existing = byGame.get(slug)
-            if (existing) {
-                existing.rows.push(row)
-            } else {
-                byGame.set(slug, {
-                    name: row.run.game.name,
-                    slug,
-                    rows: [row],
+        const modRows: RowData[] = []
+        for (const group of data.moderation_queue ?? []) {
+            for (const run of group.pending_runs) {
+                if (mineIds.has(run.id)) continue
+                modRows.push({
+                    run,
+                    isMine: false,
+                    isModerating: true,
                 })
             }
         }
 
-        const sortedGroups = Array.from(byGame.values())
-            .sort((a, b) => a.name.localeCompare(b.name))
+        const reviewGroupsFiltered = (data.review_groups ?? [])
+            .map((g) => ({
+                ...g,
+                pending_runs: g.pending_runs.filter(
+                    (r) => !mineIds.has(r.id),
+                ),
+            }))
+            .filter((g) => g.pending_runs.length > 0)
 
-        return { rows: flat, groups: sortedGroups }
+        return {
+            myGroups: groupByGame(myRows),
+            myCount: myRows.length,
+            modGroups: groupByGame(modRows),
+            modCount: modRows.length,
+            reviewGroupsFiltered,
+        }
     }, [data])
 
     if (isLoading) {
         return (
-            <div className={cn(
-                "mx-auto max-w-5xl px-4",
-                "space-y-6",
-            )}>
+            <PageShell>
                 <Panel className="p-5">
                     <div className="flex items-center gap-3 mb-4">
                         <h2 className="text-xl font-semibold">
-                            Pending Runs
+                            Your Pending Runs
                         </h2>
                     </div>
                     <TableSkeleton
-                        columns={7}
+                        columns={6}
                         rows={4}
                         headers={[
-                            "Type", "Category", "Players",
-                            "Time", "Date", "Links", "Sync",
+                            "Category", "Players",
+                            "Time", "Date", "Links", "Status",
                         ]}
                     />
                 </Panel>
-            </div>
+            </PageShell>
         )
     }
 
     if (error) {
         return (
-            <div className="mx-auto max-w-5xl px-4">
+            <PageShell spacing="none">
                 <QueryErrorBanner error={error} onRetry={refetch} />
-            </div>
+            </PageShell>
         )
     }
 
     return (
-        <div className={cn(
-            "mx-auto max-w-5xl px-4",
-            "space-y-6",
-        )}>
+        <PageShell>
             <Panel className="flex items-start gap-2.5 px-4 py-3 text-sm text-muted-foreground">
                 <Info className={cn(
                     "size-4 mt-0.5 shrink-0",
@@ -257,81 +349,36 @@ export function SubmissionsHub() {
                         rel="noopener noreferrer"
                         className={cn("text-link hover:underline")}
                     >
-                        speedrun.com
+                        SRC
                     </a>{" "}
                     automatically.
                 </span>
             </Panel>
 
-            <Panel className="p-5">
-                <div className="flex items-center gap-3 mb-4">
-                    <h2 className="text-xl font-semibold">
-                        Pending Runs
-                    </h2>
-                    {rows.length > 0 && (
-                        <Badge variant="secondary">
-                            {rows.length}
-                        </Badge>
-                    )}
-                </div>
+            <GroupedRunsPanel
+                title="Your Pending Runs"
+                groups={myGroups}
+                totalCount={myCount}
+            />
 
-                {groups.length === 0 ? (
+            <GroupedRunsPanel
+                title="Moderation Queue"
+                groups={modGroups}
+                totalCount={modCount}
+            />
+
+            {myCount === 0 && modCount === 0 && (
+                <Panel className="p-5">
                     <EmptyState
                         inset
                         icon={Inbox}
-                        title="No pending runs"
-                        description="Submitted runs will show here while they wait on moderators."
+                        title="No Pending Runs"
+                        description="Submitted runs will show here while they wait on moderators to approv, deny, or send back the runs for comments."
                     />
-                ) : (
-                    <div className="space-y-6">
-                        {groups.map((group) => (
-                            <div key={group.slug} className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                    <Link
-                                        to={`/${group.slug}`}
-                                        className={cn(
-                                            "text-sm font-semibold",
-                                            "text-link hover:underline",
-                                        )}
-                                    >
-                                        {group.name}
-                                    </Link>
-                                    <Badge variant="secondary">
-                                        {group.rows.length}
-                                    </Badge>
-                                </div>
-                                <div className={cn(
-                                    "rounded-md border",
-                                    "border-border/40",
-                                )}>
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow className="bg-muted/20">
-                                                <TableHead className="text-center">Type</TableHead>
-                                                <TableHead className="text-center">Category</TableHead>
-                                                <TableHead className="text-center">Players</TableHead>
-                                                <TableHead className="text-center">Time</TableHead>
-                                                <TableHead className="text-center">Date</TableHead>
-                                                <TableHead className="text-center">Links</TableHead>
-                                                <TableHead className="text-center">Sync</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {group.rows.map((row, idx) => (
-                                                <PendingRunRow
-                                                    key={row.run.id}
-                                                    row={row}
-                                                    idx={idx}
-                                                />
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </Panel>
-        </div>
+                </Panel>
+            )}
+
+            <ReviewGroupsSection groups={reviewGroupsFiltered} />
+        </PageShell>
     )
 }

@@ -213,7 +213,7 @@ function useProfileMediaMutation<TResponse, TInput>(
             })
         },
         onError: (err) => {
-            if (msgs.notFound && err instanceof ApiError && err.status === 404) {
+            if (msgs.notFound && err instanceof ApiError && err.isNotFound) {
                 toast.error(msgs.notFound)
                 return
             }

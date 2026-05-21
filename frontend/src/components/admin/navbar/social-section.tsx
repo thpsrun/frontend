@@ -24,7 +24,7 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { EmptyState } from "@/components/ui/empty-state"
+import { EmptyState } from "@/components/common/empty-state"
 import { Panel } from "@/components/ui/panel"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"

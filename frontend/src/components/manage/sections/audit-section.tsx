@@ -7,11 +7,11 @@ import {
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { EmptyState } from "@/components/ui/empty-state"
+import { EmptyState } from "@/components/common/empty-state"
 import { Pagination } from "@/components/ui/pagination"
 import { Panel } from "@/components/ui/panel"
-import { QueryErrorBanner } from "@/components/ui/query-error-banner"
-import { TableSkeleton } from "@/components/ui/table-skeleton"
+import { QueryErrorBanner } from "@/components/common/query-error-banner"
+import { TableSkeleton } from "@/components/common/table-skeleton"
 import {
     Table, TableBody, TableCell, TableHead,
     TableHeader, TableRow,

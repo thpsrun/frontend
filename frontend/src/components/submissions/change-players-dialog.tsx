@@ -12,7 +12,7 @@ import {
     Select, SelectContent, SelectItem,
     SelectTrigger, SelectValue,
 } from "@/components/ui/select"
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import { useSubmissions } from "@/hooks/submissions/useSubmissions"
 import { Loader2, Plus, Trash2 } from "lucide-react"
 import type {

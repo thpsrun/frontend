@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 
 import {
@@ -13,8 +13,7 @@ import {
     SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { AlertBanner } from "@/components/ui/alert-banner"
-import { Badge } from "@/components/ui/badge"
+import { AlertBanner } from "@/components/common/alert-banner"
 import { Textarea } from "@/components/ui/textarea"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { Loader2, Users } from "lucide-react"
@@ -23,15 +22,14 @@ import { useGameDetail } from "@/hooks/game/useGameDetail"
 import { useRun } from "@/hooks/runs/useRun"
 import { useUpdateRun } from "@/hooks/submissions/useUpdateRun"
 import { useSubmissions } from "@/hooks/submissions/useSubmissions"
+import { useSendBackForReview } from "@/hooks/submissions/useSendBackForReview"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
-import { useHasCapability } from "@/hooks/auth/useHasCapability"
 import { parseValidationErrors } from "@/lib/validation-errors"
-import { OverrideMethodField } from "@/components/manage/override-method-field"
-import { TIMING_METHOD_LABELS } from "@/types/shared"
-import type { TimingMethodType } from "@/types/shared"
+import { validateReviewNotes } from "@/lib/validation"
+import { ApiError } from "@/lib/api-client"
 import {
     TimeRow, type TimeFields,
-    assembleTime, parseTimeSecs, isValidYouTubeUrl,
+    parseTimeSecs, isValidYouTubeUrl,
     getYouTubeEmbedUrl,
     SectionLabel, Divider, ReadOnlyField,
     CategoryVariableGrid, PlatformEmulatedRow,
@@ -40,6 +38,14 @@ import {
 import {
     ChangePlayersDialog,
 } from "@/components/submissions/change-players-dialog"
+import { ReviewNotesBanner } from "@/components/submissions/review-notes-banner"
+import {
+    ModeratorVerdictSection,
+    type RunStatusChoice,
+} from "@/components/submissions/moderator-verdict-section"
+import {
+    UnsavedChangesDialog,
+} from "@/components/profile/unsaved-changes-dialog"
 
 import type {
     GameDetail, RunDetail,
@@ -50,69 +56,125 @@ import type {
 
 interface EditRunDialogProps {
     run: PendingRun
+    isMine?: boolean
     open: boolean
     onOpenChange: (open: boolean) => void
 }
 
 export function EditRunDialog({
-    run, open, onOpenChange,
+    run, isMine = false, open, onOpenChange,
 }: EditRunDialogProps) {
     const runQuery = useRun(run.id, { enabled: open })
     const gameQuery = useGameDetail(run.game.slug, { enabled: open })
     const updateRun = useUpdateRun()
+    const { verifyReject } = useSubmissions()
+    const sendBack = useSendBackForReview()
 
     const isLoading = runQuery.isLoading || gameQuery.isLoading
     const loadError = runQuery.error ?? gameQuery.error
-
     const detail = runQuery.data
     const gameDetail = gameQuery.data
 
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-268.5 max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle className="font-display text-3xl uppercase tracking-tight leading-none">
-                        Edit Run
-                    </DialogTitle>
-                    <DialogDescription className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground font-medium">
-                        {run.game.name}
-                        {run.level ? ` · ${run.level.name}` : ""}
-                        {` · ${run.category.name}`}
-                    </DialogDescription>
-                </DialogHeader>
+    const [discardOpen, setDiscardOpen] = useState(false)
+    const isDirtyRef = useRef(false)
+    const saveRef = useRef<(() => void) | null>(null)
 
-                {isLoading && (
-                    <div className="flex items-center justify-center py-10 text-muted-foreground">
-                        <Loader2 className="size-5 animate-spin" />
-                    </div>
-                )}
-
-                {loadError && !isLoading && (
-                    <AlertBanner variant="error">
-                        {loadError.message}
-                    </AlertBanner>
-                )}
-
-                {!isLoading && !loadError && detail && gameDetail && (
-                    <EditRunForm
-                        run={run}
-                        detail={detail}
-                        gameDetail={gameDetail}
-                        updateRun={updateRun}
-                        onClose={() => onOpenChange(false)}
-                    />
-                )}
-            </DialogContent>
-        </Dialog>
+    const isSaving = (
+        updateRun.isPending
+        || verifyReject.isPending
+        || sendBack.isPending
     )
-}
 
-interface EditRunFormProps {
-    run: PendingRun
-    detail: RunDetail
-    gameDetail: GameDetail
-    updateRun: ReturnType<typeof useUpdateRun>
-    onClose: () => void
+    const handleDialogOpenChange = (next: boolean) => {
+        if (next) {
+            onOpenChange(true)
+            return
+        }
+        if (isSaving) return
+        if (isDirtyRef.current) {
+            setDiscardOpen(true)
+            return
+        }
+        onOpenChange(false)
+    }
+
+    const handleClose = () => {
+        isDirtyRef.current = false
+        onOpenChange(false)
+    }
+
+    const handleDiscard = () => {
+        setDiscardOpen(false)
+        handleClose()
+    }
+
+    const handleSaveFromDiscard = () => {
+        setDiscardOpen(false)
+        saveRef.current?.()
+    }
+
+    return (
+        <>
+            <Dialog open={open} onOpenChange={handleDialogOpenChange}>
+                <DialogContent className="max-w-268.5 max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="font-display text-3xl uppercase tracking-tight leading-none">
+                            Edit Run
+                        </DialogTitle>
+                        <DialogDescription className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground font-medium">
+                            {run.game.name}
+                            {run.level ? ` · ${run.level.name}` : ""}
+                            {` · ${run.category.name}`}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {run.vid_status === "review" && run.review_notes && (
+                        <ReviewNotesBanner
+                            notes={run.review_notes}
+                            canResubmit={isMine}
+                            runId={run.id}
+                        />
+                    )}
+
+                    {isLoading && (
+                        <div className="flex items-center justify-center py-10 text-muted-foreground">
+                            <Loader2 className="size-5 animate-spin" />
+                        </div>
+                    )}
+
+                    {loadError && !isLoading && (
+                        <AlertBanner variant="error">
+                            {loadError.message}
+                        </AlertBanner>
+                    )}
+
+                    {!isLoading && !loadError && detail && gameDetail && (
+                        <EditRunForm
+                            run={run}
+                            detail={detail}
+                            gameDetail={gameDetail}
+                            updateRun={updateRun}
+                            verifyReject={verifyReject}
+                            sendBack={sendBack}
+                            isSaving={isSaving}
+                            isDirtyRef={isDirtyRef}
+                            saveRef={saveRef}
+                            onClose={handleClose}
+                            onRequestClose={() => handleDialogOpenChange(false)}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            <UnsavedChangesDialog
+                open={discardOpen}
+                onSave={handleSaveFromDiscard}
+                onDiscard={handleDiscard}
+                onCancel={() => setDiscardOpen(false)}
+                isSaving={isSaving}
+            />
+        </>
+    )
 }
 
 // Maps the RunDetail runtype ("main" | "il") to GameCategory type ("per-game" | "per-level").
@@ -122,8 +184,33 @@ function runtypeToCategoryType(
     return runtype === "main" ? "per-game" : "per-level"
 }
 
+function recordsEqual(
+    a: Record<string, string>,
+    b: Record<string, string>,
+): boolean {
+    const aKeys = Object.keys(a)
+    const bKeys = Object.keys(b)
+    if (aKeys.length !== bKeys.length) return false
+    return aKeys.every((k) => a[k] === b[k])
+}
+
+interface EditRunFormProps {
+    run: PendingRun
+    detail: RunDetail
+    gameDetail: GameDetail
+    updateRun: ReturnType<typeof useUpdateRun>
+    verifyReject: ReturnType<typeof useSubmissions>["verifyReject"]
+    sendBack: ReturnType<typeof useSendBackForReview>
+    isSaving: boolean
+    isDirtyRef: React.RefObject<boolean>
+    saveRef: React.RefObject<(() => void) | null>
+    onClose: () => void
+    onRequestClose: () => void
+}
+
 function EditRunForm({
-    run, detail, gameDetail, updateRun, onClose,
+    run, detail, gameDetail, updateRun, verifyReject, sendBack,
+    isSaving, isDirtyRef, saveRef, onClose, onRequestClose,
 }: EditRunFormProps) {
     const runtype = detail.runtype
     const [categoryId, setCategoryId] = useState<string>(detail.category)
@@ -142,20 +229,6 @@ function EditRunForm({
         detail.date ? detail.date.slice(0, 10) : "",
     )
 
-    const initial = useMemo(() => ({
-        categoryId: detail.category,
-        levelId: detail.level,
-        platformId: detail.platform,
-        obsolete: detail.obsolete,
-        place: String(detail.place),
-        video: detail.video ?? "",
-        archVideo: detail.arch_video ?? "",
-        srcUrl: detail.url ?? "",
-        description: run.description ?? "",
-        date: detail.date ? detail.date.slice(0, 10) : "",
-        variables: JSON.stringify(detail.variables),
-    }), [detail, run.description])
-
     const [rta, setRta] = useState<TimeFields>(
         () => parseTimeSecs(detail.times.time_secs),
     )
@@ -172,6 +245,34 @@ function EditRunForm({
     const [error, setError] = useState<string | null>(null)
     const [playersOpen, setPlayersOpen] = useState(false)
 
+    const { player } = useCurrentPlayer()
+    const isModerator = useMemo(
+        () => player?.moderation.moderated_games.some(
+            (g) => g.slug === run.game.slug,
+        ) ?? false,
+        [player, run.game.slug],
+    )
+    const resolvedRequired = detail.times.resolved_required_methods
+        ?? ["rta", "lrt", "igt"] as const
+
+    const [runStatus, setRunStatus] = useState<RunStatusChoice>("unchanged")
+    const [denyReason, setDenyReason] = useState("")
+    const [reviewNotes, setReviewNotes] = useState(run.review_notes ?? "")
+
+    const initial = useMemo(() => ({
+        categoryId: detail.category,
+        levelId: detail.level,
+        platformId: detail.platform,
+        obsolete: detail.obsolete,
+        place: String(detail.place),
+        video: detail.video ?? "",
+        archVideo: detail.arch_video ?? "",
+        srcUrl: detail.url ?? "",
+        description: run.description ?? "",
+        date: detail.date ? detail.date.slice(0, 10) : "",
+        variables: { ...detail.variables },
+    }), [detail, run.description])
+
     const isDirty = (
         categoryId !== initial.categoryId
         || levelId !== initial.levelId
@@ -183,40 +284,8 @@ function EditRunForm({
         || srcUrl !== initial.srcUrl
         || description !== initial.description
         || date !== initial.date
-        || JSON.stringify(variableValues) !== initial.variables
+        || !recordsEqual(variableValues, initial.variables)
     )
-
-    const handleCancel = () => {
-        if (isDirty) {
-            const ok = window.confirm(
-                "Discard changes? Any unsaved edits will be lost.",
-            )
-            if (!ok) return
-        }
-        onClose()
-    }
-
-    const { player } = useCurrentPlayer()
-    const { verifyReject } = useSubmissions()
-    const isModerator = useMemo(
-        () => player?.moderation.moderated_games.some(
-            (g) => g.slug === run.game.slug,
-        ) ?? false,
-        [player, run.game.slug],
-    )
-    const canEditAny = useHasCapability("runs.edit_any", gameDetail.id)
-    const [primaryOverride, setPrimaryOverride] =
-        useState<TimingMethodType | null>(
-            detail.times.primary_method_override ?? null,
-        )
-    const resolvedRequired = detail.times.resolved_required_methods
-        ?? ["rta", "lrt", "igt"] as const
-    const resolvedPrimary: TimingMethodType =
-        detail.times.resolved_primary_method ?? "rta"
-
-    type RunStatusChoice = "unchanged" | "verified" | "rejected"
-    const [runStatus, setRunStatus] = useState<RunStatusChoice>("unchanged")
-    const [denyReason, setDenyReason] = useState("")
 
     const availableCategories = useMemo(
         () => gameDetail.categories.filter(
@@ -274,29 +343,25 @@ function EditRunForm({
             setError("Place must be 1 or greater.")
             return
         }
-        if (
-            isModerator
-            && runStatus === "rejected"
-            && !denyReason.trim()
-        ) {
+        if (isModerator && runStatus === "rejected" && !denyReason.trim()) {
             setError("Provide a reason when denying a run.")
             return
         }
-
-        const rtaStr = assembleTime(rta)
-        const nlStr = assembleTime(nl)
-        const igtStr = assembleTime(igt)
+        if (isModerator && runStatus === "review") {
+            const notesError = validateReviewNotes(reviewNotes)
+            if (notesError) {
+                setError(notesError)
+                return
+            }
+        }
 
         const payload: RunUpdateRequest = {
             category_id: categoryId,
             level_id: runtype === "il" ? levelId : null,
             runtype,
             place: placeNum,
-            time: rtaStr,
             time_secs: timeFieldsToSecs(rta),
-            timenl: nlStr,
             timenl_secs: timeFieldsToSecs(nl),
-            timeigt: igtStr,
             timeigt_secs: timeFieldsToSecs(igt),
             video: video.trim() || null,
             arch_video: archVideo.trim() || null,
@@ -309,9 +374,6 @@ function EditRunForm({
             variable_values: Object.keys(variableValues).length > 0
                 ? variableValues
                 : null,
-            ...(canEditAny
-                ? { primary_method_override: primaryOverride }
-                : {}),
         }
 
         const formatErr = (err: unknown): string => {
@@ -333,6 +395,43 @@ function EditRunForm({
                         onClose()
                         return
                     }
+                    if (runStatus === "review") {
+                        sendBack.mutate(
+                            { runId: run.id, notes: reviewNotes },
+                            {
+                                onSuccess: () => {
+                                    toast.success(
+                                        run.vid_status === "review"
+                                            ? "Run Updated and Review Notes Saved!"
+                                            : "Run Updated and Sent Back to Runner!",
+                                    )
+                                    onClose()
+                                },
+                                onError: (err) => {
+                                    if (err instanceof ApiError) {
+                                        if (err.isForbidden) {
+                                            setError("You are not a moderator of this game...")
+                                            return
+                                        }
+                                        if (err.isNotFound) {
+                                            setError("Run not found...")
+                                            return
+                                        }
+                                        if (err.isConflict) {
+                                            setError("This run is no longer in a reviewable state...")
+                                            return
+                                        }
+                                        if (err.isValidation) {
+                                            setError(err.message)
+                                            return
+                                        }
+                                    }
+                                    setError(formatErr(err))
+                                },
+                            },
+                        )
+                        return
+                    }
                     verifyReject.mutate(
                         {
                             runId: run.id,
@@ -347,8 +446,8 @@ function EditRunForm({
                             onSuccess: () => {
                                 toast.success(
                                     runStatus === "verified"
-                                        ? "Run updated and verified."
-                                        : "Run updated and denied.",
+                                        ? "Run updated and verified!"
+                                        : "Run updated and denied!",
                                 )
                                 onClose()
                             },
@@ -360,6 +459,21 @@ function EditRunForm({
             },
         )
     }
+
+    // Sync dirty flag and save handle up to the parent dialog so it can
+    // intercept dialog-close attempts and offer save-or-discard.
+    useEffect(() => {
+        isDirtyRef.current = isDirty
+    }, [isDirty, isDirtyRef])
+
+    useEffect(() => {
+        saveRef.current = handleSave
+        return () => {
+            if (saveRef.current === handleSave) {
+                saveRef.current = null
+            }
+        }
+    })
 
     return (
         <>
@@ -452,17 +566,7 @@ function EditRunForm({
                     <Divider />
 
                     <div className="space-y-3">
-                        <div className="flex items-center justify-between gap-2">
-                            <SectionLabel>Timing</SectionLabel>
-                            {detail.times.primary_method_override && (
-                                <Badge variant="outline" className="text-[10px]">
-                                    Primary overridden:{" "}
-                                    {TIMING_METHOD_LABELS[
-                                        detail.times.primary_method_override
-                                    ]}
-                                </Badge>
-                            )}
-                        </div>
+                        <SectionLabel>Timing</SectionLabel>
                         {resolvedRequired.includes("rta") && (
                             <TimeRow
                                 label="Real Time (RTA)"
@@ -600,59 +704,14 @@ function EditRunForm({
                         </label>
 
                         {isModerator && (
-                            <div className="space-y-1 pt-2">
-                                <Label className="text-xs">Run Status</Label>
-                                <Select
-                                    value={runStatus}
-                                    onValueChange={(v) =>
-                                        setRunStatus(v as RunStatusChoice)
-                                    }
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="unchanged">
-                                            Keep unverified
-                                        </SelectItem>
-                                        <SelectItem value="verified">
-                                            Verified
-                                        </SelectItem>
-                                        <SelectItem value="rejected">
-                                            Denied
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                {runStatus === "rejected" && (
-                                    <div className="space-y-1 pt-2">
-                                        <Label
-                                            className="text-xs"
-                                            htmlFor="run-deny-reason"
-                                        >
-                                            Reason{" "}
-                                            <span className="text-destructive">*</span>
-                                        </Label>
-                                        <Input
-                                            id="run-deny-reason"
-                                            value={denyReason}
-                                            onChange={(e) =>
-                                                setDenyReason(e.target.value)
-                                            }
-                                            placeholder="Why is this run being denied?"
-                                        />
-                                    </div>
-                                )}
-                                {canEditAny && (
-                                    <div className="pt-3">
-                                        <OverrideMethodField
-                                            value={primaryOverride}
-                                            onChange={setPrimaryOverride}
-                                            resolvedPrimary={resolvedPrimary}
-                                            requiredMethods={resolvedRequired}
-                                        />
-                                    </div>
-                                )}
-                            </div>
+                            <ModeratorVerdictSection
+                                runStatus={runStatus}
+                                denyReason={denyReason}
+                                reviewNotes={reviewNotes}
+                                onRunStatusChange={setRunStatus}
+                                onDenyReasonChange={setDenyReason}
+                                onReviewNotesChange={setReviewNotes}
+                            />
                         )}
                     </div>
                 </div>
@@ -663,14 +722,11 @@ function EditRunForm({
             )}
 
             <DialogFooter>
-                <Button variant="outline" onClick={handleCancel}>
+                <Button variant="outline" onClick={onRequestClose}>
                     Cancel
                 </Button>
-                <Button
-                    onClick={handleSave}
-                    disabled={updateRun.isPending || verifyReject.isPending}
-                >
-                    {(updateRun.isPending || verifyReject.isPending) && (
+                <Button onClick={handleSave} disabled={isSaving}>
+                    {isSaving && (
                         <Loader2 className="size-4 animate-spin mr-1" />
                     )}
                     Save
@@ -687,4 +743,3 @@ function EditRunForm({
         </>
     )
 }
-

@@ -26,7 +26,7 @@ import { SectionDivider } from "@/components/ui/section-divider"
 import {
     UnsavedChangesGuard,
 } from "@/components/profile/unsaved-changes-guard"
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import type { StatusMsg } from "@/types/shared"
 import { cn, getErrorMessage } from "@/lib/utils"
 

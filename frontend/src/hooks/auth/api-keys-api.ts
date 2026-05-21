@@ -42,7 +42,7 @@ export function apiKeyErrorMessage(err: unknown): string {
     if (!(err instanceof ApiError)) {
         return "Something went wrong. Try again."
     }
-    if (err.status === 422) {
+    if (err.isValidation) {
         const body = err.body as { detail?: Array<{ msg?: string }> } | null
         const firstMsg = body?.detail?.[0]?.msg
         if (typeof firstMsg === "string") return firstMsg

@@ -11,7 +11,7 @@ import {
     Select, SelectContent, SelectItem,
     SelectTrigger, SelectValue,
 } from "@/components/ui/select"
-import { AlertBanner } from "@/components/ui/alert-banner"
+import { AlertBanner } from "@/components/common/alert-banner"
 import { Textarea } from "@/components/ui/textarea"
 import {
     TimeRow, type TimeFields, EMPTY_TIME, assembleTime,
