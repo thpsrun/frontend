@@ -29,15 +29,20 @@ import { useSession } from "@/hooks/auth/useSession"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useReadByTarget } from "@/hooks/notifications/useReadByTarget"
 import { SubmitRunDialog } from "@/components/submissions/submit-run-dialog"
+import { RulesDialog } from "@/components/rules/rules-dialog"
 
 import { cn } from "@/lib/utils"
-import { ChartLine, Send } from "lucide-react"
+import { BookOpen, ChartLine, Send } from "lucide-react"
 
 import {
     SkeletonRow,
     getApplicableVariables,
 } from "@/lib/leaderboard-helpers"
 import { resolveLeaderboardMethods } from "@/lib/timing-inheritance"
+import {
+    buildActiveSelection,
+    buildRulesSections,
+} from "@/lib/rules"
 
 import type {
     GameCategory,
@@ -136,6 +141,23 @@ export const GameOverview = () => {
             ),
         [applicableVariables, valueSlugs],
     )
+
+    const rulesView = useMemo(
+        () => {
+            if (!gameDetail || !activeCategory) {
+                return { sections: [], hasAny: false }
+            }
+            const active = buildActiveSelection(
+                activeCategory,
+                undefined,
+                valueSlugs,
+            )
+            return buildRulesSections(gameDetail, active)
+        },
+        [gameDetail, activeCategory, valueSlugs],
+    )
+
+    const [showRules, setShowRules] = useState(false)
 
     const leaderboardMethods = useMemo(
         () => {
@@ -412,6 +434,17 @@ export const GameOverview = () => {
                                     </Button>
                                 </span>
                             )}
+                            {rulesView.hasAny && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setShowRules(true)}
+                                    className="shrink-0 text-xs"
+                                >
+                                    <BookOpen className="size-3.5" />
+                                    Rules
+                                </Button>
+                            )}
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -514,6 +547,11 @@ export const GameOverview = () => {
                     valueSlugs={valueSlugs}
                 />
             )}
+            <RulesDialog
+                open={showRules}
+                onOpenChange={setShowRules}
+                view={rulesView}
+            />
             </>
             )}
         </div>

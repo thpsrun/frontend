@@ -47,7 +47,7 @@ export function GameManageLayout() {
                     to: `/${gameSlug}/manage/variables`,
                 },
                 ...(canViewAudit ? [{
-                    label: "Audit log",
+                    label: "Audit Log",
                     to: `/${gameSlug}/manage/audit`,
                 }] : []),
             ],

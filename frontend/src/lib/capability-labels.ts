@@ -10,6 +10,7 @@ const CAPABILITY_LABELS: Record<string, string> = {
     "guides.delete_own": "Delete Own Guides",
     "guides.delete_any": "Delete Any Guide",
     "games.manage": "Manage Games",
+    "games.audit.view": "View Game Audits",
     "api_keys.create_own": "Create Own API Keys",
     "api_keys.list_own": "List Own API Keys",
     "api_keys.revoke_own": "Revoke Own API Keys",

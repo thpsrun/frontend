@@ -9,11 +9,19 @@ import {
     GameStatsPanel,
     GameRecentPanel,
 } from "@/components/game/game-sidebar"
+import { RulesDialog } from "@/components/rules/rules-dialog"
+import { Button } from "@/components/ui/button"
 
 import { useILOverview } from "@/hooks/leaderboard/useILOverview"
 import { useILLeaderboard } from "@/hooks/leaderboard/useILLeaderboard"
 
 import { getApplicableVariables } from "@/lib/leaderboard-helpers"
+import {
+    buildActiveSelection,
+    buildRulesSections,
+} from "@/lib/rules"
+
+import { BookOpen } from "lucide-react"
 
 import type { GameDetail } from "@/types/api"
 
@@ -91,6 +99,43 @@ export const ILOverview = ({
     const hasFilters =
         ilCategories.length > 1
         || overviewVariables.length > 0
+
+    // For Rules: when a level is selected use the URL-driven category + level;
+    // when in overview mode use the overview category (no active level).
+    const rulesCategory = useMemo(
+        () => levelSlug
+            ? ilCategories.find((c) => c.slug === categorySlug)
+            : overviewCategory,
+        [levelSlug, ilCategories, categorySlug, overviewCategory],
+    )
+
+    const rulesLevel = useMemo(
+        () => levelSlug
+            ? (gameDetail?.levels ?? []).find(
+                (l) => l.slug === levelSlug,
+            )
+            : undefined,
+        [levelSlug, gameDetail],
+    )
+
+    const rulesValueSlugs = levelSlug ? valueSlugs : effectiveValues
+
+    const rulesView = useMemo(
+        () => {
+            if (!gameDetail || !rulesCategory) {
+                return { sections: [], hasAny: false }
+            }
+            const active = buildActiveSelection(
+                rulesCategory,
+                rulesLevel,
+                rulesValueSlugs,
+            )
+            return buildRulesSections(gameDetail, active)
+        },
+        [gameDetail, rulesCategory, rulesLevel, rulesValueSlugs],
+    )
+
+    const [showRules, setShowRules] = useState(false)
 
     const {
         data: overview,
@@ -175,6 +220,19 @@ export const ILOverview = ({
                         isILView={true}
                     />
                 </div>
+                {rulesView.hasAny && (
+                    <div className="flex justify-end">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowRules(true)}
+                            className="shrink-0 text-xs"
+                        >
+                            <BookOpen className="size-3.5" />
+                            Rules
+                        </Button>
+                    </div>
+                )}
                 {levelSlug ? (
                     <ILDetail
                         gameSlug={gameSlug}
@@ -265,6 +323,11 @@ export const ILOverview = ({
                     isILView={true}
                 />
             </div>
+            <RulesDialog
+                open={showRules}
+                onOpenChange={setShowRules}
+                view={rulesView}
+            />
         </>
     )
 }

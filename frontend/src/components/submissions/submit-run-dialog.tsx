@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { toast } from "sonner"
 import {
     Dialog, DialogContent, DialogHeader,
@@ -22,7 +22,14 @@ import {
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useSubmitRun } from "@/hooks/submissions/useSubmitRun"
 import { usePlayerSearch } from "@/hooks/players/usePlayerSearch"
-import { Loader2, Plus, Trash2 } from "lucide-react"
+import { Loader2, Plus, Trash2, BookOpen } from "lucide-react"
+import { RulesPanel } from "@/components/rules/rules-panel"
+import { RulesDialog } from "@/components/rules/rules-dialog"
+import { cn } from "@/lib/utils"
+import {
+    buildActiveSelection,
+    buildRulesSections,
+} from "@/lib/rules"
 import type {
     GameDetail, GameCategory, GameLevel,
 } from "@/types/api"
@@ -128,7 +135,45 @@ export function SubmitRunDialog({
         [selectedCategory],
     )
 
-    // Determine which row is actively searching to call hook unconditionally
+    const [rulesOpen, setRulesOpen] = useState(false)
+    const [isWide, setIsWide] = useState(
+        typeof window !== "undefined"
+            ? window.matchMedia("(min-width: 768px)").matches
+            : true,
+    )
+
+    useEffect(() => {
+        const mq = window.matchMedia("(min-width: 768px)")
+        const onChange = (e: MediaQueryListEvent) => setIsWide(e.matches)
+        mq.addEventListener("change", onChange)
+        return () => mq.removeEventListener("change", onChange)
+    }, [])
+
+    const orderedValueSlugs = useMemo(
+        () => applicableVariables.map((variable) => {
+            const valueId = selectedVarValues[variable.id]
+            const match = variable.values.find(
+                (val) => val.value === valueId,
+            )
+            return match?.slug ?? ""
+        }),
+        [applicableVariables, selectedVarValues],
+    )
+
+    const activeSelectionForRules = useMemo(
+        () => buildActiveSelection(
+            selectedCategory,
+            activeLevel ?? undefined,
+            orderedValueSlugs,
+        ),
+        [selectedCategory, activeLevel, orderedValueSlugs],
+    )
+
+    const rulesView = useMemo(
+        () => buildRulesSections(gameDetail, activeSelectionForRules),
+        [gameDetail, activeSelectionForRules],
+    )
+
     const activeSearchQuery = activeSearchIdx !== null
         ? (players[activeSearchIdx]?.searchQuery ?? "")
         : ""
@@ -175,6 +220,8 @@ export function SubmitRunDialog({
             setComment("")
             setError(null)
             setActiveSearchIdx(null)
+        } else {
+            setRulesOpen(false)
         }
         onOpenChange(next)
     }
@@ -265,17 +312,46 @@ export function SubmitRunDialog({
     }
 
     return (
+        <>
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+            <DialogContent
+                className={cn(
+                    "max-h-[85vh]",
+                    rulesOpen && isWide
+                        ? "max-w-300 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,420px)] md:gap-6 overflow-hidden"
+                        : "max-w-lg overflow-y-auto",
+                )}
+            >
+                <div className={cn(
+                    rulesOpen && isWide
+                        ? "min-w-0 overflow-y-auto"
+                        : undefined,
+                )}>
                 <DialogHeader>
-                    <DialogTitle className="font-display text-3xl uppercase tracking-tight leading-none">
-                        Submit Run
-                    </DialogTitle>
-                    <DialogDescription className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground font-medium">
-                        {gameDetail.name}
-                        {activeLevel ? ` · ${activeLevel.name}` : ""}
-                        {` · ${selectedCategory.name}`}
-                    </DialogDescription>
+                    <div className="flex items-start justify-between gap-2">
+                        <div className="space-y-1">
+                            <DialogTitle className="font-display text-3xl uppercase tracking-tight leading-none">
+                                Submit Run
+                            </DialogTitle>
+                            <DialogDescription className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground font-medium">
+                                {gameDetail.name}
+                                {activeLevel ? ` · ${activeLevel.name}` : ""}
+                                {` · ${selectedCategory.name}`}
+                            </DialogDescription>
+                        </div>
+                        {rulesView.hasAny && !rulesOpen && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setRulesOpen(true)}
+                                className="shrink-0 mt-2.5"
+                            >
+                                <BookOpen className="h-4 w-4 mr-1" />
+                                Show rules
+                            </Button>
+                        )}
+                    </div>
                 </DialogHeader>
 
                 <div className="space-y-3">
@@ -535,7 +611,7 @@ export function SubmitRunDialog({
                     <AlertBanner variant="error">{error}</AlertBanner>
                 )}
 
-                <DialogFooter>
+                <DialogFooter className="mt-6">
                     <Button
                         variant="outline"
                         onClick={() => handleOpenChange(false)}
@@ -561,7 +637,24 @@ export function SubmitRunDialog({
                         Submit Run
                     </Button>
                 </DialogFooter>
+                </div>
+
+                {rulesOpen && isWide && (
+                    <RulesPanel
+                        view={rulesView}
+                        onClose={() => setRulesOpen(false)}
+                        className="min-w-0 ml-2"
+                    />
+                )}
             </DialogContent>
         </Dialog>
+        {!isWide && (
+            <RulesDialog
+                open={rulesOpen}
+                onOpenChange={setRulesOpen}
+                view={rulesView}
+            />
+        )}
+        </>
     )
 }

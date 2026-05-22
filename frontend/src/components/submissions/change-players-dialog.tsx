@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select"
 import { AlertBanner } from "@/components/common/alert-banner"
 import { useSubmissions } from "@/hooks/submissions/useSubmissions"
+import { usePlayerSearch } from "@/hooks/players/usePlayerSearch"
 import { Loader2, Plus, Trash2 } from "lucide-react"
 import type {
     PendingRun, ChangePlayerEntry,
@@ -42,6 +43,12 @@ export function ChangePlayersDialog({
 
     const [rows, setRows] = useState<PlayerRow[]>(initialRows)
     const [error, setError] = useState<string | null>(null)
+    const [activeSearchIdx, setActiveSearchIdx] = useState<number | null>(null)
+
+    const activeSearchQuery = activeSearchIdx !== null
+        ? (rows[activeSearchIdx]?.value ?? "")
+        : ""
+    const searchResults = usePlayerSearch(activeSearchQuery)
 
     const handleOpenChange = (next: boolean) => {
         if (next) {
@@ -52,6 +59,7 @@ export function ChangePlayersDialog({
                 })),
             )
             setError(null)
+            setActiveSearchIdx(null)
         }
         onOpenChange(next)
     }
@@ -77,6 +85,7 @@ export function ChangePlayersDialog({
 
     const removeRow = (idx: number) => {
         setRows((prev) => prev.filter((_, i) => i !== idx))
+        if (activeSearchIdx === idx) setActiveSearchIdx(null)
     }
 
     const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
@@ -124,19 +133,18 @@ export function ChangePlayersDialog({
                                 key={idx}
                                 className="flex items-end gap-2"
                             >
-                                <div className="w-24">
+                                <div className="w-24 shrink-0">
                                     <Label className="text-xs">
                                         Type
                                     </Label>
                                     <Select
                                         value={row.rel}
-                                        onValueChange={(v) =>
-                                            updateRow(
-                                                idx,
-                                                "rel",
-                                                v,
-                                            )
-                                        }
+                                        onValueChange={(v) => {
+                                            updateRow(idx, "rel", v)
+                                            if (activeSearchIdx === idx) {
+                                                setActiveSearchIdx(null)
+                                            }
+                                        }}
                                     >
                                         <SelectTrigger>
                                             <SelectValue />
@@ -151,7 +159,7 @@ export function ChangePlayersDialog({
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="flex-1">
+                                <div className="flex-1 relative">
                                     <Label className="text-xs">
                                         {row.rel === "user"
                                             ? "Player Name"
@@ -159,19 +167,60 @@ export function ChangePlayersDialog({
                                     </Label>
                                     <Input
                                         value={row.value}
-                                        onChange={(e) =>
+                                        onChange={(e) => {
                                             updateRow(
                                                 idx,
                                                 "value",
                                                 e.target.value,
                                             )
-                                        }
+                                            if (row.rel === "user") {
+                                                setActiveSearchIdx(idx)
+                                            }
+                                        }}
+                                        onFocus={() => {
+                                            if (row.rel === "user") {
+                                                setActiveSearchIdx(idx)
+                                            }
+                                        }}
                                         placeholder={
                                             row.rel === "user"
-                                                ? "e.g. SpeedRunner"
+                                                ? "Search players..."
                                                 : "e.g. GuestRunner"
                                         }
                                     />
+
+                                    {row.rel === "user"
+                                        && activeSearchIdx === idx
+                                        && searchResults.data
+                                        && searchResults.data.length > 0 && (
+                                            <div className="absolute z-50 top-full left-0 right-0 mt-1 rounded-md border border-border bg-popover shadow-md overflow-hidden">
+                                                {searchResults.data.map((result) => (
+                                                    <button
+                                                        key={result.id}
+                                                        type="button"
+                                                        className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
+                                                        onMouseDown={(e) => {
+                                                            e.preventDefault()
+                                                            updateRow(
+                                                                idx,
+                                                                "value",
+                                                                result.name,
+                                                            )
+                                                            setActiveSearchIdx(null)
+                                                        }}
+                                                    >
+                                                        <span className="font-medium">
+                                                            {result.name}
+                                                        </span>
+                                                        {result.nickname && (
+                                                            <span className="text-muted-foreground ml-1">
+                                                                ({result.nickname})
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
                                 </div>
                                 <Button
                                     type="button"

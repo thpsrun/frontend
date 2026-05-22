@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { AlertBanner } from "@/components/common/alert-banner"
 import { Textarea } from "@/components/ui/textarea"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
-import { Loader2, Users } from "lucide-react"
+import { BookOpen, Loader2, Users } from "lucide-react"
 
 import { useGameDetail } from "@/hooks/game/useGameDetail"
 import { useRun } from "@/hooks/runs/useRun"
@@ -27,6 +27,14 @@ import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { parseValidationErrors } from "@/lib/validation-errors"
 import { validateReviewNotes } from "@/lib/validation"
 import { ApiError } from "@/lib/api-client"
+import { cn } from "@/lib/utils"
+import {
+    buildActiveSelection,
+    buildRulesSections,
+    type RulesView,
+} from "@/lib/rules"
+import { RulesPanel } from "@/components/rules/rules-panel"
+import { RulesDialog } from "@/components/rules/rules-dialog"
 import {
     TimeRow, type TimeFields,
     parseTimeSecs, isValidYouTubeUrl,
@@ -54,6 +62,8 @@ import type {
     PendingRun, RunUpdateRequest,
 } from "@/types/submissions"
 
+const EMPTY_RULES_VIEW: RulesView = { sections: [], hasAny: false }
+
 interface EditRunDialogProps {
     run: PendingRun
     isMine?: boolean
@@ -79,6 +89,21 @@ export function EditRunDialog({
     const isDirtyRef = useRef(false)
     const saveRef = useRef<(() => void) | null>(null)
 
+    const [rulesOpen, setRulesOpen] = useState(false)
+    const [rulesView, setRulesView] = useState<RulesView>(EMPTY_RULES_VIEW)
+    const [isWide, setIsWide] = useState(
+        typeof window !== "undefined"
+            ? window.matchMedia("(min-width: 768px)").matches
+            : true,
+    )
+
+    useEffect(() => {
+        const mq = window.matchMedia("(min-width: 768px)")
+        const onChange = (e: MediaQueryListEvent) => setIsWide(e.matches)
+        mq.addEventListener("change", onChange)
+        return () => mq.removeEventListener("change", onChange)
+    }, [])
+
     const isSaving = (
         updateRun.isPending
         || verifyReject.isPending
@@ -95,11 +120,13 @@ export function EditRunDialog({
             setDiscardOpen(true)
             return
         }
+        setRulesOpen(false)
         onOpenChange(false)
     }
 
     const handleClose = () => {
         isDirtyRef.current = false
+        setRulesOpen(false)
         onOpenChange(false)
     }
 
@@ -113,58 +140,107 @@ export function EditRunDialog({
         saveRef.current?.()
     }
 
+    const showSplit = rulesOpen && isWide
+
     return (
         <>
             <Dialog open={open} onOpenChange={handleDialogOpenChange}>
-                <DialogContent className="max-w-268.5 max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle className="font-display text-3xl uppercase tracking-tight leading-none">
-                            Edit Run
-                        </DialogTitle>
-                        <DialogDescription className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground font-medium">
-                            {run.game.name}
-                            {run.level ? ` · ${run.level.name}` : ""}
-                            {` · ${run.category.name}`}
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    {run.vid_status === "review" && run.review_notes && (
-                        <ReviewNotesBanner
-                            notes={run.review_notes}
-                            canResubmit={isMine}
-                            runId={run.id}
-                        />
+                <DialogContent
+                    className={cn(
+                        showSplit
+                            ? "h-[90vh] max-w-375 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,420px)] md:grid-rows-1 md:gap-6 overflow-hidden"
+                            : "max-h-[90vh] max-w-268.5 overflow-y-auto",
                     )}
+                >
+                    <div
+                        className={cn(
+                            showSplit
+                                ? "min-w-0 min-h-0 overflow-y-auto"
+                                : undefined,
+                        )}
+                    >
+                        <DialogHeader>
+                            <div className="flex items-start justify-between gap-2">
+                                <div className="space-y-1">
+                                    <DialogTitle className="font-display text-3xl uppercase tracking-tight leading-none">
+                                        Edit Run
+                                    </DialogTitle>
+                                    <DialogDescription className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground font-medium">
+                                        {run.game.name}
+                                        {run.level ? ` · ${run.level.name}` : ""}
+                                        {` · ${run.category.name}`}
+                                    </DialogDescription>
+                                </div>
+                                {rulesView.hasAny && !rulesOpen && (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setRulesOpen(true)}
+                                        className="shrink-0 mt-2.5"
+                                    >
+                                        <BookOpen className="h-4 w-4 mr-1" />
+                                        Show rules
+                                    </Button>
+                                )}
+                            </div>
+                        </DialogHeader>
 
-                    {isLoading && (
-                        <div className="flex items-center justify-center py-10 text-muted-foreground">
-                            <Loader2 className="size-5 animate-spin" />
-                        </div>
-                    )}
+                        {run.vid_status === "review" && run.review_notes && (
+                            <ReviewNotesBanner
+                                notes={run.review_notes}
+                                canResubmit={isMine}
+                                runId={run.id}
+                            />
+                        )}
 
-                    {loadError && !isLoading && (
-                        <AlertBanner variant="error">
-                            {loadError.message}
-                        </AlertBanner>
-                    )}
+                        {isLoading && (
+                            <div className="flex items-center justify-center py-10 text-muted-foreground">
+                                <Loader2 className="size-5 animate-spin" />
+                            </div>
+                        )}
 
-                    {!isLoading && !loadError && detail && gameDetail && (
-                        <EditRunForm
-                            run={run}
-                            detail={detail}
-                            gameDetail={gameDetail}
-                            updateRun={updateRun}
-                            verifyReject={verifyReject}
-                            sendBack={sendBack}
-                            isSaving={isSaving}
-                            isDirtyRef={isDirtyRef}
-                            saveRef={saveRef}
-                            onClose={handleClose}
-                            onRequestClose={() => handleDialogOpenChange(false)}
+                        {loadError && !isLoading && (
+                            <AlertBanner variant="error">
+                                {loadError.message}
+                            </AlertBanner>
+                        )}
+
+                        {!isLoading && !loadError && detail && gameDetail && (
+                            <EditRunForm
+                                run={run}
+                                detail={detail}
+                                gameDetail={gameDetail}
+                                updateRun={updateRun}
+                                verifyReject={verifyReject}
+                                sendBack={sendBack}
+                                isSaving={isSaving}
+                                isDirtyRef={isDirtyRef}
+                                saveRef={saveRef}
+                                onClose={handleClose}
+                                onRequestClose={() => handleDialogOpenChange(false)}
+                                onRulesViewChange={setRulesView}
+                            />
+                        )}
+                    </div>
+
+                    {showSplit && (
+                        <RulesPanel
+                            view={rulesView}
+                            onClose={() => setRulesOpen(false)}
+                            className="min-w-0 ml-2"
                         />
                     )}
                 </DialogContent>
             </Dialog>
+
+            {!isWide && (
+                <RulesDialog
+                    open={rulesOpen}
+                    onOpenChange={setRulesOpen}
+                    view={rulesView}
+                />
+            )}
 
             <UnsavedChangesDialog
                 open={discardOpen}
@@ -177,7 +253,6 @@ export function EditRunDialog({
     )
 }
 
-// Maps the RunDetail runtype ("main" | "il") to GameCategory type ("per-game" | "per-level").
 function runtypeToCategoryType(
     runtype: "main" | "il",
 ): "per-game" | "per-level" {
@@ -206,11 +281,13 @@ interface EditRunFormProps {
     saveRef: React.RefObject<(() => void) | null>
     onClose: () => void
     onRequestClose: () => void
+    onRulesViewChange: (view: RulesView) => void
 }
 
 function EditRunForm({
     run, detail, gameDetail, updateRun, verifyReject, sendBack,
     isSaving, isDirtyRef, saveRef, onClose, onRequestClose,
+    onRulesViewChange,
 }: EditRunFormProps) {
     const runtype = detail.runtype
     const [categoryId, setCategoryId] = useState<string>(detail.category)
@@ -311,6 +388,37 @@ function EditRunForm({
     )
 
     const embedUrl = useMemo(() => getYouTubeEmbedUrl(video), [video])
+
+    const activeLevelObj = useMemo(
+        () => availableLevels.find((l) => l.id === levelId),
+        [availableLevels, levelId],
+    )
+
+    const orderedValueSlugs = useMemo(
+        () => applicableVariables.map((variable) => {
+            const v = variable.values.find(
+                (val) => val.value === variableValues[variable.id],
+            )
+            return v?.slug ?? ""
+        }),
+        [applicableVariables, variableValues],
+    )
+
+    const rulesView = useMemo(
+        () => buildRulesSections(
+            gameDetail,
+            buildActiveSelection(
+                selectedCategory,
+                runtype === "il" ? activeLevelObj : undefined,
+                orderedValueSlugs,
+            ),
+        ),
+        [gameDetail, selectedCategory, runtype, activeLevelObj, orderedValueSlugs],
+    )
+
+    useEffect(() => {
+        onRulesViewChange(rulesView)
+    }, [rulesView, onRulesViewChange])
 
     const handleCategoryChange = (newId: string) => {
         setCategoryId(newId)
@@ -599,14 +707,9 @@ function EditRunForm({
                                 {run.players.map((p) => (
                                     <div
                                         key={p.id}
-                                        className="flex items-center justify-between rounded-md border border-border/40 bg-muted/20 px-3 py-2 text-sm"
+                                        className="rounded-md border border-border/40 bg-muted/20 px-3 py-2 text-sm"
                                     >
-                                        <span>{p.name}</span>
-                                        {p.countrycode && (
-                                            <span className="text-[10px] uppercase text-muted-foreground tracking-wide">
-                                                {p.countrycode}
-                                            </span>
-                                        )}
+                                        {p.name}
                                     </div>
                                 ))}
                             </div>
@@ -721,7 +824,7 @@ function EditRunForm({
                 <AlertBanner variant="error">{error}</AlertBanner>
             )}
 
-            <DialogFooter>
+            <DialogFooter className="mt-6">
                 <Button variant="outline" onClick={onRequestClose}>
                     Cancel
                 </Button>
