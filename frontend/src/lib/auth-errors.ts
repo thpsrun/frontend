@@ -1,5 +1,7 @@
 import type { OAuthConnectErrorReason } from "@/lib/oauth-connect"
 import type { OAuthReauthErrorReason } from "@/lib/oauth-reauth"
+import type { OAuthSignupErrorReason } from "@/lib/oauth-signup"
+import type { OAuthLoginErrorReason } from "@/lib/oauth-login"
 
 export function mapDeletePasswordError(code: string | null): string {
     switch (code) {
@@ -104,5 +106,73 @@ export function oauthConnectErrorMessage(
             return `${providerLabel} sign-in isn't available right now.`
         case "initiate_failed":
             return "Couldn't start the connect flow. Please try again."
+    }
+}
+
+export function oauthSignupErrorMessage(
+    reason: OAuthSignupErrorReason,
+    providerLabel: string,
+): string {
+    switch (reason) {
+        case "intent_expired":
+            return "Signup timed out. Try again."
+        case "provider_mismatch":
+            return "Signup failed. Please try again."
+        case "already_linked":
+            return `That ${providerLabel} account is already linked to an existing thps.run profile.`
+        case "provider_error":
+            return `${providerLabel} rejected the request. Please try again.`
+        case "discord_handle_taken":
+            return "Another thps.run user is already using that Discord handle."
+        case "twitch_handle_taken":
+            return "Another thps.run user is already using that Twitch handle."
+        case "signup_closed":
+            return `Signup with ${providerLabel} isn't available right now.`
+        case "cancelled":
+            return "Signup cancelled."
+        case "popup_blocked":
+            return "Popup was blocked. Allow popups for this site and try again."
+        case "initiate_unsupported_provider":
+            return `${providerLabel} sign-up isn't available right now.`
+        case "initiate_already_authenticated":
+            return "You're already signed in."
+        case "initiate_rate_limited":
+            return "Too many attempts. Try again in a minute."
+        case "initiate_failed":
+            return "Couldn't start signup. Please try again."
+    }
+}
+
+export function oauthLoginErrorMessage(
+    reason: OAuthLoginErrorReason,
+    providerLabel: string,
+): string {
+    switch (reason) {
+        case "intent_expired":
+            return "Login timed out. Try again."
+        case "provider_mismatch":
+            return "Login failed. Please try again."
+        case "no_link":
+            return `That ${providerLabel} account isn't linked to a thps.run profile.`
+        case "banned":
+            return "Your account has been disabled."
+        case "provider_error":
+            return `${providerLabel} rejected the request. Please try again.`
+        case "discord_handle_taken":
+            return "Another thps.run user is already using that Discord handle."
+        case "twitch_handle_taken":
+            return "Another thps.run user is already using that Twitch handle."
+        case "cancelled":
+            return "Login cancelled."
+        case "popup_blocked":
+            return "Popup was blocked. Allow popups for this site and try again."
+        case "initiate_unsupported_provider":
+            return `${providerLabel} login isn't available right now.`
+        case "initiate_already_authenticated":
+            return "You're already signed in."
+        case "initiate_rate_limited":
+            return "Too many attempts. Try again in a minute."
+        case "initiate_failed":
+            return "Couldn't start login. Please try again."
     }
 }

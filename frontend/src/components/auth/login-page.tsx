@@ -9,14 +9,32 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { FormField } from "@/components/profile/form-field"
-import { OAuthProviderButton } from "@/components/auth/oauth-provider-button"
+import { SiDiscord, SiTwitch } from "@icons-pack/react-simple-icons"
 import { PasskeyLoginButton } from "@/components/auth/passkey-login-button"
+import { useOauthLogin } from "@/hooks/auth/useOauthLogin"
+import { oauthLoginErrorMessage } from "@/lib/auth-errors"
+import type { AuthProvider } from "@/types/auth"
 import {
     peekRememberMeStash,
     stashRememberMe,
 } from "@/lib/remember-me"
 
 type LoginStep = "login" | "totp" | "email-verification"
+
+const PROVIDER_LABEL: Record<AuthProvider, string> = {
+    discord: "Discord",
+    twitch: "Twitch",
+}
+
+const PROVIDER_ICON: Record<AuthProvider, typeof SiDiscord> = {
+    discord: SiDiscord,
+    twitch: SiTwitch,
+}
+
+const PROVIDER_BRAND: Record<AuthProvider, string> = {
+    discord: "#5865F2",
+    twitch: "#9146FF",
+}
 
 function getReturnTo(state: unknown): string {
     if (
@@ -39,6 +57,7 @@ export function LoginPage() {
     const { isAuthenticated } = useSession()
     const login = useLogin()
     const submitTotp = useSubmitTotp()
+    const { login: oauthLogin, pending: oauthPending } = useOauthLogin()
 
     const returnTo = getReturnTo(location.state)
 
@@ -94,6 +113,16 @@ export function LoginPage() {
                     : "An unexpected error occurred.",
             )
         }
+    }
+
+    const handleOauthLogin = async (provider: AuthProvider) => {
+        setError(null)
+        const result = await oauthLogin(provider)
+        if (result.ok) {
+            navigate(returnTo)
+            return
+        }
+        setError(oauthLoginErrorMessage(result.reason, PROVIDER_LABEL[provider]))
     }
 
     const handleRememberMeChange = (checked: boolean) => {
@@ -230,22 +259,29 @@ export function LoginPage() {
 
                             <div className="flex flex-col gap-2">
                                 <PasskeyLoginButton rememberMe={rememberMe} />
-                                <OAuthProviderButton
-                                    provider="discord"
-                                    process="login"
-                                    callbackPath="/oauth/callback"
-                                    fullWidth
-                                >
-                                    Sign in with Discord
-                                </OAuthProviderButton>
-                                <OAuthProviderButton
-                                    provider="twitch"
-                                    process="login"
-                                    callbackPath="/oauth/callback"
-                                    fullWidth
-                                >
-                                    Sign in with Twitch
-                                </OAuthProviderButton>
+                                {(["discord", "twitch"] as const).map((p) => {
+                                    const Icon = PROVIDER_ICON[p]
+                                    const isPending = oauthPending === p
+                                    return (
+                                        <Button
+                                            key={p}
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() => handleOauthLogin(p)}
+                                            disabled={oauthPending !== null}
+                                            className="w-full"
+                                        >
+                                            <Icon
+                                                size={16}
+                                                color={PROVIDER_BRAND[p]}
+                                                className="mr-1"
+                                            />
+                                            {isPending
+                                                ? `Logging In With ${PROVIDER_LABEL[p]}...`
+                                                : `Log In With ${PROVIDER_LABEL[p]}`}
+                                        </Button>
+                                    )
+                                })}
                                 <p className="text-xs text-muted-foreground">
                                     Discord and Twitch sign-ins stay signed in for 7 days.
                                 </p>

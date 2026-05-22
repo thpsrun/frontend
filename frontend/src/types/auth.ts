@@ -171,18 +171,11 @@ export interface AuthMethodsSummary {
     authenticators: AuthMethodsAuthenticator[]
 }
 
-export interface OauthSignupDraft {
-    username: string
-    email: string
-    src_api_key: string
-    save_key: boolean
-    provider: AuthProvider
-}
-
 export interface OauthSignupRequest {
     username: string
     email: string
     src_api_key: string
+    save_key: boolean
 }
 
 export type OauthSignupErrorCode =

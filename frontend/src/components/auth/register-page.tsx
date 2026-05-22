@@ -19,7 +19,11 @@ import {
     validatePassword,
     validateEmail,
 } from "@/lib/validation"
-import { OAuthProviderButton } from "@/components/auth/oauth-provider-button"
+import { SiDiscord, SiTwitch } from "@icons-pack/react-simple-icons"
+import { useOauthSignup } from "@/hooks/auth/useOauthSignup"
+import { oauthSignupErrorMessage } from "@/lib/auth-errors"
+import { mapFinalizeSignupError } from "@/lib/oauth-signup-errors"
+import type { AuthProvider } from "@/types/auth"
 
 function getReturnTo(state: unknown): string {
     if (
@@ -36,11 +40,27 @@ function getReturnTo(state: unknown): string {
     return "/"
 }
 
+const PROVIDER_LABEL: Record<AuthProvider, string> = {
+    discord: "Discord",
+    twitch: "Twitch",
+}
+
+const PROVIDER_ICON: Record<AuthProvider, typeof SiDiscord> = {
+    discord: SiDiscord,
+    twitch: SiTwitch,
+}
+
+const PROVIDER_BRAND: Record<AuthProvider, string> = {
+    discord: "#5865F2",
+    twitch: "#9146FF",
+}
+
 export function RegisterPage() {
     const navigate = useNavigate()
     const location = useLocation()
     const { isAuthenticated } = useSession()
     const register = useRegister()
+    const { signup: oauthSignup, pending: oauthPending } = useOauthSignup()
 
     const returnTo = getReturnTo(location.state)
 
@@ -122,6 +142,24 @@ export function RegisterPage() {
                     : "Registration failed...",
             )
         }
+    }
+
+    const handleOauthSignup = async (provider: AuthProvider) => {
+        if (!validateSharedFields()) return
+        const result = await oauthSignup(provider, {
+            username,
+            email,
+            src_api_key: srcApiKey,
+            save_key: saveKey,
+        })
+        if (result.ok) {
+            navigate(returnTo)
+            return
+        }
+        const msg = result.kind === "popup"
+            ? oauthSignupErrorMessage(result.reason, PROVIDER_LABEL[provider])
+            : mapFinalizeSignupError(result.code)
+        setError(msg)
     }
 
     return (
@@ -311,25 +349,29 @@ export function RegisterPage() {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        {(["discord", "twitch"] as const).map((p) => (
-                            <OAuthProviderButton
-                                key={p}
-                                provider={p}
-                                process="signup"
-                                callbackPath="/oauth/callback"
-                                fullWidth
-                                signupDraft={{
-                                    username,
-                                    email,
-                                    src_api_key: srcApiKey,
-                                    save_key: saveKey,
-                                    provider: p,
-                                }}
-                                onBeforeSubmit={() => validateSharedFields()}
-                            >
-                                Sign Up With {p === "discord" ? "Discord" : "Twitch"}
-                            </OAuthProviderButton>
-                        ))}
+                        {(["discord", "twitch"] as const).map((p) => {
+                            const Icon = PROVIDER_ICON[p]
+                            const isPending = oauthPending === p
+                            return (
+                                <Button
+                                    key={p}
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => handleOauthSignup(p)}
+                                    disabled={oauthPending !== null}
+                                    className="w-full"
+                                >
+                                    <Icon
+                                        size={16}
+                                        color={PROVIDER_BRAND[p]}
+                                        className="mr-1"
+                                    />
+                                    {isPending
+                                        ? `Signing Up With ${PROVIDER_LABEL[p]}...`
+                                        : `Sign Up With ${PROVIDER_LABEL[p]}`}
+                                </Button>
+                            )
+                        })}
                     </div>
                 </CardContent>
             </Card>

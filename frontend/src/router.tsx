@@ -16,10 +16,6 @@ import { PlayerProfile } from "./components/player/player-profile.tsx"
 // Auth pages
 import { LoginPage } from "./components/auth/login-page.tsx"
 import { RegisterPage } from "./components/auth/register-page.tsx"
-import { OAuthCancelledPage } from "./components/auth/oauth-cancelled-page.tsx"
-import { OAuthErrorPage } from "./components/auth/oauth-error-page.tsx"
-import { OAuthCallbackPage } from "./components/auth/oauth-callback-page.tsx"
-import { NoLinkPage } from "./components/auth/no-link-page.tsx"
 import { BannedPage } from "./components/auth/banned-page.tsx"
 
 // Rankings
@@ -94,11 +90,7 @@ export const router = createBrowserRouter([
             { path: ":gameSlug/*", Component: GameOverview },
             { path: "login", Component: LoginPage },
             { path: "register", Component: RegisterPage },
-            { path: "login/cancelled", Component: OAuthCancelledPage },
-            { path: "login/error", Component: OAuthErrorPage },
-            { path: "login/no-link", Component: NoLinkPage },
             { path: "login/banned", Component: BannedPage },
-            { path: "oauth/callback", Component: OAuthCallbackPage },
             {
                 Component: ProtectedRoute,
                 children: [

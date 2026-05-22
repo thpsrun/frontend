@@ -2,7 +2,6 @@ import { apiFetch } from "@/lib/api-client"
 import type {
     AuthMethodsSummary,
     AuthProvider,
-    OauthSignupRequest,
 } from "@/types/auth"
 
 export const fetchAuthMethodsFn = (
@@ -22,12 +21,4 @@ export const deletePasswordFn = (): Promise<void> =>
     apiFetch<void>(
         "/auth/me/auth/password",
         { method: "DELETE" },
-    )
-
-export const finalizeOauthSignupFn = (
-    body: OauthSignupRequest,
-): Promise<void> =>
-    apiFetch<void>(
-        "/auth/provider/signup",
-        { base: "allauth", method: "POST", json: body },
     )
