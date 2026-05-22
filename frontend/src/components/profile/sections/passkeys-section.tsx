@@ -2,8 +2,6 @@ import { useState } from "react"
 import { Fingerprint } from "lucide-react"
 import { useAuthMethods } from "@/hooks/auth/useAuthMethods"
 import { useAuthenticators } from "@/hooks/auth/useAuthenticators"
-import { useEnrollPasskey } from "@/hooks/auth/useEnrollPasskey"
-import { useDeletePasskey } from "@/hooks/auth/useDeletePasskey"
 import { canRemovePasskey } from "@/lib/auth-methods"
 import type { Authenticator } from "@/types/auth"
 import { Button } from "@/components/ui/button"
@@ -35,23 +33,8 @@ export function PasskeysSection() {
     const passkeys = (authenticators ?? []).filter(
         (a): a is Authenticator => a.type === "webauthn",
     )
-    const enroll = useEnrollPasskey()
-    const remove = useDeletePasskey()
     const [enrollOpen, setEnrollOpen] = useState(false)
     const [removing, setRemoving] = useState<Authenticator | null>(null)
-
-    const handleEnroll = (name: string, password: string) => {
-        enroll.mutate({ name, password }, {
-            onSuccess: () => setEnrollOpen(false),
-        })
-    }
-
-    const handleRemove = (password: string) => {
-        if (!removing) return
-        remove.mutate({ id: removing.id, password }, {
-            onSuccess: () => setRemoving(null),
-        })
-    }
 
     return (
         <SectionPanel
@@ -85,7 +68,7 @@ export function PasskeysSection() {
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    disabled={remove.isPending || !canRemoveThis}
+                                    disabled={!canRemoveThis}
                                     onClick={() => setRemoving(pk)}
                                 >
                                     Remove
@@ -110,17 +93,12 @@ export function PasskeysSection() {
             <EnrollPasskeyDialog
                 open={enrollOpen}
                 onOpenChange={setEnrollOpen}
-                onConfirm={handleEnroll}
-                isPending={enroll.isPending}
             />
             <RemovePasskeyDialog
-                open={removing !== null}
-                onOpenChange={(open) => {
-                    if (!open) setRemoving(null)
-                }}
-                onConfirm={handleRemove}
-                isPending={remove.isPending}
-                passkeyName={removing?.name ?? "Passkey"}
+                target={removing
+                    ? { id: removing.id, name: removing.name ?? "Passkey" }
+                    : null}
+                onClose={() => setRemoving(null)}
             />
         </SectionPanel>
     )
