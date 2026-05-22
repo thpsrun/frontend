@@ -1,3 +1,6 @@
+import type { OAuthConnectErrorReason } from "@/lib/oauth-connect"
+import type { OAuthReauthErrorReason } from "@/lib/oauth-reauth"
+
 export function mapDeletePasswordError(code: string | null): string {
     switch (code) {
         case "no_alternative_auth":
@@ -38,5 +41,68 @@ export function mapDisconnectSocialError(
                 silent: false,
                 toast: "Couldn't disconnect. Please try again.",
             }
+    }
+}
+
+export function oauthReauthErrorMessage(
+    reason: OAuthReauthErrorReason,
+    providerLabel: string,
+): string {
+    switch (reason) {
+        case "not_authenticated":
+            return "Your session expired. Please log in again."
+        case "user_mismatch":
+            return "Something went wrong. Please refresh and try again."
+        case "intent_expired":
+            return "Verification timed out. Try again."
+        case "provider_mismatch":
+            return "Verification failed. Please try again."
+        case "account_mismatch":
+            return `That doesn't match your linked ${providerLabel}. `
+                + `Use the same account that's linked to your profile.`
+        case "provider_error":
+            return `${providerLabel} rejected the request. Please try again.`
+        case "cancelled":
+            return "Verification was cancelled..."
+        case "popup_blocked":
+            return "Popup was blocked. Allow popups for this site and try again."
+        case "initiate_rate_limited":
+            return "Too many attempts. Try again in a minute."
+        case "initiate_failed":
+            return "Couldn't start verification. Please try again."
+    }
+}
+
+export function oauthConnectErrorMessage(
+    reason: OAuthConnectErrorReason,
+    providerLabel: string,
+): string {
+    switch (reason) {
+        case "not_authenticated":
+            return "Your session expired. Please log in again."
+        case "user_mismatch":
+            return "Something went wrong. Please refresh and try again."
+        case "intent_expired":
+            return "Connect timed out. Try again."
+        case "provider_mismatch":
+            return "Connect failed. Please try again."
+        case "already_linked":
+        case "initiate_already_linked":
+            return `${providerLabel} is already connected to your account.`
+        case "account_taken":
+            return `That ${providerLabel} account is already `
+                + `connected to another profile.`
+        case "provider_error":
+            return `${providerLabel} rejected the request. Please try again.`
+        case "cancelled":
+            return "Connect cancelled."
+        case "popup_blocked":
+            return "Popup was blocked. Allow popups for this site and try again."
+        case "initiate_rate_limited":
+            return "Too many attempts. Try again in a minute."
+        case "initiate_unsupported_provider":
+            return `${providerLabel} sign-in isn't available right now.`
+        case "initiate_failed":
+            return "Couldn't start the connect flow. Please try again."
     }
 }

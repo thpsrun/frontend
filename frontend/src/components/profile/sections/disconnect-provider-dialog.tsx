@@ -5,7 +5,10 @@ import { ApiError } from "@/lib/api-client"
 import {
     mapDisconnectSocialError,
     mapReauthError,
+    oauthReauthErrorMessage,
 } from "@/lib/auth-errors"
+import { runOAuthReauth } from "@/lib/oauth-reauth"
+import { useAuthMethods } from "@/hooks/auth/useAuthMethods"
 import { useDisconnectSocialAccount } from "@/hooks/auth/useDisconnectSocialAccount"
 import { reauthenticateFn } from "@/hooks/auth/auth-api"
 import type { AuthProvider } from "@/types/auth"
@@ -29,7 +32,7 @@ interface Props {
     onClose: () => void
 }
 
-type Step = "confirm" | "reauth"
+type Step = "confirm" | "reauth_password" | "reauth_oauth"
 
 function formatRetryAfter(seconds: number): string {
     if (seconds <= 1) return "a moment"
@@ -40,6 +43,8 @@ function formatRetryAfter(seconds: number): string {
 
 export function DisconnectProviderDialog({ target, onClose }: Props) {
     const disconnect = useDisconnectSocialAccount()
+    const { data: methods } = useAuthMethods()
+    const hasUsablePassword = methods?.has_usable_password ?? true
 
     const [step, setStep] = useState<Step>("confirm")
     const [reauthPassword, setReauthPassword] = useState("")
@@ -47,12 +52,10 @@ export function DisconnectProviderDialog({ target, onClose }: Props) {
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
-        if (!target) {
-            setStep("confirm")
-            setReauthPassword("")
-            setReauthing(false)
-            setError(null)
-        }
+        setStep("confirm")
+        setReauthPassword("")
+        setReauthing(false)
+        setError(null)
     }, [target])
 
     const attemptDisconnect = () => {
@@ -66,7 +69,7 @@ export function DisconnectProviderDialog({ target, onClose }: Props) {
                     && err.isAuthRequired
                     && err.code === "reauth_required"
                 ) {
-                    setStep("reauth")
+                    setStep(hasUsablePassword ? "reauth_password" : "reauth_oauth")
                     return
                 }
                 if (err instanceof ApiError && err.isRateLimited) {
@@ -97,6 +100,7 @@ export function DisconnectProviderDialog({ target, onClose }: Props) {
 
     const handleReauth = async (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault()
+        if (!isPasswordReauthStep) return
         if (!reauthPassword) return
         setError(null)
         setReauthing(true)
@@ -113,7 +117,24 @@ export function DisconnectProviderDialog({ target, onClose }: Props) {
         }
     }
 
-    const isReauthStep = step === "reauth"
+    const handleOAuthReauth = async (e: SyntheticEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        if (!target) return
+        setError(null)
+        setReauthing(true)
+        const result = await runOAuthReauth(target.providerId)
+        setReauthing(false)
+        if (result.ok) {
+            setStep("confirm")
+            attemptDisconnect()
+            return
+        }
+        setError(oauthReauthErrorMessage(result.reason, target.label))
+    }
+
+    const isPasswordReauthStep = step === "reauth_password"
+    const isOAuthReauthStep = step === "reauth_oauth"
+    const isReauthStep = isPasswordReauthStep || isOAuthReauthStep
     const submitting = disconnect.isPending || reauthing
     const providerLabel = target?.label ?? ""
 
@@ -126,7 +147,13 @@ export function DisconnectProviderDialog({ target, onClose }: Props) {
         >
             <DialogContent>
                 <form
-                    onSubmit={isReauthStep ? handleReauth : handleConfirm}
+                    onSubmit={
+                        isOAuthReauthStep
+                            ? handleOAuthReauth
+                            : isPasswordReauthStep
+                                ? handleReauth
+                                : handleConfirm
+                    }
                     className="flex flex-col gap-4"
                 >
                     <DialogHeader>
@@ -137,22 +164,22 @@ export function DisconnectProviderDialog({ target, onClose }: Props) {
                         </DialogTitle>
                     </DialogHeader>
                     <p className="text-sm text-muted-foreground">
-                        {isReauthStep
-                            ? "Enter your password to continue."
-                            : (
-                                <>
-                                    You won't be able to sign in with{" "}
-                                    <span className="font-medium">
-                                        {providerLabel}
-                                    </span>{" "}
-                                    anymore.
-                                </>
-                            )}
+                        {isPasswordReauthStep && "Enter your password to continue."}
+                        {isOAuthReauthStep && `Verify with ${providerLabel} to continue.`}
+                        {!isReauthStep && (
+                            <>
+                                You won't be able to sign in with{" "}
+                                <span className="font-medium">
+                                    {providerLabel}
+                                </span>{" "}
+                                anymore.
+                            </>
+                        )}
                     </p>
                     {error && (
                         <div className="text-sm text-destructive">{error}</div>
                     )}
-                    {isReauthStep && (
+                    {isPasswordReauthStep && (
                         <FormField
                             label="Current Password"
                             id="reauth-password"
@@ -176,12 +203,14 @@ export function DisconnectProviderDialog({ target, onClose }: Props) {
                             variant="destructive"
                             disabled={
                                 submitting
-                                || (isReauthStep && !reauthPassword)
+                                || (isPasswordReauthStep && !reauthPassword)
                             }
                         >
-                            {isReauthStep
-                                ? (reauthing ? "Verifying..." : "Verify and Disconnect")
-                                : (disconnect.isPending ? "Disconnecting..." : "Disconnect")}
+                            {isOAuthReauthStep
+                                ? (reauthing ? "Verifying..." : `Verify with ${providerLabel}`)
+                                : isPasswordReauthStep
+                                    ? (reauthing ? "Verifying..." : "Verify and Disconnect")
+                                    : (disconnect.isPending ? "Disconnecting..." : "Disconnect")}
                         </Button>
                     </DialogFooter>
                 </form>

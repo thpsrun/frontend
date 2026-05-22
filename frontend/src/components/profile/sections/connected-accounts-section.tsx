@@ -1,9 +1,11 @@
 import { useState } from "react"
 import { SiDiscord, SiTwitch } from "@icons-pack/react-simple-icons"
+import { toast } from "sonner"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useAuthMethods } from "@/hooks/auth/useAuthMethods"
+import { useConnectSocialAccount } from "@/hooks/auth/useConnectSocialAccount"
 import { canDisconnectSocial } from "@/lib/auth-methods"
-import { OAuthProviderButton } from "@/components/auth/oauth-provider-button"
+import { oauthConnectErrorMessage } from "@/lib/auth-errors"
 import { Button } from "@/components/ui/button"
 import { SectionPanel } from "@/components/profile/section-panel"
 import { cn } from "@/lib/utils"
@@ -41,6 +43,7 @@ function rowLabel(
 export function ConnectedAccountsSection() {
     const { player } = useCurrentPlayer()
     const { data: methods } = useAuthMethods()
+    const { connect, pending } = useConnectSocialAccount()
     const [target, setTarget] = useState<{
         providerId: AuthProvider
         label: string
@@ -48,6 +51,15 @@ export function ConnectedAccountsSection() {
 
     const linked = methods?.social_accounts ?? []
     const socials = player?.socials
+
+    const handleConnect = async (id: AuthProvider, label: string) => {
+        const result = await connect(id)
+        if (result.ok) {
+            toast.success(`Connected ${label}!`)
+            return
+        }
+        toast.error(oauthConnectErrorMessage(result.reason, label))
+    }
 
     return (
         <SectionPanel
@@ -60,6 +72,7 @@ export function ConnectedAccountsSection() {
                     const canDisconnect = methods
                         ? canDisconnectSocial(methods, id)
                         : false
+                    const isConnecting = pending === id
                     return (
                         <div key={id} className="flex flex-col gap-1">
                             <div className={ROW_CLASS}>
@@ -89,19 +102,24 @@ export function ConnectedAccountsSection() {
                                         Disconnect
                                     </Button>
                                 ) : (
-                                    <OAuthProviderButton
-                                        provider={id}
-                                        process="connect"
-                                        callbackPath="/oauth/callback"
+                                    <Button
+                                        variant="outline"
                                         size="sm"
+                                        disabled={isConnecting}
+                                        onClick={() => handleConnect(id, label)}
                                     >
-                                        Connect
-                                    </OAuthProviderButton>
+                                        <Icon
+                                            size={16}
+                                            color={color}
+                                            className="mr-1"
+                                        />
+                                        {isConnecting ? "Connecting..." : "Connect"}
+                                    </Button>
                                 )}
                             </div>
                             {acct && !canDisconnect && (
                                 <p className="px-1 text-xs text-muted-foreground">
-                                    Add another sign-in method first.
+                                    Add another sign-in method first!
                                 </p>
                             )}
                         </div>
