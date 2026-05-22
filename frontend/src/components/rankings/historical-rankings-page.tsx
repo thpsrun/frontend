@@ -212,11 +212,11 @@ export const HistoricalRankingsPage = () => {
 
             <div className={cn(
                 "w-full grid grid-cols-1 gap-4",
-                showOldestSidebar && "lg:grid-cols-3",
+                showOldestSidebar && "lg:grid-cols-5",
             )}>
                 <div className={cn(
                     "flex flex-col gap-2",
-                    showOldestSidebar && "lg:col-span-2",
+                    showOldestSidebar && "lg:col-span-3",
                 )}>
                     {isLoading && (
                         <Panel className="space-y-2">
@@ -241,7 +241,7 @@ export const HistoricalRankingsPage = () => {
                 {showOldestSidebar
                     && oldestQuery.data
                     && oldestQuery.data.length > 0 && (
-                    <div className="lg:col-span-1">
+                    <div className="lg:col-span-2">
                         <OldestRunsList runs={oldestQuery.data} />
                     </div>
                 )}

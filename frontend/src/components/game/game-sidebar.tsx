@@ -6,6 +6,7 @@ import { Panel } from "@/components/ui/panel"
 import { ManageButton } from "@/components/manage/manage-button"
 import { RecentRunItem } from "@/components/leaderboard/leaderboard-table"
 
+import { BACKEND_URL } from "@/constants"
 import { cn } from "@/lib/utils"
 
 import {
@@ -91,7 +92,7 @@ export const GameCardPanel = ({
         <Panel className={cn("overflow-hidden p-0", className)}>
             {gameDetail.boxart && (
                 <img
-                    src={gameDetail.boxart}
+                    src={`${BACKEND_URL}${gameDetail.boxart}`}
                     alt={gameDetail.name}
                     className={cn(
                         "max-h-40 mx-auto",

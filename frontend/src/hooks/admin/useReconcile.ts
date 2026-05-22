@@ -68,11 +68,11 @@ export function useStartReconcile() {
     const queryClient = useQueryClient()
     return useMutation({
         mutationFn: startReconcileFn,
-        onSuccess: (job: ReconcileJob) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: queryKeys.admin.reconcileJobs(),
             })
-            toast.success(`Reconciliation queued (${job.scope}).`)
+            toast.success("Reconciliation queued.")
         },
         onError: (err) => {
             toast.error(getErrorMessage(err, "Failed to start reconciliation."))

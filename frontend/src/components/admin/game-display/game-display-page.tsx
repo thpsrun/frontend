@@ -17,6 +17,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { BACKEND_URL } from "@/constants"
 import type { Game } from "@/types/api"
 
 export function GameDisplayPage() {
@@ -105,7 +106,7 @@ export function GameDisplayPage() {
                                                 <div className="flex items-center gap-3">
                                                     {game.boxart && (
                                                         <img
-                                                            src={game.boxart}
+                                                            src={`${BACKEND_URL}${game.boxart}`}
                                                             alt=""
                                                             className="h-10 w-8 rounded object-cover"
                                                         />

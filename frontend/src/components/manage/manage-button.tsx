@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router"
-import { Wrench } from "lucide-react"
+import { Settings } from "lucide-react"
 import { useIsGameMod } from "@/hooks/game/useIsGameMod"
 import { cn } from "@/lib/utils"
 
@@ -25,8 +25,8 @@ export function ManageButton({ gameSlug, isActive }: ManageButtonProps) {
                     : "text-amber-400/80 hover:text-white hover:bg-amber-600/30",
             )}
         >
-            <Wrench className="size-3" />
-            Manage
+            <Settings className="size-3" />
+            Moderator Settings
         </button>
     )
 }

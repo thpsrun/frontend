@@ -14,6 +14,7 @@ import { UnsavedChangesGuard } from "@/components/profile/unsaved-changes-guard"
 import { useGameDetail } from "@/hooks/game/useGameDetail"
 import { useUpdateGame } from "@/hooks/game/useUpdateGame"
 import { applyValidationErrors } from "@/lib/validation-errors"
+import { BACKEND_URL } from "@/constants"
 
 interface FormValues {
     release: string
@@ -104,7 +105,7 @@ export function GeneralSection() {
                             {game.data.boxart
                                 ? (
                                     <img
-                                        src={game.data.boxart}
+                                        src={`${BACKEND_URL}${game.data.boxart}`}
                                         alt={`${game.data.name} boxart`}
                                         className="h-32 w-auto rounded-md border border-border bg-muted/20 object-contain"
                                     />

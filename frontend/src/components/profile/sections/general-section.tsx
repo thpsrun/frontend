@@ -236,7 +236,7 @@ export function GeneralSection() {
         <div className="flex flex-col gap-6">
             <SectionPanel
                 title="General"
-                description="Manage your profile information"
+                description="Manage your profile settings"
             >
                 <form
                     onSubmit={onSubmit}
