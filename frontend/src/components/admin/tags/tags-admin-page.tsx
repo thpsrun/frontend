@@ -3,6 +3,7 @@ import { Plus, Tag as TagIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/common/empty-state"
 import { Panel } from "@/components/ui/panel"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useTags } from "@/hooks/guides/useTags"
 import type { Tag } from "@/types/guides"
 import { TagsTable } from "./tags-table"
@@ -32,7 +33,13 @@ export function TagsAdminPage() {
             </Panel>
 
             {isLoading
-                ? <Panel className="p-10 text-center text-muted-foreground">Loading...</Panel>
+                ? (
+                    <Panel className="p-4 space-y-2">
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full" />
+                    </Panel>
+                )
                 : (data?.length ?? 0) === 0
                     ? <EmptyState icon={TagIcon} title="No tags yet." />
                     : (

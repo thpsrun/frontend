@@ -3,6 +3,7 @@ import { Link } from "react-router"
 import type { ReactNode } from "react"
 
 import { cn } from "@/lib/utils"
+import { BACKEND_URL } from "@/constants"
 import { GradientUsername } from "@/components/profile/gradient-username"
 
 import type {
@@ -52,9 +53,12 @@ export const CountryFlag = (
     const code = countryCode.toUpperCase()
     const classes = className ?? "w-7 pr-[5px] inline"
     if (flagUrl) {
+        const src = flagUrl.startsWith("/")
+            ? `${BACKEND_URL}${flagUrl}`
+            : flagUrl
         return (
             <img
-                src={flagUrl}
+                src={src}
                 alt={title ?? code}
                 title={title}
                 className={classes}
@@ -148,8 +152,6 @@ export const SidebarSkeleton = () => (
     </div>
 )
 
-// Get variable groups applicable to the category given.
-// If a category is archived, it is ignored.
 export const getApplicableVariables = (
     cat: GameCategory,
 ): CategoryVariable[] => {
@@ -170,7 +172,6 @@ export const buildLeaderboardPath = (
     return `/${parts.join("/")}`
 }
 
-// Base points awarded for a 1st-place run before streak bonuses.
 const FG_BASE_POINTS = 1000
 const IL_BASE_POINTS = 250
 

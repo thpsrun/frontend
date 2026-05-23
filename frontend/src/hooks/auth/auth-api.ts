@@ -63,8 +63,7 @@ export async function loginFn(
             emailVerificationRequired: false,
         }
     } catch (err) {
-        if (!(err instanceof ApiError)) throw err
-        if (!err.isAuthRequired) throw err
+        if (!(err instanceof ApiError) || !err.isAuthRequired) throw err
 
         const body = err.body as AllauthSessionResponse | null
         const hasMfa = body?.data?.flows?.some((f) => f.id === "mfa_authenticate")

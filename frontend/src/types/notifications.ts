@@ -6,6 +6,7 @@ export type NotificationKind =
     | "mod_promoted"
     | "api_key_expiring"
     | "run_review"
+    | "user_data_export"
     | "user_data_export_ready"
     | "user_data_export_failed"
     | (string & {})

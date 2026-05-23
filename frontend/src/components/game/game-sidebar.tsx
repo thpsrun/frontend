@@ -21,9 +21,8 @@ import type {
 } from "@/types/api"
 
 
-// The recent runs from the API only has IDs, not slugs, since another
-// request should already have them (maybe a good idea? lol). This will
-// reconstruct the URL by matching the gameDetail information against it.
+// Recent-runs API returns category/level IDs (not slugs), so reconstruct
+// the URL by matching against gameDetail.
 const buildLeaderboardUrl = (
     gameSlug: string,
     run: LbsRecentRun,

@@ -373,7 +373,7 @@ export function SubmissionsHub() {
                         inset
                         icon={Inbox}
                         title="No Pending Runs"
-                        description="Submitted runs will show here while they wait on moderators to approv, deny, or send back the runs for comments."
+                        description="Submitted runs will show here while they wait on moderators to approve, deny, or send back the runs for comments."
                     />
                 </Panel>
             )}

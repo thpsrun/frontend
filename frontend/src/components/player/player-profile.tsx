@@ -599,7 +599,7 @@ export function PlayerProfile() {
                                 gradients={
                                     profile.customizations
                                 }
-                                className="text-xl font-bold"
+                                className="text-xl font-bold leading-none"
                             />
                         </span>
                     </div>

@@ -14,7 +14,6 @@ import type {
 
 import { SortableSection } from "./sortable-section"
 
-// Renders the category / level / variable-value ordering UI for a single game.
 export function GameDisplayEditor({ gameId }: { gameId: string }) {
     const displayQuery = useGameDisplay(gameId)
     const reorder = useReorderDisplayItems(gameId)

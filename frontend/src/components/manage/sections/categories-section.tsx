@@ -4,8 +4,10 @@ import { useForm, Controller } from "react-hook-form"
 import { toast } from "sonner"
 
 import { AlertBanner } from "@/components/common/alert-banner"
+import { Button } from "@/components/ui/button"
 import { SectionPanel } from "@/components/profile/section-panel"
 import { SaveButton } from "@/components/profile/save-button"
+import { ChevronDown, ChevronRight } from "lucide-react"
 
 import { useGameDetail } from "@/hooks/game/useGameDetail"
 import { useUpdateCategory } from "@/hooks/game/useUpdateCategory"
@@ -43,6 +45,7 @@ interface CategoryCardProps {
 function CategoryCard({ category, game }: CategoryCardProps) {
     const update = useUpdateCategory(game.slug)
     const [topError, setTopError] = useState<string | null>(null)
+    const [rulesOpen, setRulesOpen] = useState(false)
 
     const parentRequired = (category.type === "per-game"
         ? game.required_methods_fg
@@ -116,22 +119,6 @@ function CategoryCard({ category, game }: CategoryCardProps) {
                 )}
                 <Controller
                     control={form.control}
-                    name="rules"
-                    render={({ field }) => (
-                        <div className="flex flex-col gap-2">
-                            <label className="text-sm font-medium text-foreground/80">
-                                Rules
-                            </label>
-                            <GuideMarkdownEditor
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder={`Rules for ${category.name} (Markdown Supported).`}
-                            />
-                        </div>
-                    )}
-                />
-                <Controller
-                    control={form.control}
                     name="required_methods"
                     render={({ field, fieldState }) => (
                         <RequiredMethodsField
@@ -168,6 +155,33 @@ function CategoryCard({ category, game }: CategoryCardProps) {
                         />
                     )}
                 />
+                <div className="flex flex-col gap-2">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="w-fit gap-1 px-2"
+                        onClick={() => setRulesOpen((o) => !o)}
+                    >
+                        {rulesOpen
+                            ? <ChevronDown className="h-4 w-4" />
+                            : <ChevronRight className="h-4 w-4" />}
+                        Rules
+                    </Button>
+                    {rulesOpen && (
+                        <Controller
+                            control={form.control}
+                            name="rules"
+                            render={({ field }) => (
+                                <GuideMarkdownEditor
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    placeholder={`Rules for ${category.name} (Markdown Supported).`}
+                                />
+                            )}
+                        />
+                    )}
+                </div>
                 <SaveButton
                     isPending={update.isPending}
                     disabled={!form.formState.isDirty}

@@ -80,8 +80,6 @@ const formatDelta = (delta: number): string => {
     return `${sign}${m}:${sStr}`
 }
 
-// Gets the best URL video to display on the record.
-// arch_video > Twitch VOD.
 const getVideoUrl = (
     video: string | null,
     archVideo: string | null,
@@ -95,8 +93,6 @@ const getVideoUrl = (
     return video ?? archVideo
 }
 
-// Oldest run is shown first, with all other runs collapsing.
-// Example: Anastasia (+2 Ties)
 const processEntries = (
     entries: WRHistoryEntry[],
 ): ChartDataPoint[] => {
@@ -117,8 +113,6 @@ const processEntries = (
             j++
         }
 
-        // Build player display name:
-        // nickname preferred, joined with " & " for co-op
         const playerName = entry.players
             .map((p) => p.nickname ?? p.name)
             .join(" & ")
@@ -143,7 +137,6 @@ const processEntries = (
         i = j
     }
 
-    // Extend the step line to the current date
     if (points.length > 0) {
         const last = points[points.length - 1]
         points.push({
@@ -302,7 +295,6 @@ export const WRHistoryChart = ({
         [data],
     )
 
-    // Compute year tick positions for clean X-axis labels
     const yearTicks = useMemo(() => {
         if (chartData.length === 0) return []
         const startYear = new Date(

@@ -62,7 +62,7 @@ export const LeaderboardTable = (
             <EmptyState
                 inset
                 icon={Trophy}
-                title="No Runs Yet??"
+                title="No Runs Yet"
             />
         )
     }

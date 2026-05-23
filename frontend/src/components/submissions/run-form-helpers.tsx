@@ -32,8 +32,6 @@ export function assembleTime(fields: TimeFields): string | null {
     return parts.join(" ")
 }
 
-// Splits a numeric time_secs (e.g. 754.567) into the discrete TimeFields
-// used by TimeRow, so the edit dialog can seed the form from the API value.
 export function parseTimeSecs(secs: number | null): TimeFields {
     if (secs === null || secs <= 0) return { ...EMPTY_TIME }
     const totalMs = Math.round(secs * 1000)
@@ -49,7 +47,6 @@ export function parseTimeSecs(secs: number | null): TimeFields {
     }
 }
 
-// Quick check to make sure it is a valid YouTube URL, since we don't allow anything else.
 export function isValidYouTubeUrl(url: string): boolean {
     try {
         const parsed = new URL(url)
@@ -63,8 +60,6 @@ export function isValidYouTubeUrl(url: string): boolean {
     }
 }
 
-// Extracts a YouTube video ID from any accepted URL form and returns a
-// privacy-enabled embed URL.
 export function getYouTubeEmbedUrl(url: string): string | null {
     if (!isValidYouTubeUrl(url)) return null
     try {

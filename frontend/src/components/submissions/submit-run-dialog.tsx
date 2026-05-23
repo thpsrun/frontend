@@ -82,7 +82,6 @@ export function SubmitRunDialog({
         [gameDetail.categories, activeCategory.type],
     )
 
-    // Builds the initial values based on what is in the URL slugs.
     const buildInitialVarValues = (
         cat: GameCategory,
         slugs: string[],

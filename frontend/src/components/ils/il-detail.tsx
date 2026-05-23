@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Panel } from "@/components/ui/panel"
+import { Skeleton } from "@/components/ui/skeleton"
 
 import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table"
 import { WRHistoryChart } from "@/components/leaderboard/wr-history-chart"
@@ -72,8 +73,6 @@ export const ILDetail = ({
 
     const levels = gameDetail?.levels ?? []
 
-    // Sets the active category (and variables) to show on the UI
-    // AND also update the URL.
     const activeCategory: GameCategory | undefined =
         useMemo(
             () => ilCategories.find(
@@ -235,13 +234,8 @@ export const ILDetail = ({
 
     if (!categorySlug) {
         return (
-            <div className={cn(
-                "flex items-center",
-                "justify-center p-12",
-            )}>
-                <div className="text-muted-foreground">
-                    Loading...
-                </div>
+            <div className="flex items-center justify-center p-12">
+                <Skeleton className="h-6 w-32" />
             </div>
         )
     }

@@ -20,14 +20,14 @@ export const ALL_AUDIT_EVENT_TYPES: ReadonlyArray<AuditEventType> = [
 ]
 
 export const EVENT_TYPE_LABEL: Record<AuditEventType, string> = {
-    timing_config_change: "Timing change",
-    recalc_dispatch: "Recalc dispatched",
-    recalc_board: "Board recalc",
-    run_recalc: "Run recalc",
-    src_sync_attempt: "SRC sync",
-    moderator_added: "Mod added",
-    moderator_removed: "Mod removed",
-    apikey_revoked: "Key revoked",
+    timing_config_change: "Timing Change",
+    recalc_dispatch: "Recalculation Dispatched",
+    recalc_board: "Board Recalculation",
+    run_recalc: "Run Recalculation",
+    src_sync_attempt: "SRC Sync",
+    moderator_added: "Mod Added",
+    moderator_removed: "Mod Removed",
+    apikey_revoked: "Key Revoked",
 }
 
 export type AuditEventGroup =
