@@ -45,7 +45,7 @@ export function GuideToc({ headings, className }: Props) {
             )}
         >
             <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
-                On this page
+                Table of Contents
             </p>
             <ul className="space-y-0.5">
                 {headings.map((h) => (

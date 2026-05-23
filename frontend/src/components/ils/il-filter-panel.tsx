@@ -1,5 +1,7 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Panel } from "@/components/ui/panel"
+import { Button } from "@/components/ui/button"
+import { BookOpen } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -18,6 +20,8 @@ interface ILFilterPanelProps {
     valueSlugs: string[]
     onCategoryChange: (slug: string) => void
     onValueChange: (idx: number, slug: string) => void
+    rulesHasAny: boolean
+    onShowRules: () => void
 }
 
 export const ILFilterPanel = ({
@@ -27,6 +31,8 @@ export const ILFilterPanel = ({
     valueSlugs,
     onCategoryChange,
     onValueChange,
+    rulesHasAny,
+    onShowRules,
 }: ILFilterPanelProps) => {
     return (
         <Panel className="px-4 py-3 flex flex-col gap-3">
@@ -59,11 +65,26 @@ export const ILFilterPanel = ({
                 </Tabs>
             )}
 
-            <VariableToggles
-                variables={variables}
-                valueSlugs={valueSlugs}
-                onValueChange={onValueChange}
-            />
+            <div className="flex items-start gap-3">
+                <div className="flex-1">
+                    <VariableToggles
+                        variables={variables}
+                        valueSlugs={valueSlugs}
+                        onValueChange={onValueChange}
+                    />
+                </div>
+                {rulesHasAny && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onShowRules}
+                        className="shrink-0 text-xs"
+                    >
+                        <BookOpen className="size-3.5" />
+                        Rules
+                    </Button>
+                )}
+            </div>
         </Panel>
     )
 }

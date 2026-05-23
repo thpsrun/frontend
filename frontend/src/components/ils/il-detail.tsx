@@ -15,7 +15,7 @@ import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table"
 import { WRHistoryChart } from "@/components/leaderboard/wr-history-chart"
 import { VariableToggles } from "@/components/leaderboard/variable-toggles"
 import { Button } from "@/components/ui/button"
-import { ChartLine, Send } from "lucide-react"
+import { BookOpen, ChartLine, Send } from "lucide-react"
 
 import { useSession } from "@/hooks/auth/useSession"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
@@ -45,6 +45,8 @@ interface ILDetailProps {
     lbData: LbsResponse | undefined
     lbLoading: boolean
     lbError: Error | null | undefined
+    rulesHasAny: boolean
+    onShowRules: () => void
 }
 
 export const ILDetail = ({
@@ -56,6 +58,8 @@ export const ILDetail = ({
     lbData,
     lbLoading,
     lbError,
+    rulesHasAny,
+    onShowRules,
 }: ILDetailProps) => {
     const navigate = useNavigate()
 
@@ -344,6 +348,17 @@ export const ILDetail = ({
                                 Submit Run
                             </Button>
                         </span>
+                    )}
+                    {rulesHasAny && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={onShowRules}
+                            className="shrink-0 text-xs"
+                        >
+                            <BookOpen className="size-3.5" />
+                            Rules
+                        </Button>
                     )}
                     <Button
                         variant="outline"

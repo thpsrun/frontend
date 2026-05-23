@@ -280,4 +280,44 @@ export const FAQ_ENTRIES: FaqEntry[] = [
             </div>
         ),
     },
+    {
+        id: "access-api",
+        question: "Can I use the thps.run API?",
+        answer: (
+            <div className="flex flex-col gap-2">
+                <p className="leading-relaxed">
+                    Yes! You are fully allowed to use the API for your projects, bots, tools, and so-on. Obviously, you should be responsible with what you are doing.
+                    If you are interested, go to <Link to="/profile/settings/api-keys">your profile's API Keys page</Link> - there, you can create API keys for various
+                    methods with your current roles with the site. If you are a regular user, you will have vastly less powers (e.g. no PUT, PUSH, PATCH, DELETE, and so on),
+                    but you can still perform GET requests to various endpoints. Moderators can request a lot more and scope it to the specific games of which they moderate,
+                    and super admins (super mods, essentially) can use broader powers to programatically edit the site.
+                </p>
+                <p className="flex flex-col gap-2">
+                    <Link to="/api/v1/docs">thps.run API Documentation</Link>
+                </p>
+            </div>
+        )
+    },
+    {
+        id: "why-thps-run",
+        question: "Why should I use thps.run?",
+        answer: (
+            <div className="flex flex-col gap-2">
+                <p className="leading-relaxed">
+                    SRC is a very nice site, and thps.run does not aim to be a competitor. This site helps give more power, functionality,
+                    and accessibility to the Tony Hawk Speedrun Community's data. With a more robust and easier-to-manage API, more features
+                    that extend our moderating capabilities, and providing a more seamless, less ad-ridden interface, the aim for this project
+                    is instead to provide the best possible experience for runners and followers of the community.
+                </p>
+                <p className="leading-relaxed">
+                    This entire project - which is open-source by the way! -  is a love letter to the Tony Hawk Speedrun Community. And, while 
+                    SRC is a good site that helps unite the leaderboards under  one roof, speedrunning lives and dies by community collaboration.
+                </p>
+                <p className="leading-relaxed">
+                    No singular entity should ever hold control of speedrun communities. And, thus, this project is available for others to use,
+                    tinker, learn from, adapt to, and evolve with.
+                </p>
+            </div>
+        )
+    }
 ]

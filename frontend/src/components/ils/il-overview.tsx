@@ -220,7 +220,7 @@ export const ILOverview = ({
                         isILView={true}
                     />
                 </div>
-                {rulesView.hasAny && (
+                {!levelSlug && !hasFilters && rulesView.hasAny && (
                     <div className="flex justify-end">
                         <Button
                             variant="outline"
@@ -243,6 +243,8 @@ export const ILOverview = ({
                         lbData={ilLbData}
                         lbLoading={ilLbLoading}
                         lbError={ilLbError}
+                        rulesHasAny={rulesView.hasAny}
+                        onShowRules={() => setShowRules(true)}
                     />
                 ) : (
                     <>
@@ -266,6 +268,8 @@ export const ILOverview = ({
                                 onValueChange={
                                     handleOverviewValueChange
                                 }
+                                rulesHasAny={rulesView.hasAny}
+                                onShowRules={() => setShowRules(true)}
                             />
                         )}
                         <ILOverviewGrid

@@ -36,7 +36,7 @@ export function FAQPage() {
                     <Panel className="lg:sticky lg:top-20">
                         <nav aria-label="Table of contents">
                             <h3 className="mb-3 text-sm font-semibold text-foreground">
-                                On this page
+                                FAQ Table of Contents
                             </h3>
                             <ul className="flex flex-col gap-2 text-sm">
                                 {FAQ_ENTRIES.map((entry) => (

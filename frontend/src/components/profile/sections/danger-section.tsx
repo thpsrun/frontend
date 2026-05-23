@@ -6,6 +6,7 @@ import { useDeleteAccount } from "@/hooks/auth/useDeleteAccount"
 import { useLogout } from "@/hooks/auth/useLogout"
 import { AlertBanner } from "@/components/common/alert-banner"
 import { Button } from "@/components/ui/button"
+import { DataExportSection } from "@/components/profile/sections/data-export-section"
 import { FormField } from "@/components/profile/form-field"
 import { SaveButton } from "@/components/profile/save-button"
 import { SectionPanel } from "@/components/profile/section-panel"
@@ -71,16 +72,18 @@ export function DangerSection() {
     }
 
     return (
-        <SectionPanel
-            title="Danger Zone"
-            description={
-                <>
-                    Permanently delete your account. Your runs will be preserved under "Anonymous".
-                </>
-            }
-            className="border-destructive/50"
-            titleClassName="text-destructive"
-        >
+        <div className="space-y-6">
+            <DataExportSection />
+            <SectionPanel
+                title="Danger Zone"
+                description={
+                    <>
+                        WARNING: This permanently delete your account! Your runs will be preserved under "Anonymous".
+                    </>
+                }
+                className="border-destructive/50"
+                titleClassName="text-destructive"
+            >
             {!showDeleteConfirm ? (
                 <Button
                     variant="destructive"
@@ -100,9 +103,7 @@ export function DangerSection() {
                         <strong>
                             {player.player.name}
                         </strong>
-                        {" "}and confirm your password to
-                        delete your account. This action
-                        cannot be undone!
+                        {" "}and confirm your password to delete your account. This action cannot be undone!
                     </p>
                     <p className="text-xs text-muted-foreground line-through">
                         I mean, Anastasia could fix it... But it'd be annoying.
@@ -161,6 +162,7 @@ export function DangerSection() {
                     </div>
                 </form>
             )}
-        </SectionPanel>
+            </SectionPanel>
+        </div>
     )
 }

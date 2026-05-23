@@ -6,6 +6,8 @@ export type NotificationKind =
     | "mod_promoted"
     | "api_key_expiring"
     | "run_review"
+    | "user_data_export_ready"
+    | "user_data_export_failed"
     | (string & {})
 
 export interface RunPayload {
@@ -29,10 +31,21 @@ export interface ApiKeyExpiringPayload {
     days_until_expiry: number
 }
 
+export interface UserDataExportReadyPayload {
+    export_id: string
+}
+
+export interface UserDataExportFailedPayload {
+    export_id: string
+    error: string
+}
+
 export type NotificationPayload =
     | RunPayload
     | ModPromotedPayload
     | ApiKeyExpiringPayload
+    | UserDataExportReadyPayload
+    | UserDataExportFailedPayload
     | Record<string, unknown>
 
 export interface Notification {

@@ -318,13 +318,13 @@ export function SubmitRunDialog({
                 className={cn(
                     "max-h-[85vh]",
                     rulesOpen && isWide
-                        ? "max-w-300 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,420px)] md:gap-6 overflow-hidden"
+                        ? "max-w-300 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,420px)] md:grid-rows-1 md:gap-6 overflow-hidden"
                         : "max-w-lg overflow-y-auto",
                 )}
             >
                 <div className={cn(
                     rulesOpen && isWide
-                        ? "min-w-0 overflow-y-auto"
+                        ? "min-w-0 min-h-0 overflow-y-auto"
                         : undefined,
                 )}>
                 <DialogHeader>

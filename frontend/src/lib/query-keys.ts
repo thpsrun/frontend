@@ -79,6 +79,7 @@ export const queryKeys = {
         capabilities: () => [...queryKeys.auth.all, "capabilities"] as const,
         methods: () => [...queryKeys.auth.all, "methods"] as const,
         authenticators: () => [...queryKeys.auth.all, "authenticators"] as const,
+        exports: () => [...queryKeys.auth.all, "exports"] as const,
     },
 
     submissions: {

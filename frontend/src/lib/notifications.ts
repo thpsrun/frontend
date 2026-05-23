@@ -1,6 +1,8 @@
 import {
     Bell,
     Check,
+    CircleAlert,
+    Download,
     KeyRound,
     MessageSquareWarning,
     ShieldCheck,
@@ -22,11 +24,13 @@ interface KindIcon {
 }
 
 const KIND_ICON: Record<string, KindIcon> = {
-    run_approved:     { Icon: Check,                 className: "text-green-500"        },
-    run_denied:       { Icon: X,                     className: "text-red-500"          },
-    run_review:       { Icon: MessageSquareWarning,  className: "text-amber-500"        },
-    mod_promoted:     { Icon: ShieldCheck,           className: "text-blue-500"         },
-    api_key_expiring: { Icon: KeyRound,              className: "text-amber-500"        },
+    run_approved:            { Icon: Check,                 className: "text-green-500"        },
+    run_denied:              { Icon: X,                     className: "text-red-500"          },
+    run_review:              { Icon: MessageSquareWarning,  className: "text-amber-500"        },
+    mod_promoted:            { Icon: ShieldCheck,           className: "text-blue-500"         },
+    api_key_expiring:        { Icon: KeyRound,              className: "text-amber-500"        },
+    user_data_export_ready:  { Icon: Download,              className: "text-green-500"        },
+    user_data_export_failed: { Icon: CircleAlert,           className: "text-red-500"          },
 }
 
 const FALLBACK_ICON: KindIcon = {
@@ -53,6 +57,9 @@ export function destinationFor(n: Notification): string | null {
         }
         case "api_key_expiring":
             return "/profile/settings/api-keys"
+        case "user_data_export_ready":
+        case "user_data_export_failed":
+            return "/profile/settings/danger"
         default:
             return null
     }
