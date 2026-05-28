@@ -16,6 +16,9 @@ export interface PlayerEmbed {
     pfp: string | null
     is_superuser: boolean
     ex_stream: boolean
+    email: string
+    email_verified: boolean
+    pending_email: string | null
 }
 
 export interface ModerationEmbed {
@@ -188,3 +191,49 @@ export type OauthSignupErrorCode =
     | "src_player_not_found"
     | "src_player_already_claimed"
     | "no_verified_run"
+
+export interface VerificationRequiredResponse {
+    status: "verification_required"
+    email: string
+    username: string
+    src_user_id: string
+}
+
+export type RegisterResult = RegisterResponse | VerificationRequiredResponse
+
+export interface EmailStatusResponse {
+    email: string
+    verified: boolean
+    pending_email: string | null
+    pending_expires_at: string | null
+}
+
+export interface EmailChangeResponse {
+    status: "verification_sent"
+    new_email: string
+    expires_at: string | null
+}
+
+export interface CorrectEmailResponse {
+    status: "verification_sent"
+    email: string
+}
+
+export type SignupVerifyErrorCode =
+    | "invalid_or_expired_code"
+    | "rate_limited"
+
+export type CorrectEmailErrorCode =
+    | "src_api_unavailable"
+    | "src_api_invalid"
+    | "rate_limited"
+
+export type EmailChangeErrorCode =
+    | "same_email"
+    | "reauth_required"
+    | "email_taken"
+    | "rate_limited"
+
+export type VerifyEmailChangeErrorCode =
+    | "invalid_or_expired_code"
+    | "no_pending_change"

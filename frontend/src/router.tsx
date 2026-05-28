@@ -17,6 +17,9 @@ import { PlayerProfile } from "./components/player/player-profile.tsx"
 import { LoginPage } from "./components/auth/login-page.tsx"
 import { RegisterPage } from "./components/auth/register-page.tsx"
 import { BannedPage } from "./components/auth/banned-page.tsx"
+import { ForgotPasswordPage } from "./components/auth/forgot-password-page.tsx"
+import { ResetPasswordPage } from "./components/auth/reset-password-page.tsx"
+import { VerifyEmailPage } from "./components/auth/verify-email-page.tsx"
 
 // Rankings
 import { RankingsRedirect } from "./components/rankings/rankings-redirect.tsx"
@@ -91,6 +94,13 @@ export const router = createBrowserRouter([
             { path: "login", Component: LoginPage },
             { path: "register", Component: RegisterPage },
             { path: "login/banned", Component: BannedPage },
+            { path: "forgot-password", Component: ForgotPasswordPage },
+            {
+                path: "reset-password/:uidb36/:key",
+                Component: ResetPasswordPage,
+            },
+            { path: "verify-email", Component: VerifyEmailPage },
+            { path: "verify-email/:key", Component: VerifyEmailPage },
             {
                 Component: ProtectedRoute,
                 children: [

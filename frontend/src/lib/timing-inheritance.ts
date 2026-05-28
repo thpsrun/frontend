@@ -123,9 +123,6 @@ export function timeForMethod(
     }
 }
 
-// Companion to timeForMethod — pulls the numeric seconds field for the
-// same method. Use this for "is the time actually recorded?" checks; the
-// formatted string may be "0:00.000" or similar when secs is 0/null.
 export function timeSecsForMethod(
     times: {
         time_secs: number

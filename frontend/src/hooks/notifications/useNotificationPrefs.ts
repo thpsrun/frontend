@@ -8,6 +8,7 @@ import {
 } from "./notifications-api"
 import type {
     NotificationPreference,
+    NotificationPreferenceUpdate,
     NotificationPreferencesResponse,
 } from "@/types/notifications"
 
@@ -34,7 +35,7 @@ export function useNotificationKinds() {
 export function useUpdatePreferences() {
     const qc = useQueryClient()
     return useMutation({
-        mutationFn: (prefs: Record<string, boolean>) =>
+        mutationFn: (prefs: NotificationPreferenceUpdate) =>
             updatePreferencesFn(prefs),
         onMutate: async (prefs) => {
             await qc.cancelQueries({ queryKey: queryKeys.notifications.preferences() })
@@ -43,11 +44,17 @@ export function useUpdatePreferences() {
             )
             if (prev) {
                 const next: NotificationPreferencesResponse = {
-                    preferences: prev.preferences.map((p): NotificationPreference => (
-                        prefs[p.kind] !== undefined
-                            ? { ...p, enabled: prefs[p.kind] }
-                            : p
-                    )),
+                    preferences: prev.preferences.map((p): NotificationPreference => {
+                        const patch = prefs[p.kind]
+                        if (!patch) return p
+                        const mergedChannels = { ...p.channels }
+                        for (const [channel, value] of Object.entries(patch)) {
+                            if (typeof value === "boolean") {
+                                mergedChannels[channel] = value
+                            }
+                        }
+                        return { ...p, channels: mergedChannels }
+                    }),
                 }
                 qc.setQueryData(queryKeys.notifications.preferences(), next)
             }

@@ -144,21 +144,12 @@ export function NotificationsPage() {
                             variant="outline"
                             value={filterValue}
                             onValueChange={handleFilterChange}
-                            className={cn(
-                                "grid w-full grid-cols-2 gap-1 sm:grid-cols-3",
-                                "min-[1334px]:flex min-[1334px]:w-fit min-[1334px]:gap-0",
-                            )}
+                            className="flex w-full flex-wrap justify-start gap-1"
                         >
                             <ToggleGroupItem
                                 value="unread"
                                 aria-label="Show Unread Only"
-                                className={cn(
-                                    "rounded-md border data-[variant=outline]:border-l",
-                                    "min-[1334px]:rounded-none min-[1334px]:px-6",
-                                    "min-[1334px]:first:rounded-l-md min-[1334px]:last:rounded-r-md",
-                                    "min-[1334px]:data-[variant=outline]:border-l-0",
-                                    "min-[1334px]:data-[variant=outline]:first:border-l",
-                                )}
+                                className="flex-initial rounded-md border px-3 data-[variant=outline]:border-l"
                             >
                                 Unread
                             </ToggleGroupItem>
@@ -167,13 +158,7 @@ export function NotificationsPage() {
                                     key={k.kind}
                                     value={`kind:${k.kind}`}
                                     aria-label={k.label}
-                                    className={cn(
-                                        "rounded-md border data-[variant=outline]:border-l",
-                                        "min-[1334px]:rounded-none min-[1334px]:px-6",
-                                        "min-[1334px]:first:rounded-l-md min-[1334px]:last:rounded-r-md",
-                                        "min-[1334px]:data-[variant=outline]:border-l-0",
-                                        "min-[1334px]:data-[variant=outline]:first:border-l",
-                                    )}
+                                    className="flex-initial rounded-md border px-3 data-[variant=outline]:border-l"
                                 >
                                     {k.label}
                                 </ToggleGroupItem>

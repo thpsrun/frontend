@@ -8,7 +8,7 @@ const requiredText = (max: number, label: string) =>
         .max(max, `${label} must be ${max} characters or fewer.`)
 
 // Reusable: control-character check for URL inputs. The control chars
-// are precisely what we want to reject; the eslint rule is overcautious here.
+// are precisely what we want to reject
 // eslint-disable-next-line no-control-regex
 const URL_CONTROL_CHARS = /[\x00-\x1F\x7F]/
 
@@ -140,3 +140,36 @@ export const passwordChangeSchema = z.object({
 )
 
 export type PasswordChangeForm = z.infer<typeof passwordChangeSchema>
+
+export const forgotPasswordSchema = z.object({
+    email: emailSchema,
+})
+
+export type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>
+
+export const resetPasswordSchema = z.object({
+    newPassword: passwordSchema,
+    confirmNewPassword: z.string(),
+}).refine(
+    (data) => data.newPassword === data.confirmNewPassword,
+    {
+        message: "New passwords do not match!",
+        path: ["confirmNewPassword"],
+    },
+)
+
+export type ResetPasswordForm = z.infer<typeof resetPasswordSchema>
+
+export const emailRecoverySchema = z.object({
+    srcApiKey: z.string()
+        .min(1, "SRC API key is required."),
+    newEmail: emailSchema,
+})
+
+export type EmailRecoveryForm = z.infer<typeof emailRecoverySchema>
+
+export const emailChangeSchema = z.object({
+    newEmail: emailSchema,
+})
+
+export type EmailChangeForm = z.infer<typeof emailChangeSchema>

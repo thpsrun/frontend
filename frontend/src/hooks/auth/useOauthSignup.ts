@@ -19,10 +19,11 @@ export function useOauthSignup() {
         async (
             provider: AuthProvider,
             body: OauthSignupRequest,
+            turnstileToken: string | null = null,
         ): Promise<OauthSignupHookResult> => {
             setPending(provider)
             try {
-                const popupResult = await runOAuthSignup(provider)
+                const popupResult = await runOAuthSignup(provider, turnstileToken)
                 if (!popupResult.ok) {
                     return {
                         ok: false,
@@ -31,7 +32,7 @@ export function useOauthSignup() {
                     }
                 }
                 try {
-                    await finalizeOauthSignupFn(body)
+                    await finalizeOauthSignupFn(body, turnstileToken)
                 } catch (err) {
                     const code = err instanceof ApiError ? err.code : null
                     return { ok: false, kind: "finalize", code }

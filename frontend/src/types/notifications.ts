@@ -80,11 +80,17 @@ export interface UnreadCountResponse {
     count: number
 }
 
+export type NotificationChannel = "in_app" | "email" | (string & {})
+
+export type NotificationChannelState = Record<string, boolean>
+
+export type NotificationChannelUpdate = Partial<Record<string, boolean>>
+
 export interface NotificationPreference {
     kind: NotificationKind
     label: string
     description?: string
-    enabled: boolean
+    channels: NotificationChannelState
 }
 
 export interface NotificationPreferencesResponse {
@@ -95,12 +101,14 @@ export interface NotificationKindInfo {
     kind: NotificationKind
     label: string
     description?: string
-    default_enabled?: boolean
+    default_channels?: NotificationChannelState
 }
 
 export interface NotificationKindsResponse {
     kinds: NotificationKindInfo[]
 }
+
+export type NotificationPreferenceUpdate = Record<string, NotificationChannelUpdate>
 
 export interface ReadByTargetRequest {
     target_type: NotificationTargetType

@@ -33,13 +33,13 @@ export const LatestRuns: React.FC<LatestRunsProps> = ({ title, data }) => {
             <h1 className="text-xl font-semibold mb-4">
                 {title}
             </h1>
-            <Table containerClassName="overflow-x-hidden">
+            <Table containerClassName="overflow-x-hidden" className="table-fixed">
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="w-25">Game</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead className="w-50">Player</TableHead>
-                        <TableHead>Time</TableHead>
+                        <TableHead className="w-[20%]">Game</TableHead>
+                        <TableHead className="w-[25%]">Category</TableHead>
+                        <TableHead className="w-[30%]">Player</TableHead>
+                        <TableHead className="w-[25%]">Time</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody onMouseLeave={() => setHoveredGroup(null)}>

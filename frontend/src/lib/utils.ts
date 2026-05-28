@@ -35,6 +35,13 @@ export function buildQueryString<T extends object>(params: T): string {
     return qs ? `?${qs}` : ""
 }
 
+export function formatRetryAfter(seconds: number): string {
+    if (seconds <= 1) return "a moment"
+    if (seconds < 60) return `${seconds} seconds`
+    const mins = Math.ceil(seconds / 60)
+    return mins === 1 ? "a minute" : `${mins} minutes`
+}
+
 export function formatBytes(bytes: number): string {
     if (!Number.isFinite(bytes) || bytes <= 0) return "0 B"
     const units = ["B", "KB", "MB", "GB", "TB"]

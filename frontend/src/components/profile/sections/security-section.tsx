@@ -19,6 +19,7 @@ import type { StatusMsg } from "@/types/shared"
 import { getErrorMessage } from "@/lib/utils"
 import { ConnectedAccountsSection } from "./connected-accounts-section"
 import { PasskeysSection } from "./passkeys-section"
+import { EmailSection } from "@/components/profile/sections/email-section"
 
 export function SecuritySection() {
     const { player } = useCurrentPlayer()
@@ -76,6 +77,7 @@ export function SecuritySection() {
 
     return (
         <div className="flex flex-col gap-6">
+            <EmailSection />
             <SectionPanel title={hasPassword ? "Change Password" : "Set Password"}>
                 <form
                     onSubmit={handleChangePassword}

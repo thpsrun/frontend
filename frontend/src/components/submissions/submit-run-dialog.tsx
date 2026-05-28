@@ -21,6 +21,7 @@ import {
 } from "@/components/submissions/run-form-helpers"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useSubmitRun } from "@/hooks/submissions/useSubmitRun"
+import { useResolveTiming } from "@/hooks/game/useResolveTiming"
 import { usePlayerSearch } from "@/hooks/players/usePlayerSearch"
 import { Loader2, Plus, Trash2, BookOpen } from "lucide-react"
 import { RulesPanel } from "@/components/rules/rules-panel"
@@ -133,6 +134,21 @@ export function SubmitRunDialog({
         () => selectedCategory.variables.filter((v) => !v.archive),
         [selectedCategory],
     )
+
+    const selectedValueIds = useMemo(
+        () => Object.values(selectedVarValues),
+        [selectedVarValues],
+    )
+
+    const { data: timing } = useResolveTiming(
+        gameDetail.slug,
+        selectedCategory.id,
+        activeLevel?.id ?? null,
+        selectedValueIds,
+    )
+
+    const resolvedRequired = timing?.resolved_required_methods
+        ?? (["rta", "lrt", "igt"] as const)
 
     const [rulesOpen, setRulesOpen] = useState(false)
     const [isWide, setIsWide] = useState(
@@ -281,9 +297,15 @@ export function SubmitRunDialog({
                 id: p.rel === "user" ? p.id : null,
                 name: p.rel === "guest" ? p.displayName : null,
             })),
-            time: assembleTime(rtaTime),
-            timenl: assembleTime(nlTime),
-            timeigt: assembleTime(igtTime),
+            time: resolvedRequired.includes("rta")
+                ? assembleTime(rtaTime)
+                : null,
+            timenl: resolvedRequired.includes("lrt")
+                ? assembleTime(nlTime)
+                : null,
+            timeigt: resolvedRequired.includes("igt")
+                ? assembleTime(igtTime)
+                : null,
             video,
             comment: comment.trim() || null,
             date: date || null,
@@ -547,21 +569,27 @@ export function SubmitRunDialog({
 
                 <div className="space-y-3">
                     <SectionLabel>Timing</SectionLabel>
-                    <TimeRow
-                        label="Real Time (RTA)"
-                        fields={rtaTime}
-                        onChange={setRtaTime}
-                    />
-                    <TimeRow
-                        label="Loads Removed (LRT)"
-                        fields={nlTime}
-                        onChange={setNlTime}
-                    />
-                    <TimeRow
-                        label="In-Game Time (IGT)"
-                        fields={igtTime}
-                        onChange={setIgtTime}
-                    />
+                    {resolvedRequired.includes("rta") && (
+                        <TimeRow
+                            label="Real Time (RTA)"
+                            fields={rtaTime}
+                            onChange={setRtaTime}
+                        />
+                    )}
+                    {resolvedRequired.includes("lrt") && (
+                        <TimeRow
+                            label="Loads Removed (LRT)"
+                            fields={nlTime}
+                            onChange={setNlTime}
+                        />
+                    )}
+                    {resolvedRequired.includes("igt") && (
+                        <TimeRow
+                            label="In-Game Time (IGT)"
+                            fields={igtTime}
+                            onChange={setIgtTime}
+                        />
+                    )}
                 </div>
 
                 <Divider />

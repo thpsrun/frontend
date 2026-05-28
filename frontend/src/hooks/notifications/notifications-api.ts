@@ -4,6 +4,7 @@ import type {
     NotificationListParams,
     NotificationListResponse,
     NotificationPreferencesResponse,
+    NotificationPreferenceUpdate,
     NotificationKindsResponse,
     NotificationTargetType,
     UnreadCountResponse,
@@ -75,7 +76,7 @@ export const getPreferencesFn = (
     )
 
 export const updatePreferencesFn = (
-    prefs: Record<string, boolean>,
+    prefs: NotificationPreferenceUpdate,
 ): Promise<NotificationPreferencesResponse> =>
     apiFetch<NotificationPreferencesResponse>(
         "/notifications/preferences",

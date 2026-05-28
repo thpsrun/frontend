@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import type { SyntheticEvent } from "react"
 import { useNavigate, Navigate, Link, useLocation } from "react-router"
 import { useSession } from "@/hooks/auth/useSession"
@@ -12,14 +12,20 @@ import { FormField } from "@/components/profile/form-field"
 import { SiDiscord, SiTwitch } from "@icons-pack/react-simple-icons"
 import { PasskeyLoginButton } from "@/components/auth/passkey-login-button"
 import { useOauthLogin } from "@/hooks/auth/useOauthLogin"
-import { oauthLoginErrorMessage } from "@/lib/auth-errors"
+import { ApiError } from "@/lib/api-client"
+import { oauthLoginErrorMessage, turnstileErrorMessage } from "@/lib/auth-errors"
+import { isTurnstileEnabled } from "@/lib/turnstile"
+import {
+    TurnstileWidget,
+    type TurnstileWidgetHandle,
+} from "@/components/auth/turnstile-widget"
 import type { AuthProvider } from "@/types/auth"
 import {
     peekRememberMeStash,
     stashRememberMe,
 } from "@/lib/remember-me"
 
-type LoginStep = "login" | "totp" | "email-verification"
+type LoginStep = "login" | "totp"
 
 const PROVIDER_LABEL: Record<AuthProvider, string> = {
     discord: "Discord",
@@ -69,6 +75,27 @@ export function LoginPage() {
     )
     const [step, setStep] = useState<LoginStep>("login")
     const [error, setError] = useState<string | null>(null)
+    const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+    const turnstileRef = useRef<TurnstileWidgetHandle>(null)
+
+    const turnstileEnabled = isTurnstileEnabled()
+    const turnstileReady = !turnstileEnabled || turnstileToken !== null
+
+    const resetTurnstile = () => {
+        turnstileRef.current?.reset()
+        setTurnstileToken(null)
+    }
+
+    const reportError = (err: unknown, fallback: string) => {
+        if (err instanceof ApiError) {
+            const tsMsg = turnstileErrorMessage(err.code)
+            if (tsMsg) {
+                setError(tsMsg)
+                return
+            }
+        }
+        setError(err instanceof Error ? err.message : fallback)
+    }
 
     if (isAuthenticated) {
         return <Navigate to={returnTo} replace />
@@ -82,20 +109,20 @@ export function LoginPage() {
             const result = await login.mutateAsync({
                 data: { username: loginValue, password },
                 options: { rememberMe },
+                turnstileToken,
             })
             if (result.mfaRequired) {
                 setStep("totp")
             } else if (result.emailVerificationRequired) {
-                setStep("email-verification")
+                navigate("/verify-email")
+                return
             } else {
                 navigate(returnTo)
             }
         } catch (err) {
-            setError(
-                err instanceof Error
-                    ? err.message
-                    : "An unexpected error occurred.",
-            )
+            reportError(err, "An unexpected error occurred.")
+        } finally {
+            resetTurnstile()
         }
     }
 
@@ -117,7 +144,9 @@ export function LoginPage() {
 
     const handleOauthLogin = async (provider: AuthProvider) => {
         setError(null)
-        const result = await oauthLogin(provider)
+        const tokenForCall = turnstileToken
+        const result = await oauthLogin(provider, tokenForCall)
+        resetTurnstile()
         if (result.ok) {
             navigate(returnTo)
             return
@@ -133,7 +162,6 @@ export function LoginPage() {
     const titles: Record<LoginStep, string> = {
         "login": "Log In",
         "totp": "Two-Factor Authentication",
-        "email-verification": "Check your Email",
     }
 
     return (
@@ -151,25 +179,7 @@ export function LoginPage() {
                         </AlertBanner>
                     )}
 
-                    {step === "email-verification" ? (
-                        <div className="flex flex-col gap-4">
-                            <p className="text-sm text-muted-foreground">
-                                Please verify your email address before logging in.
-                                Check your inbox for a verification link. If you are having
-                                issues, contact Anastasia on the Discord.
-                            </p>
-                            <button
-                                type="button"
-                                className="text-sm text-muted-foreground hover:text-foreground"
-                                onClick={() => {
-                                    setStep("login")
-                                    setError(null)
-                                }}
-                            >
-                                Back to login
-                            </button>
-                        </div>
-                    ) : step === "totp" ? (
+                    {step === "totp" ? (
                         <form onSubmit={handleTotp} className="flex flex-col gap-4">
                             <p className="text-sm text-muted-foreground">
                                 Enter the 6-digit code from your authenticator app.
@@ -230,27 +240,41 @@ export function LoginPage() {
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
-                                <div className="flex items-center gap-2">
-                                    <Checkbox
-                                        id="remember-me"
-                                        checked={rememberMe}
-                                        onCheckedChange={(value) =>
-                                            handleRememberMeChange(value === true)
-                                        }
-                                    />
-                                    <Label
-                                        htmlFor="remember-me"
-                                        className="cursor-pointer"
+                                <div className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <Checkbox
+                                            id="remember-me"
+                                            checked={rememberMe}
+                                            onCheckedChange={(value) =>
+                                                handleRememberMeChange(value === true)
+                                            }
+                                        />
+                                        <Label
+                                            htmlFor="remember-me"
+                                            className="cursor-pointer"
+                                        >
+                                            Log In For 30 Days
+                                        </Label>
+                                    </div>
+                                    <Link
+                                        to="/forgot-password"
+                                        className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                                     >
-                                        Log In For 30 Days
-                                    </Label>
+                                        Forgot Password?
+                                    </Link>
                                 </div>
+                                <TurnstileWidget
+                                    ref={turnstileRef}
+                                    onToken={setTurnstileToken}
+                                    className="flex justify-center"
+                                />
                                 <Button
                                     type="submit"
                                     disabled={
                                         login.isPending
                                         || !loginValue.trim()
                                         || !password
+                                        || !turnstileReady
                                     }
                                 >
                                     {login.isPending ? "Logging In..." : "Log In"}
@@ -268,7 +292,10 @@ export function LoginPage() {
                                             type="button"
                                             variant="outline"
                                             onClick={() => handleOauthLogin(p)}
-                                            disabled={oauthPending !== null}
+                                            disabled={
+                                                oauthPending !== null
+                                                || !turnstileReady
+                                            }
                                             className="w-full"
                                         >
                                             <Icon

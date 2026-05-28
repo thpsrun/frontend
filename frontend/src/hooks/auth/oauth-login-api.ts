@@ -7,8 +7,9 @@ export interface OAuthLoginInitiateResponse {
 
 export const initiateOAuthLoginFn = (
     provider: AuthProvider,
+    turnstileToken: string | null = null,
 ): Promise<OAuthLoginInitiateResponse> =>
     apiFetch<OAuthLoginInitiateResponse>(
         `/auth/oauth-login/${provider}`,
-        { method: "POST" },
+        { method: "POST", turnstileToken },
     )

@@ -9,6 +9,7 @@ type ApiFetchOptions = Omit<RequestInit, "body" | "headers"> & {
     headers?: HeadersInit
     signal?: AbortSignal
     rememberMe?: boolean
+    turnstileToken?: string | null
 }
 
 export class ApiError extends Error {
@@ -100,6 +101,7 @@ function buildHeaders(
     hasJsonBody: boolean,
     needsCsrf: boolean,
     rememberMe: boolean,
+    turnstileToken: string | null,
 ): Headers {
     const headers = new Headers(init)
     if (!headers.has("Accept")) {
@@ -113,6 +115,9 @@ function buildHeaders(
     }
     if (rememberMe && !headers.has("X-Remember-Me")) {
         headers.set("X-Remember-Me", "1")
+    }
+    if (turnstileToken && !headers.has("X-Turnstile-Token")) {
+        headers.set("X-Turnstile-Token", turnstileToken)
     }
     return headers
 }
@@ -131,23 +136,18 @@ function parseRetryAfter(header: string | null): number | null {
 
 async function parseError(res: Response): Promise<ApiError> {
     const retryAfter = parseRetryAfter(res.headers.get("Retry-After"))
-    if (res.status === 429) {
-        return new ApiError(
-            429,
-            "Too many attempts. Please wait and try again.",
-            "rate_limited",
-            null,
-            retryAfter,
-        )
-    }
     const body = await res.json().catch(() => null)
     // Backend ErrorResponse uses `error` for the slug (e.g. "reauth_required").
-    // Prefer an explicit `code` if present, otherwise fall back to `error`.
+    // Allauth and the 429 envelope use `errors[0].code` (e.g. "rate_limited",
+    // "turnstile_required"). Prefer an explicit `code`, then fall back to
+    // `error`, then to the first allauth/rate-limit error.
     const code = typeof body?.code === "string"
         ? body.code
         : typeof body?.error === "string"
             ? body.error
-            : null
+            : typeof body?.errors?.[0]?.code === "string"
+                ? body.errors[0].code
+                : null
     const message = typeof body?.error === "string"
         ? body.error
         : typeof body?.detail === "string"
@@ -155,6 +155,18 @@ async function parseError(res: Response): Promise<ApiError> {
             : typeof body?.errors?.[0]?.message === "string"
                 ? body.errors[0].message
                 : `Request failed: ${res.status}`
+    if (res.status === 429) {
+        const rateMessage = typeof body?.errors?.[0]?.message === "string"
+            ? body.errors[0].message
+            : "Too many attempts. Please wait and try again."
+        return new ApiError(
+            429,
+            rateMessage,
+            code ?? "rate_limited",
+            body,
+            retryAfter,
+        )
+    }
     return new ApiError(res.status, message, code, body, retryAfter)
 }
 
@@ -170,12 +182,19 @@ export async function apiFetch<T = unknown>(
         signal,
         method,
         rememberMe = false,
+        turnstileToken = null,
         ...rest
     } = options
 
     const mutation = isMutation(method)
     const hasJsonBody = json !== undefined
-    const finalHeaders = buildHeaders(headers, hasJsonBody, mutation, rememberMe)
+    const finalHeaders = buildHeaders(
+        headers,
+        hasJsonBody,
+        mutation,
+        rememberMe,
+        turnstileToken,
+    )
 
     const url = path.startsWith("http") ? path : `${resolveBase(base)}${path}`
 

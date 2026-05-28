@@ -53,7 +53,7 @@ function PendingRunRow({
                 )}
                 onClick={() => setEditOpen(true)}
             >
-                <TableCell className="text-sm">
+                <TableCell className="text-sm whitespace-normal wrap-break-word">
                     {run.subcategory}
                 </TableCell>
                 <TableCell className="text-sm">

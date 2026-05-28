@@ -4,7 +4,7 @@ import type {
     LoginRequest,
     RegisterRequest,
     VerifySrcRequest,
-    RegisterResponse,
+    RegisterResult,
     SessionState,
     AllauthSessionResponse,
     UpdateProfileRequest,
@@ -46,6 +46,7 @@ export const fetchCountries = (signal?: AbortSignal): Promise<Country[]> =>
 export async function loginFn(
     data: LoginRequest,
     options: LoginOptions = { rememberMe: false },
+    turnstileToken: string | null = null,
 ): Promise<LoginResult> {
     try {
         await apiFetch<AllauthSessionResponse>(
@@ -55,6 +56,7 @@ export async function loginFn(
                 method: "POST",
                 json: data,
                 rememberMe: options.rememberMe,
+                turnstileToken,
             },
         )
         return {
@@ -114,10 +116,13 @@ export async function logoutFn(): Promise<void> {
     }
 }
 
-export const registerFn = (data: RegisterRequest): Promise<RegisterResponse> =>
-    apiFetch<RegisterResponse>(
+export const registerFn = (
+    data: RegisterRequest,
+    turnstileToken: string | null = null,
+): Promise<RegisterResult> =>
+    apiFetch<RegisterResult>(
         "/auth/register",
-        { method: "POST", json: data },
+        { method: "POST", json: data, turnstileToken },
     )
 
 export const updateProfileFn = (data: UpdateProfileRequest): Promise<AuthMe> =>
@@ -171,4 +176,32 @@ export const reauthenticateFn = (password: string): Promise<void> =>
     apiFetch<void>(
         "/auth/reauthenticate",
         { base: "allauth", method: "POST", json: { password } },
+    )
+
+export const requestPasswordResetFn = (
+    email: string,
+    turnstileToken: string | null = null,
+): Promise<void> =>
+    apiFetch<void>(
+        "/auth/password/request",
+        {
+            base: "allauth",
+            method: "POST",
+            json: { email },
+            turnstileToken,
+        },
+    )
+
+export const confirmPasswordResetFn = (
+    key: string,
+    password: string,
+): Promise<void> =>
+    apiFetch<void>(
+        "/auth/password/reset",
+        {
+            base: "allauth",
+            method: "POST",
+            json: { password },
+            headers: { "X-Password-Reset-Key": key },
+        },
     )

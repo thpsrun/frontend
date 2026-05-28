@@ -90,6 +90,12 @@ export interface GameDetail extends Game {
     platforms: GamePlatform[]
 }
 
+// Utilized on GET /api/v1/games/{slug}/timings
+export interface ResolveTimingResponse {
+    resolved_required_methods: TimingMethodType[]
+    resolved_primary_method: TimingMethodType
+}
+
 // Utilized on /api/v1/website/main?embed=latest-wrs,latest-pbs,records
 export interface MainPlayer {
     name: string

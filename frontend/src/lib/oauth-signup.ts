@@ -63,6 +63,7 @@ function narrowPopupReason(raw: string): OAuthSignupErrorReason {
 
 export async function runOAuthSignup(
     provider: AuthProvider,
+    turnstileToken: string | null = null,
 ): Promise<OAuthSignupResult> {
     const popup = window.open(
         "about:blank",
@@ -75,7 +76,7 @@ export async function runOAuthSignup(
 
     let initiate: { authorize_url: string }
     try {
-        initiate = await initiateOAuthSignupFn(provider)
+        initiate = await initiateOAuthSignupFn(provider, turnstileToken)
     } catch (err) {
         popup.close()
         if (err instanceof ApiError) {

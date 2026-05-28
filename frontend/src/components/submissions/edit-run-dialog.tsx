@@ -19,6 +19,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { BookOpen, Loader2, Users } from "lucide-react"
 
 import { useGameDetail } from "@/hooks/game/useGameDetail"
+import { useResolveTiming } from "@/hooks/game/useResolveTiming"
 import { useRun } from "@/hooks/runs/useRun"
 import { useUpdateRun } from "@/hooks/submissions/useUpdateRun"
 import { useSubmissions } from "@/hooks/submissions/useSubmissions"
@@ -329,9 +330,6 @@ function EditRunForm({
         ) ?? false,
         [player, run.game.slug],
     )
-    const resolvedRequired = detail.times.resolved_required_methods
-        ?? ["rta", "lrt", "igt"] as const
-
     const [runStatus, setRunStatus] = useState<RunStatusChoice>("unchanged")
     const [denyReason, setDenyReason] = useState("")
     const [reviewNotes, setReviewNotes] = useState(run.review_notes ?? "")
@@ -386,6 +384,22 @@ function EditRunForm({
         () => selectedCategory?.variables.filter((v) => !v.archive) ?? [],
         [selectedCategory],
     )
+
+    const selectedValueIds = useMemo(
+        () => Object.values(variableValues),
+        [variableValues],
+    )
+
+    const { data: timing } = useResolveTiming(
+        gameDetail.slug,
+        selectedCategory?.id ?? "",
+        runtype === "il" ? levelId : null,
+        selectedValueIds,
+    )
+
+    const resolvedRequired = timing?.resolved_required_methods
+        ?? detail.times.resolved_required_methods
+        ?? (["rta", "lrt", "igt"] as const)
 
     const embedUrl = useMemo(() => getYouTubeEmbedUrl(video), [video])
 
@@ -525,11 +539,7 @@ function EditRunForm({
                                             setError("Run not found...")
                                             return
                                         }
-                                        if (err.isConflict) {
-                                            setError("This run is no longer in a reviewable state...")
-                                            return
-                                        }
-                                        if (err.isValidation) {
+                                        if (err.isConflict || err.isValidation) {
                                             setError(err.message)
                                             return
                                         }

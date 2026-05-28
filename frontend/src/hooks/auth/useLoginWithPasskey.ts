@@ -3,6 +3,7 @@ import { useNavigate } from "react-router"
 import { startAuthentication } from "@simplewebauthn/browser"
 import { toast } from "sonner"
 import { queryKeys } from "@/lib/query-keys"
+import { clearSignupVerification } from "@/lib/signup-verification-state"
 import { getErrorMessage } from "@/lib/utils"
 import type { PasskeyLoginOptions } from "@/types/auth"
 import { completePasskeyLogin, getPasskeyLoginOptions } from "./passkey-api"
@@ -19,6 +20,7 @@ export function useLoginWithPasskey() {
             await completePasskeyLogin(credential, options)
         },
         onSuccess: () => {
+            clearSignupVerification()
             qc.invalidateQueries({ queryKey: queryKeys.auth.session() })
             qc.invalidateQueries({ queryKey: queryKeys.auth.me() })
             navigate("/")

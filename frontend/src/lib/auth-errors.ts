@@ -143,6 +143,43 @@ export function oauthSignupErrorMessage(
     }
 }
 
+export function passwordResetRequestErrorMessage(
+    code: string | null,
+    retryAfterSeconds: number | null,
+): string | null {
+    if (code === "rate_limited") {
+        const minutes = Math.max(
+            1,
+            Math.ceil((retryAfterSeconds ?? 60) / 60),
+        )
+        const unit = minutes === 1 ? "minute" : "minutes"
+        return `Too many reset attempts. Try again in ${minutes} ${unit}.`
+    }
+    return null
+}
+
+export function passwordResetConfirmErrorMessage(code: string | null): string {
+    switch (code) {
+        case "rate_limited":
+            return "Too many attempts. Please wait and try again."
+        default:
+            return "Your reset link is invalid or has expired. Request a new one to continue"
+    }
+}
+
+export function turnstileErrorMessage(code: string | null): string | null {
+    switch (code) {
+        case "turnstile_required":
+            return "Please complete the verification."
+        case "turnstile_failed":
+            return "Verification failed. Please try again."
+        case "turnstile_unavailable":
+            return "Verification service is temporarily unavailable. Please try again later."
+        default:
+            return null
+    }
+}
+
 export function oauthLoginErrorMessage(
     reason: OAuthLoginErrorReason,
     providerLabel: string,
@@ -174,5 +211,66 @@ export function oauthLoginErrorMessage(
             return "Too many attempts. Try again in a minute."
         case "initiate_failed":
             return "Couldn't start login. Please try again."
+    }
+}
+
+export function mapVerifySignupEmailError(code: string | null): string {
+    switch (code) {
+        case "invalid_or_expired_code":
+            return "That link is invalid or has expired. Try resending and trying again."
+        case "rate_limited":
+            return "Too many attempts. Please wait some time before trying again."
+        default:
+            return "The link couldn't be verified. Please try again."
+    }
+}
+
+export function mapResendEmailChangeError(code: string | null): string {
+    switch (code) {
+        case "no_pending_change":
+            return "There's no pending email change to resend."
+        case "rate_limited":
+            return "You've requested too many links. Please wait before trying again."
+        default:
+            return "We couldn't send a new link. Please try again."
+    }
+}
+
+export function mapCorrectSignupEmailError(code: string | null): string {
+    switch (code) {
+        case "src_api_unavailable":
+            return "Couldn't reach speedrun.com. Try again shortly."
+        case "src_api_invalid":
+            return "That SRC API key isn't valid."
+        case "rate_limited":
+            return "Too many attempts. Please wait before trying again."
+        default:
+            return "We couldn't update your email. Please try again."
+    }
+}
+
+export function mapEmailChangeError(code: string | null): string {
+    switch (code) {
+        case "same_email":
+            return "That's already your current email."
+        case "email_taken":
+            return "Another account is already using that email."
+        case "rate_limited":
+            return "Too many attempts. Please wait before trying again."
+        case "reauth_required":
+            return "Please re-enter your password to continue."
+        default:
+            return "We couldn't start the email change. Please try again."
+    }
+}
+
+export function mapVerifyEmailChangeError(code: string | null): string {
+    switch (code) {
+        case "invalid_or_expired_code":
+            return "This verification link is invalid or has expired. Click 'Resend code' below."
+        case "no_pending_change":
+            return "There's no email change to verify. It may have already been completed."
+        default:
+            return "We couldn't verify that link. Please try again."
     }
 }

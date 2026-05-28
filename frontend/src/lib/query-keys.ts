@@ -19,6 +19,20 @@ export const queryKeys = {
         moderators: (gameSlug: string) =>
             [...queryKeys.games.all, "moderators", gameSlug] as const,
         platforms: () => [...queryKeys.games.all, "platforms"] as const,
+        timings: (
+            gameSlug: string,
+            categoryId: string,
+            levelId: string | null,
+            valueIds: string[],
+        ) =>
+            [
+                ...queryKeys.games.all,
+                "timings",
+                gameSlug,
+                categoryId,
+                levelId ?? "",
+                valueIds,
+            ] as const,
     },
 
     guides: {
@@ -80,6 +94,7 @@ export const queryKeys = {
         methods: () => [...queryKeys.auth.all, "methods"] as const,
         authenticators: () => [...queryKeys.auth.all, "authenticators"] as const,
         exports: () => [...queryKeys.auth.all, "exports"] as const,
+        email: () => [...queryKeys.auth.all, "email"] as const,
     },
 
     submissions: {
