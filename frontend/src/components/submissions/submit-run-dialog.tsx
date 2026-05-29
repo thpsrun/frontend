@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { toast } from "sonner"
 import {
     Dialog, DialogContent, DialogHeader,
@@ -19,10 +19,12 @@ import {
     ReadOnlyField, CategoryVariableGrid, PlatformEmulatedRow,
     buildDefaultVariables,
 } from "@/components/submissions/run-form-helpers"
+import { PlayerSearchDropdown } from "@/components/submissions/player-search-dropdown"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useSubmitRun } from "@/hooks/submissions/useSubmitRun"
 import { useResolveTiming } from "@/hooks/game/useResolveTiming"
 import { usePlayerSearch } from "@/hooks/players/usePlayerSearch"
+import { useIsWide } from "@/hooks/useIsWide"
 import { Loader2, Plus, Trash2, BookOpen } from "lucide-react"
 import { RulesPanel } from "@/components/rules/rules-panel"
 import { RulesDialog } from "@/components/rules/rules-dialog"
@@ -151,18 +153,7 @@ export function SubmitRunDialog({
         ?? (["rta", "lrt", "igt"] as const)
 
     const [rulesOpen, setRulesOpen] = useState(false)
-    const [isWide, setIsWide] = useState(
-        typeof window !== "undefined"
-            ? window.matchMedia("(min-width: 768px)").matches
-            : true,
-    )
-
-    useEffect(() => {
-        const mq = window.matchMedia("(min-width: 768px)")
-        const onChange = (e: MediaQueryListEvent) => setIsWide(e.matches)
-        mq.addEventListener("change", onChange)
-        return () => mq.removeEventListener("change", onChange)
-    }, [])
+    const isWide = useIsWide()
 
     const orderedValueSlugs = useMemo(
         () => applicableVariables.map((variable) => {
@@ -321,7 +312,7 @@ export function SubmitRunDialog({
                     description: data.message,
                     action: {
                         label: "View on SRC",
-                        onClick: () => window.open(data.src_url, "_blank"),
+                        onClick: () => window.open(data.src_url, "_blank", "noopener,noreferrer"),
                     },
                 })
             },
@@ -507,33 +498,17 @@ export function SubmitRunDialog({
                                         activeSearchIdx === idx &&
                                         searchResults.data &&
                                         searchResults.data.length > 0 && (
-                                            <div className="absolute z-50 top-full left-0 right-0 mt-1 rounded-md border border-border bg-popover shadow-md overflow-hidden">
-                                                {searchResults.data.map((result) => (
-                                                    <button
-                                                        key={result.id}
-                                                        type="button"
-                                                        className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
-                                                        onMouseDown={(e) => {
-                                                            e.preventDefault()
-                                                            updatePlayerField(idx, {
-                                                                id: result.id,
-                                                                displayName: result.name,
-                                                                searchQuery: "",
-                                                            })
-                                                            setActiveSearchIdx(null)
-                                                        }}
-                                                    >
-                                                        <span className="font-medium">
-                                                            {result.name}
-                                                        </span>
-                                                        {result.nickname && (
-                                                            <span className="text-muted-foreground ml-1">
-                                                                ({result.nickname})
-                                                            </span>
-                                                        )}
-                                                    </button>
-                                                ))}
-                                            </div>
+                                            <PlayerSearchDropdown
+                                                results={searchResults.data}
+                                                onSelect={(result) => {
+                                                    updatePlayerField(idx, {
+                                                        id: result.id,
+                                                        displayName: result.name,
+                                                        searchQuery: "",
+                                                    })
+                                                    setActiveSearchIdx(null)
+                                                }}
+                                            />
                                         )}
                                 </div>
 

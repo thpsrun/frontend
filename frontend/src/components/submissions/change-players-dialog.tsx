@@ -15,6 +15,7 @@ import {
 import { AlertBanner } from "@/components/common/alert-banner"
 import { useSubmissions } from "@/hooks/submissions/useSubmissions"
 import { usePlayerSearch } from "@/hooks/players/usePlayerSearch"
+import { PlayerSearchDropdown } from "@/components/submissions/player-search-dropdown"
 import { Loader2, Plus, Trash2 } from "lucide-react"
 import type {
     PendingRun, ChangePlayerEntry,
@@ -193,33 +194,13 @@ export function ChangePlayersDialog({
                                         && activeSearchIdx === idx
                                         && searchResults.data
                                         && searchResults.data.length > 0 && (
-                                            <div className="absolute z-50 top-full left-0 right-0 mt-1 rounded-md border border-border bg-popover shadow-md overflow-hidden">
-                                                {searchResults.data.map((result) => (
-                                                    <button
-                                                        key={result.id}
-                                                        type="button"
-                                                        className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
-                                                        onMouseDown={(e) => {
-                                                            e.preventDefault()
-                                                            updateRow(
-                                                                idx,
-                                                                "value",
-                                                                result.name,
-                                                            )
-                                                            setActiveSearchIdx(null)
-                                                        }}
-                                                    >
-                                                        <span className="font-medium">
-                                                            {result.name}
-                                                        </span>
-                                                        {result.nickname && (
-                                                            <span className="text-muted-foreground ml-1">
-                                                                ({result.nickname})
-                                                            </span>
-                                                        )}
-                                                    </button>
-                                                ))}
-                                            </div>
+                                            <PlayerSearchDropdown
+                                                results={searchResults.data}
+                                                onSelect={(result) => {
+                                                    updateRow(idx, "value", result.name)
+                                                    setActiveSearchIdx(null)
+                                                }}
+                                            />
                                         )}
                                 </div>
                                 <Button

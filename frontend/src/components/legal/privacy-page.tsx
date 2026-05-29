@@ -1,3 +1,4 @@
+import { Link } from "react-router"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Panel } from "@/components/ui/panel"
 import { PageShell } from "@/components/common/page-shell"
@@ -109,8 +110,8 @@ export function PrivacyPage() {
                                 <ul className="list-disc pl-6 flex flex-col gap-2 leading-relaxed">
                                     <li>
                                         All collected user data on this site is encrypted in transit via TLS and at rest. Once every 24 hours,
-                                        users can request a full export of all of their data from this website in <a href="profile/settings/danger">
-                                        their profile settings (link).</a>
+                                        users can request a full export of all of their data from this website in <Link to="/profile/settings/danger" className="text-link hover:underline">
+                                        their profile settings.</Link>
                                     </li>
                                     <li>
                                         Audit logs on PUT, POST, PATCH, and DELETE API requests are collected - to include IP addresses - for security and non-repudiation.

@@ -111,7 +111,7 @@ function RunRow({
 }) {
     const [editOpen, setEditOpen] = useState(false)
     const stop = (e: SyntheticEvent) => e.stopPropagation()
-    const time = run.times.p_time && run.times.p_time !== "0"
+    const time = run.times.p_time_secs > 0
         ? run.times.p_time
         : run.times.time
     const videoHref = run.arch_video ?? run.video

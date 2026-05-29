@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react"
-import { Link } from "react-router"
 
 import { CountryFlag, type CountryCode } from "@/lib/leaderboard-helpers"
-import { GradientUsername } from "@/components/profile/gradient-username"
+import { PlayerLink } from "@/components/common/player-link"
 
 
 interface GameSpan {
@@ -88,25 +87,12 @@ export const PlayerCell = ({ players }: PlayerCellProps) => {
                             title={player.country.name}
                         />
                     )}
-                    {player.name ? (
-                        <Link
-                            to={`/player/${player.name}`}
-                            className="text-link hover:underline"
-                        >
-                            <GradientUsername
-                                name={
-                                    player.nickname
-                                        || player.name
-                                }
-                                gradients={
-                                    player.gradients
-                                        ?? null
-                                }
-                            />
-                        </Link>
-                    ) : (
-                        "Anonymous"
-                    )}
+                    <PlayerLink
+                        name={player.name}
+                        nickname={player.nickname}
+                        gradients={player.gradients}
+                        className="text-link"
+                    />
                     {idx < players.length - 1 && ", "}
                 </span>
             ))}

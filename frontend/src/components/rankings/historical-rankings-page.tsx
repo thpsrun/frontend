@@ -59,6 +59,7 @@ const parseParams = (
     const month = Number.parseInt(raw.month ?? "", 10)
     if (!isValidYear(year, today)) return null
     if (!isValidMonth(month)) return null
+    if (year === today.year && month > today.month) return null
     return {
         mode: raw.mode,
         year,

@@ -54,13 +54,14 @@ export function useReconcileJob(jobId: string | undefined) {
 export function useReconcileItems(
     jobId: string | undefined,
     params: ReconcileItemsParams = {},
+    options: { jobActive?: boolean } = {},
 ) {
     return useQuery({
         queryKey: queryKeys.admin.reconcileItems(jobId ?? "", params),
         queryFn: ({ signal }) => fetchReconcileItems(jobId!, params, signal),
         enabled: Boolean(jobId),
         staleTime: 5 * 1000,
-        refetchInterval: 15 * 1000,
+        refetchInterval: options.jobActive ? 15 * 1000 : false,
     })
 }
 

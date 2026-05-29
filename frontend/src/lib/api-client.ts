@@ -81,6 +81,10 @@ export function setBannedHandler(handler: BannedHandler | null): void {
     bannedHandler = handler
 }
 
+export function triggerAuthLost(): void {
+    authLostHandler?.()
+}
+
 export function getCsrfToken(): string {
     const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]*)/)
     return match ? decodeURIComponent(match[1]) : ""

@@ -11,6 +11,7 @@ export function useDisconnectSocialAccount() {
             disconnectSocialAccountFn(provider),
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: queryKeys.auth.methods() })
+            qc.invalidateQueries({ queryKey: queryKeys.auth.me() })
             toast.success("Disconnected.")
         },
     })

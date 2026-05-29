@@ -16,6 +16,7 @@ import {
 import { ReviewNotesBanner } from "@/components/submissions/review-notes-banner"
 import { VidStatusBadge } from "@/components/submissions/vid-status-badge"
 import { EditRunDialog } from "@/components/submissions/edit-run-dialog"
+import { PlayerLink } from "@/components/common/player-link"
 import { cn } from "@/lib/utils"
 import type { PendingRun, ReviewGameGroup } from "@/types/submissions"
 
@@ -116,15 +117,12 @@ function ReviewRow({ run, idx }: { run: PendingRun; idx: number }) {
                     {run.players.map((p, i) => (
                         <span key={p.id}>
                             {i > 0 && ", "}
-                            <Link
-                                to={`/player/${p.name}`}
+                            <PlayerLink
+                                name={p.name}
                                 target="_blank"
-                                rel="noopener noreferrer"
                                 onClick={stop}
-                                className={cn("text-link hover:underline")}
-                            >
-                                {p.name}
-                            </Link>
+                                className="text-link"
+                            />
                         </span>
                     ))}
                 </TableCell>

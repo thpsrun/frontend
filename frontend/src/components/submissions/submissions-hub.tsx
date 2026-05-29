@@ -12,6 +12,7 @@ import {
 import { TableSkeleton } from "@/components/common/table-skeleton"
 import { EmptyState } from "@/components/common/empty-state"
 import { PageShell } from "@/components/common/page-shell"
+import { PlayerLink } from "@/components/common/player-link"
 import { Info, ExternalLink, Inbox } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -60,18 +61,12 @@ function PendingRunRow({
                     {run.players.map((p, i) => (
                         <span key={p.id}>
                             {i > 0 && ", "}
-                            <Link
-                                to={`/player/${p.name}`}
+                            <PlayerLink
+                                name={p.name}
                                 target="_blank"
-                                rel="noopener noreferrer"
                                 onClick={stop}
-                                className={cn(
-                                    "text-link",
-                                    "hover:underline",
-                                )}
-                            >
-                                {p.name}
-                            </Link>
+                                className="text-link"
+                            />
                         </span>
                     ))}
                 </TableCell>

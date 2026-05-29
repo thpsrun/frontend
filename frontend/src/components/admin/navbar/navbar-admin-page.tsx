@@ -178,7 +178,7 @@ export function NavbarAdminPage() {
                                 }
                                 onToggleVisible={handleToggleItemVisible}
                                 onReorder={handleReorderItems}
-                                pendingItemId={null}
+                                pendingItemId={updateItem.isPending ? updateItem.variables?.itemId ?? null : null}
                             />
                         )}
                     </Panel>
@@ -194,7 +194,7 @@ export function NavbarAdminPage() {
                         }
                         onToggleVisible={handleToggleSocialVisible}
                         onReorder={handleReorderSocials}
-                        pendingId={null}
+                        pendingId={updateSocial.isPending ? updateSocial.variables?.linkId ?? null : null}
                     />
 
                     <NavItemFormDialog

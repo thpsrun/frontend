@@ -16,6 +16,9 @@ export function useRemoveGameModerator(
             qc.invalidateQueries({
                 queryKey: queryKeys.games.moderators(slug),
             })
+            qc.invalidateQueries({
+                queryKey: queryKeys.games.detail(slug),
+            })
         },
     })
 }

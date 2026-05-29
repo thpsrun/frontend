@@ -1,10 +1,9 @@
 import * as flags from "country-flag-icons/react/3x2"
-import { Link } from "react-router"
 import type { ReactNode } from "react"
 
 import { cn } from "@/lib/utils"
 import { BACKEND_URL } from "@/constants"
-import { GradientUsername } from "@/components/profile/gradient-username"
+import { PlayerLink } from "@/components/common/player-link"
 
 import type {
     GameCategory,
@@ -234,38 +233,18 @@ export const RunPlayers = ({
                     title={first.country.name}
                 />
             )}
-            {players.map((p, i) => {
-                const name = p.name
-                if (!name || name === "Anonymous") {
-                    return (
-                        <span key={`anon-${i}`}>
-                            {i > 0 && separator}
-                            Anonymous
-                        </span>
-                    )
-                }
-                const display = (
-                    <GradientUsername
-                        name={p.nickname || name}
-                        gradients={p.gradients ?? null}
+            {players.map((p, i) => (
+                <span key={p.name && p.name !== "Anonymous" ? p.name : `anon-${i}`}>
+                    {i > 0 && separator}
+                    <PlayerLink
+                        name={p.name}
+                        nickname={p.nickname}
+                        gradients={p.gradients}
+                        asLink={asLink}
+                        className="text-link"
                     />
-                )
-                return (
-                    <span key={name}>
-                        {i > 0 && separator}
-                        {asLink ? (
-                            <Link
-                                to={`/player/${name}`}
-                                className="text-link hover:underline"
-                            >
-                                {display}
-                            </Link>
-                        ) : (
-                            display
-                        )}
-                    </span>
-                )
-            })}
+                </span>
+            ))}
             {expectedPlayers !== undefined
                 && players.length < expectedPlayers
                 && <>{separator}Anonymous</>}

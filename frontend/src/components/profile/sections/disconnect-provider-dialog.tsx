@@ -88,7 +88,7 @@ export function DisconnectProviderDialog({ target, onClose }: Props) {
                 if (mapped.toast) {
                     toast.error(mapped.toast)
                 }
-                setError(mapped.toast)
+                setError(mapped.toast ?? "Couldn't disconnect. Please try again...")
             },
         })
     }

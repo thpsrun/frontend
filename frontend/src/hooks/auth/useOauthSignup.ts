@@ -3,11 +3,11 @@ import { useQueryClient } from "@tanstack/react-query"
 import { ApiError } from "@/lib/api-client"
 import { queryKeys } from "@/lib/query-keys"
 import { runOAuthSignup, type OAuthSignupErrorReason } from "@/lib/oauth-signup"
-import { finalizeOauthSignupFn } from "@/hooks/auth/oauth-signup-api"
+import { finalizeOauthSignupFn, type FinalizeOauthSignupResult } from "@/hooks/auth/oauth-signup-api"
 import type { AuthProvider, OauthSignupRequest } from "@/types/auth"
 
 export type OauthSignupHookResult =
-    | { ok: true }
+    | { ok: true, verificationRequired?: boolean }
     | { ok: false, kind: "popup", reason: OAuthSignupErrorReason }
     | { ok: false, kind: "finalize", code: string | null }
 
@@ -31,11 +31,15 @@ export function useOauthSignup() {
                         reason: popupResult.reason,
                     }
                 }
+                let finalize: FinalizeOauthSignupResult
                 try {
-                    await finalizeOauthSignupFn(body, turnstileToken)
+                    finalize = await finalizeOauthSignupFn(body, turnstileToken)
                 } catch (err) {
                     const code = err instanceof ApiError ? err.code : null
                     return { ok: false, kind: "finalize", code }
+                }
+                if (finalize.kind === "verification_required") {
+                    return { ok: true, verificationRequired: true }
                 }
                 qc.invalidateQueries({ queryKey: queryKeys.auth.session() })
                 qc.invalidateQueries({ queryKey: queryKeys.auth.me() })

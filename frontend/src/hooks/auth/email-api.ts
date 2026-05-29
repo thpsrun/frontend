@@ -42,8 +42,10 @@ export const correctSignupEmailFn = (
         },
     )
 
-export const getEmailStatusFn = (): Promise<EmailStatusResponse> =>
-    apiFetch<EmailStatusResponse>("/auth/me/email", { method: "GET" })
+export const getEmailStatusFn = (
+    signal?: AbortSignal,
+): Promise<EmailStatusResponse> =>
+    apiFetch<EmailStatusResponse>("/auth/me/email", { signal })
 
 export const requestEmailChangeFn = (
     newEmail: string,

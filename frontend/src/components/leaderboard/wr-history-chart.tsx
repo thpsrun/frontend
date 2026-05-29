@@ -164,7 +164,7 @@ const CustomDot = (props: {
 }) => {
     const { cx, cy, payload } = props
     if (
-        !cx || !cy || !payload
+        cx == null || cy == null || !payload
         || payload.isSynthetic
     ) {
         return null
@@ -190,7 +190,7 @@ const CustomDot = (props: {
             }}
             onClick={() => {
                 if (videoUrl) {
-                    window.open(videoUrl, "_blank")
+                    window.open(videoUrl, "_blank", "noopener,noreferrer")
                 }
             }}
         />
@@ -204,7 +204,7 @@ const CustomActiveDot = (props: {
 }) => {
     const { cx, cy, payload } = props
     if (
-        !cx || !cy || !payload
+        cx == null || cy == null || !payload
         || payload.isSynthetic
     ) {
         return null
@@ -231,7 +231,7 @@ const CustomActiveDot = (props: {
             }}
             onClick={() => {
                 if (videoUrl) {
-                    window.open(videoUrl, "_blank")
+                    window.open(videoUrl, "_blank", "noopener,noreferrer")
                 }
             }}
         />

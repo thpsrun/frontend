@@ -294,7 +294,7 @@ export function GuideMarkdown({ content, className }: Props) {
     return (
         <div
             className={cn(
-                "max-w-none wrap-brea-word text-foreground",
+                "max-w-none wrap-break-word text-foreground",
                 className,
             )}
         >

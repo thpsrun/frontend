@@ -1,10 +1,10 @@
 import { Fragment, useState } from "react"
-import { Link } from "react-router"
 import { ChevronDown, Radio, UserIcon } from "lucide-react"
 import { FaTwitch } from "react-icons/fa"
 import { cn } from "@/lib/utils"
 import { BACKEND_URL } from "@/constants"
 import { GradientUsername } from "@/components/profile/gradient-username"
+import { PlayerLink } from "@/components/common/player-link"
 import { useLiveStreams } from "@/hooks/home/useLiveStreams"
 import type { Stream } from "@/types/api"
 
@@ -132,16 +132,11 @@ export const LiveStreams = () => {
                                 )}
                                 <div className="min-w-0 flex-1">
                                     <div className="flex flex-wrap items-baseline gap-x-2">
-                                        <Link
-                                            to={`/player/${stream.player.name}`}
-                                            className="hover:underline"
-                                        >
-                                            <GradientUsername
-                                                name={stream.player.name}
-                                                gradients={stream.player.gradients ?? null}
-                                                className="font-medium"
-                                            />
-                                        </Link>
+                                        <PlayerLink
+                                            name={stream.player.name}
+                                            gradients={stream.player.gradients}
+                                            nameClassName="font-medium"
+                                        />
                                         {stream.game && (
                                             <span className="text-xs text-muted-foreground truncate">
                                                 {stream.game.name}

@@ -155,6 +155,7 @@ function SignupVerifyContent() {
     }
 
     const targetEmail = stashed?.email ?? null
+    const isOauthSignup = Boolean(stashed?.provider)
 
     return (
         <CardShell title="Verify your email">
@@ -191,20 +192,22 @@ function SignupVerifyContent() {
                         </Button>
                     </div>
                 </form>
-                <div className="border-t border-border/40 pt-4">
-                    <button
-                        type="button"
-                        onClick={() => setRecoveryOpen((v) => !v)}
-                        className="text-sm text-primary underline-offset-2 hover:underline"
-                    >
-                        {recoveryOpen ? "Hide" : "I never got the code"}
-                    </button>
-                    {recoveryOpen && (
-                        <div className="mt-3">
-                            <EmailRecoveryForm onSuccess={handleRecoverySuccess} />
-                        </div>
-                    )}
-                </div>
+                {!isOauthSignup && (
+                    <div className="border-t border-border/40 pt-4">
+                        <button
+                            type="button"
+                            onClick={() => setRecoveryOpen((v) => !v)}
+                            className="text-sm text-primary underline-offset-2 hover:underline"
+                        >
+                            {recoveryOpen ? "Hide" : "I never got the code"}
+                        </button>
+                        {recoveryOpen && (
+                            <div className="mt-3">
+                                <EmailRecoveryForm onSuccess={handleRecoverySuccess} />
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </CardShell>
     )

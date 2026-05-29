@@ -16,7 +16,7 @@ import { useGuides } from "@/hooks/guides/useGuides"
 import { useTags } from "@/hooks/guides/useTags"
 import type { GuideListItem, Tag } from "@/types/guides"
 import { GuideTableSkeleton } from "./guide-table-skeleton"
-import { GradientUsername } from "@/components/profile/gradient-username"
+import { PlayerLink } from "@/components/common/player-link"
 import { EmptyState } from "@/components/common/empty-state"
 import { buildGuideUrl, resolveGuideTags } from "@/lib/guide-urls"
 import { cn, truncate } from "@/lib/utils"
@@ -238,15 +238,11 @@ function GuideRow({ guide, idx, showGameColumn, masterTags }: RowProps) {
             <TableCell>
                 {guide.author?.name
                     ? (
-                        <Link
-                            to={`/player/${guide.author.name}`}
-                            className="hover:underline"
-                        >
-                            <GradientUsername
-                                name={guide.author.nickname || guide.author.name}
-                                gradients={guide.author.gradients ?? null}
-                            />
-                        </Link>
+                        <PlayerLink
+                            name={guide.author.name}
+                            nickname={guide.author.nickname}
+                            gradients={guide.author.gradients}
+                        />
                     )
                     : <span className="text-muted-foreground">-</span>}
             </TableCell>

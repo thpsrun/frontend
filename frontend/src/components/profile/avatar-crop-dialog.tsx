@@ -8,6 +8,7 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 
@@ -91,12 +92,15 @@ export function AvatarCropDialog({
     const handleConfirm = async () => {
         if (!imageUrl || !croppedAreaPixels) return
 
-        const blob = await getCroppedImage(imageUrl, croppedAreaPixels)
-        onCrop(blob)
-
-        setCrop({ x: 0, y: 0 })
-        setZoom(1)
-        setCroppedAreaPixels(null)
+        try {
+            const blob = await getCroppedImage(imageUrl, croppedAreaPixels)
+            onCrop(blob)
+            setCrop({ x: 0, y: 0 })
+            setZoom(1)
+            setCroppedAreaPixels(null)
+        } catch {
+            toast.error("Could not crop the image. Please try a different file.")
+        }
     }
 
     const handleCancel = () => {

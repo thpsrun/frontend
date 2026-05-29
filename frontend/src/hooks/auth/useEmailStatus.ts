@@ -5,7 +5,7 @@ import { queryKeys } from "@/lib/query-keys"
 export function useEmailStatus(enabled = true) {
     return useQuery({
         queryKey: queryKeys.auth.email(),
-        queryFn: getEmailStatusFn,
+        queryFn: ({ signal }) => getEmailStatusFn(signal),
         enabled,
     })
 }

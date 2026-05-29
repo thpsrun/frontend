@@ -78,7 +78,7 @@ export function DangerSection() {
                 title="Danger Zone"
                 description={
                     <>
-                        WARNING: This permanently delete your account! Your runs will be preserved under "Anonymous".
+                        WARNING: This will permanently delete your account! Your runs will be preserved under "Anonymous".
                     </>
                 }
                 className="border-destructive/50"

@@ -162,7 +162,7 @@ export function EnrollPasskeyDialog({ open, onOpenChange }: Props) {
                             {!isReauthStep && (
                                 <>
                                     Give this Passkey a label so you can identify
-                                    it later (for example, "Btitwarden" or "YubiKey").
+                                    it later (for example, "Bitwarden" or "YubiKey").
                                 </>
                             )}
                         </p>

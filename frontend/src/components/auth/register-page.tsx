@@ -194,6 +194,11 @@ export function RegisterPage() {
         )
         resetTurnstile()
         if (result.ok) {
+            if (result.verificationRequired) {
+                stashSignupVerification({ email, username, provider })
+                navigate("/verify-email")
+                return
+            }
             navigate(returnTo)
             return
         }

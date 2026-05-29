@@ -30,16 +30,45 @@ function MobileNavItem({
 }: NavLinkProps) {
     const hasChildren = item.children.length > 0
 
-    if (hasChildren && !item.url) {
-        return (
-            <div className="flex flex-col">
-                <p
-                    className={cn(
-                        "text-xs font-semibold uppercase tracking-wider text-muted-foreground px-2 pt-3 pb-1",
-                    )}
+    const linkClassName = cn(
+        "block rounded-md px-2 py-2 text-sm hover:bg-accent",
+        depth === 0 && "font-medium",
+    )
+
+    const link = item.url
+        ? isExternalUrl(item.url)
+            ? (
+                <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={onNavigate}
+                    className={linkClassName}
                 >
                     {item.name}
-                </p>
+                </a>
+            )
+            : (
+                <Link to={item.url} onClick={onNavigate} className={linkClassName}>
+                    {item.name}
+                </Link>
+            )
+        : null
+
+    // Items with children render their children below; a linked parent keeps
+    // its link, an unlinked parent becomes a section header.
+    if (hasChildren) {
+        return (
+            <div className="flex flex-col">
+                {link ?? (
+                    <p
+                        className={cn(
+                            "text-xs font-semibold uppercase tracking-wider text-muted-foreground px-2 pt-3 pb-1",
+                        )}
+                    >
+                        {item.name}
+                    </p>
+                )}
                 <div className="flex flex-col">
                     {item.children.map((child) => (
                         <MobileNavItem
@@ -54,34 +83,7 @@ function MobileNavItem({
         )
     }
 
-    if (!item.url) {
-        return null
-    }
-
-    const className = cn(
-        "block rounded-md px-2 py-2 text-sm hover:bg-accent",
-        depth === 0 && "font-medium",
-    )
-
-    if (isExternalUrl(item.url)) {
-        return (
-            <a
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={onNavigate}
-                className={className}
-            >
-                {item.name}
-            </a>
-        )
-    }
-
-    return (
-        <Link to={item.url} onClick={onNavigate} className={className}>
-            {item.name}
-        </Link>
-    )
+    return link
 }
 
 export function MobileNav() {

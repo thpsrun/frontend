@@ -13,6 +13,9 @@ export function useAddGameModerator(slug: string, gameId: string | undefined) {
             qc.invalidateQueries({
                 queryKey: queryKeys.games.moderators(slug),
             })
+            qc.invalidateQueries({
+                queryKey: queryKeys.games.detail(slug),
+            })
         },
     })
 }

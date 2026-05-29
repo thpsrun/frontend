@@ -467,6 +467,7 @@ export interface RunDetail {
     place: number
     points: number
     obsolete: boolean
+    emulated: boolean
     subcategory: string | null
     platform: string
     times: RunDetailTimes

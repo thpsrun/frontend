@@ -25,6 +25,7 @@ import { useUpdateRun } from "@/hooks/submissions/useUpdateRun"
 import { useSubmissions } from "@/hooks/submissions/useSubmissions"
 import { useSendBackForReview } from "@/hooks/submissions/useSendBackForReview"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
+import { useIsWide } from "@/hooks/useIsWide"
 import { parseValidationErrors } from "@/lib/validation-errors"
 import { validateReviewNotes } from "@/lib/validation"
 import { ApiError } from "@/lib/api-client"
@@ -92,18 +93,7 @@ export function EditRunDialog({
 
     const [rulesOpen, setRulesOpen] = useState(false)
     const [rulesView, setRulesView] = useState<RulesView>(EMPTY_RULES_VIEW)
-    const [isWide, setIsWide] = useState(
-        typeof window !== "undefined"
-            ? window.matchMedia("(min-width: 768px)").matches
-            : true,
-    )
-
-    useEffect(() => {
-        const mq = window.matchMedia("(min-width: 768px)")
-        const onChange = (e: MediaQueryListEvent) => setIsWide(e.matches)
-        mq.addEventListener("change", onChange)
-        return () => mq.removeEventListener("change", onChange)
-    }, [])
+    const isWide = useIsWide()
 
     const isSaving = (
         updateRun.isPending
@@ -294,7 +284,7 @@ function EditRunForm({
     const [categoryId, setCategoryId] = useState<string>(detail.category)
     const [levelId, setLevelId] = useState<string | null>(detail.level)
     const [platformId, setPlatformId] = useState<string>(detail.platform)
-    const [emulated, setEmulated] = useState<boolean>(false)
+    const [emulated, setEmulated] = useState<boolean>(detail.emulated)
     const [obsolete, setObsolete] = useState<boolean>(detail.obsolete)
     const [place, setPlace] = useState<string>(String(detail.place))
     const [video, setVideo] = useState<string>(detail.video ?? "")
@@ -339,6 +329,7 @@ function EditRunForm({
         levelId: detail.level,
         platformId: detail.platform,
         obsolete: detail.obsolete,
+        emulated: detail.emulated,
         place: String(detail.place),
         video: detail.video ?? "",
         archVideo: detail.arch_video ?? "",
@@ -353,6 +344,7 @@ function EditRunForm({
         || levelId !== initial.levelId
         || platformId !== initial.platformId
         || obsolete !== initial.obsolete
+        || emulated !== initial.emulated
         || place !== initial.place
         || video !== initial.video
         || archVideo !== initial.archVideo

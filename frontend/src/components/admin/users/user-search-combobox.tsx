@@ -41,35 +41,36 @@ export function UserSearchCombobox({ autoFocus }: UserSearchComboboxProps) {
                             <Loader2 className="size-3 animate-spin" />
                             Searching...
                         </div>
-                    ) : (
+                    ) : !data || data.length === 0 ? (
                         <CommandEmpty>No players found with information given.</CommandEmpty>
+                    ) : (
+                        <CommandGroup>
+                            {data.map((player) => (
+                                <CommandItem
+                                    key={player.id}
+                                    value={player.id}
+                                    onSelect={() => {
+                                        setQuery("")
+                                        navigate(`/admin/users/${player.id}`)
+                                    }}
+                                >
+                                    <div className="flex flex-col">
+                                        <span>{player.nickname ?? player.name}</span>
+                                        {player.nickname && (
+                                            <span
+                                                className={cn(
+                                                    "text-xs",
+                                                    "text-muted-foreground",
+                                                )}
+                                            >
+                                                {player.name}
+                                            </span>
+                                        )}
+                                    </div>
+                                </CommandItem>
+                            ))}
+                        </CommandGroup>
                     )}
-                    <CommandGroup>
-                        {data?.map((player) => (
-                            <CommandItem
-                                key={player.id}
-                                value={player.id}
-                                onSelect={() => {
-                                    setQuery("")
-                                    navigate(`/admin/users/${player.id}`)
-                                }}
-                            >
-                                <div className="flex flex-col">
-                                    <span>{player.nickname ?? player.name}</span>
-                                    {player.nickname && (
-                                        <span
-                                            className={cn(
-                                                "text-xs",
-                                                "text-muted-foreground",
-                                            )}
-                                        >
-                                            {player.name}
-                                        </span>
-                                    )}
-                                </div>
-                            </CommandItem>
-                        ))}
-                    </CommandGroup>
                 </CommandList>
             )}
         </Command>

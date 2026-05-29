@@ -221,7 +221,9 @@ export function ReconcileDetailPage() {
         }
     }
 
-    const itemsQuery = useReconcileItems(jobId, itemsFilters)
+    const itemsQuery = useReconcileItems(jobId, itemsFilters, {
+        jobActive: Boolean(job && isJobActive(job.status)),
+    })
     const items = itemsQuery.data
 
     const cancel = useCancelReconcile()

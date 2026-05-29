@@ -13,7 +13,7 @@ export const FAQ_ENTRIES: FaqEntry[] = [
         question: "What is thps.run?",
         answer: (
             <p className="leading-relaxed">
-                thps.run is a community-riven speedrunning leaderboard and website
+                thps.run is a community-driven speedrunning leaderboard and website
                 for the Tony Hawk's Pro Skater franchise. It provides verified rankings,
                 player profiles, run history, points scoring, and much more for
                 speedrunners of the series.
@@ -26,7 +26,7 @@ export const FAQ_ENTRIES: FaqEntry[] = [
         answer: (
             <div className="flex flex-col gap-2">
                 <p className="leading-relaxed">
-                    Points (lovingly referred to as Packle Points by the communtiy) is a sort-of numerical
+                    Points (lovingly referred to as Packle Points by the community) is a sort-of numerical
                     score given to all speedruns on this site. Originally developed by goatrope and ibeechu at{" "}
                     <Link to="https://haloruns.com">HaloRuns</Link>, this system incentivizes players to venture
                     out from their normal speedgames and get better in multiple games to add to their global "score".
@@ -213,7 +213,7 @@ export const FAQ_ENTRIES: FaqEntry[] = [
             <div className="flex flex-col gap-2">
                 <p className="leading-relaxed">
                     Streaks are a bonus-point system that both gives a world record holder
-                    additional points for each month they are atop a leaderbord, and also a
+                    additional points for each month they are atop a leaderboard, and also a
                     "bounty" to knock them off their top spot.
                 </p>
                 <p className="leading-relaxed">
@@ -290,7 +290,7 @@ export const FAQ_ENTRIES: FaqEntry[] = [
                     If you are interested, go to <Link to="/profile/settings/api-keys">your profile's API Keys page</Link> - there, you can create API keys for various
                     methods with your current roles with the site. If you are a regular user, you will have vastly less powers (e.g. no PUT, PUSH, PATCH, DELETE, and so on),
                     but you can still perform GET requests to various endpoints. Moderators can request a lot more and scope it to the specific games of which they moderate,
-                    and super admins (super mods, essentially) can use broader powers to programatically edit the site.
+                    and super admins (super mods, essentially) can use broader powers to programmatically edit the site.
                 </p>
                 <p className="flex flex-col gap-2">
                     <Link to="/api/v1/docs">thps.run API Documentation</Link>

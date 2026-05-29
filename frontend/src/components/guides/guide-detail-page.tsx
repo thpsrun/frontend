@@ -20,7 +20,7 @@ import { GuideMarkdown } from "./guide-markdown"
 import { GuideToc } from "./guide-toc"
 import { extractTocHeadings, TOC_MIN_HEADINGS } from "./guide-toc-headings"
 import { DeleteGuideDialog } from "./delete-guide-dialog"
-import { GradientUsername } from "@/components/profile/gradient-username"
+import { PlayerLink } from "@/components/common/player-link"
 
 function canEditFallback(
     guide: Guide,
@@ -167,15 +167,11 @@ export function GuideDetailPage() {
                             {guide.author?.name && (
                                 <span className="text-muted-foreground">
                                     by{" "}
-                                    <Link
-                                        to={`/player/${guide.author.name}`}
-                                        className="hover:underline"
-                                    >
-                                        <GradientUsername
-                                            name={guide.author.nickname || guide.author.name}
-                                            gradients={guide.author.gradients ?? null}
-                                        />
-                                    </Link>
+                                    <PlayerLink
+                                        name={guide.author.name}
+                                        nickname={guide.author.nickname}
+                                        gradients={guide.author.gradients}
+                                    />
                                 </span>
                             )}
                             {updatedDate && (

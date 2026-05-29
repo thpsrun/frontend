@@ -19,7 +19,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { queryKeys } from "@/lib/query-keys"
-import { ApiError } from "@/lib/api-client"
+import { ApiError, triggerAuthLost } from "@/lib/api-client"
 import { formatBytes, getErrorMessage } from "@/lib/utils"
 import { formatRelativeVerbose } from "@/lib/notifications"
 
@@ -107,6 +107,11 @@ export function DataExportSection() {
             const res = await fetch(exportDownloadHref(id), {
                 credentials: "include",
             })
+            if (res.status === 401) {
+                triggerAuthLost()
+                toast.error("Your session expired. Please sign in again.")
+                return
+            }
             if (res.status === 404) {
                 qc.invalidateQueries({ queryKey: queryKeys.auth.exports() })
                 toast.error(
@@ -170,7 +175,7 @@ export function DataExportSection() {
             description={
                 <>
                     Request a .zip of your account data that contains ALL of your data from thps.run.
-                    We'll build it in tehe background and notify you when it's ready. You can request
+                    We'll build it in the background and notify you when it's ready. You can request
                     one export every 24 hours.
                 </>
             }
@@ -236,7 +241,7 @@ export function DataExportSection() {
                         <AlertDialogTitle>Download My Data?</AlertDialogTitle>
                         <AlertDialogDescription>
                             Request a .zip of your account data that contains ALL of your data from thps.run.
-                            We'll build it in tehe background and notify you when it's ready. You can request
+                            We'll build it in the background and notify you when it's ready. You can request
                             one export every 24 hours.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
