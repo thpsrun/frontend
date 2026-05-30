@@ -12,20 +12,22 @@ export const MainPage = () => {
             <LiveStreams />
             <div
                 className={[
-                    "flex-1 min-w-0 flex flex-col gap-4",
-                    "xl:grid xl:grid-cols-[5fr_3fr] xl:grid-rows-[1fr_1fr]",
+                    "flex-1 min-w-0 flex flex-col gap-3",
+                    "xl:grid xl:grid-cols-[5fr_3fr] xl:items-start",
                 ].join(" ")}
             >
-                <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex xl:col-start-1 xl:row-span-2">
+                <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
                     <CurrentRecords />
                 </div>
 
-                <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex xl:col-start-2 xl:row-start-1">
-                    <LatestRuns title="Latest Records" data={latestRecords} />
-                </div>
+                <div className="min-w-0 flex flex-col gap-3">
+                    <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
+                        <LatestRuns title="Latest Records" data={latestRecords} />
+                    </div>
 
-                <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex xl:col-start-2 xl:row-start-2">
-                    <LatestRuns title="Latest Runs" data={latestRuns} />
+                    <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
+                        <LatestRuns title="Latest Runs" data={latestRuns} />
+                    </div>
                 </div>
             </div>
         </div>

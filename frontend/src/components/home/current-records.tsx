@@ -22,12 +22,12 @@ export const CurrentRecords = () => {
             <h1 className="text-xl font-semibold mb-4">
                 Current Records
             </h1>
-            <Table>
+            <Table containerClassName="overflow-x-hidden">
                 <TableHeader>
                     <TableRow>
                         <TableHead className="w-25">Game</TableHead>
                         <TableHead>Category</TableHead>
-                        <TableHead className="w-75">Player</TableHead>
+                        <TableHead className="w-50">Player</TableHead>
                         <TableHead>Time</TableHead>
                         <TableHead>Date</TableHead>
                     </TableRow>

@@ -13,7 +13,7 @@ import { TableSkeleton } from "@/components/common/table-skeleton"
 import { EmptyState } from "@/components/common/empty-state"
 import { PageShell } from "@/components/common/page-shell"
 import { PlayerLink } from "@/components/common/player-link"
-import { Info, ExternalLink, Inbox } from "lucide-react"
+import { Info, ExternalLink, Inbox, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
     SyncStatusBadge,
@@ -125,6 +125,12 @@ function PendingRunRow({
                     )}>
                         <VidStatusBadge status={run.vid_status} />
                         <SyncStatusBadge sync={run.src_sync} />
+                        {run.has_import_issues && (
+                            <Badge variant="destructive" className="gap-1">
+                                <AlertTriangle className="size-3" />
+                                Issues
+                            </Badge>
+                        )}
                     </div>
                 </TableCell>
             </TableRow>

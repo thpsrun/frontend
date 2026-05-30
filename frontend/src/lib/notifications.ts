@@ -3,6 +3,7 @@ import {
     Check,
     CircleAlert,
     Download,
+    Inbox,
     KeyRound,
     MessageSquareWarning,
     ShieldCheck,
@@ -12,6 +13,7 @@ import {
 
 import type {
     ApiKeyExpiringPayload,
+    AwaitingReviewPayload,
     ModPromotedPayload,
     Notification,
     NotificationKind,
@@ -27,6 +29,7 @@ const KIND_ICON: Record<string, KindIcon> = {
     run_approved:            { Icon: Check,                 className: "text-green-500"        },
     run_denied:              { Icon: X,                     className: "text-red-500"          },
     run_review:              { Icon: MessageSquareWarning,  className: "text-amber-500"        },
+    run_awaiting_review:     { Icon: Inbox,                 className: "text-amber-500"        },
     mod_promoted:            { Icon: ShieldCheck,           className: "text-blue-500"         },
     api_key_expiring:        { Icon: KeyRound,              className: "text-amber-500"        },
     user_data_export_ready:  { Icon: Download,              className: "text-green-500"        },
@@ -50,6 +53,7 @@ export function destinationFor(n: Notification): string | null {
         }
         case "run_denied":
         case "run_review":
+        case "run_awaiting_review":
             return "/submissions"
         case "mod_promoted": {
             const p = n.payload as ModPromotedPayload
@@ -73,6 +77,16 @@ export function subtitleFor(n: Notification): string {
             const p = n.payload as RunPayload
             if (p.game_name && p.category_name) {
                 return `${p.game_name} - ${p.category_name}`
+            }
+            return n.body
+        }
+        case "run_awaiting_review": {
+            const p = n.payload as AwaitingReviewPayload
+            if (p.game_name && p.category_name) {
+                const players = p.player_names?.length
+                    ? p.player_names.join(", ")
+                    : "someone"
+                return `${p.game_name} - ${p.category_name} by ${players}`
             }
             return n.body
         }

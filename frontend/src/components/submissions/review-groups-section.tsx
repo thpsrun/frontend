@@ -1,7 +1,7 @@
 import { useState } from "react"
 import type { SyntheticEvent } from "react"
 import { Link } from "react-router"
-import { ExternalLink } from "lucide-react"
+import { ExternalLink, AlertTriangle } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Panel } from "@/components/ui/panel"
@@ -108,7 +108,15 @@ function ReviewRow({ run, idx }: { run: PendingRun; idx: number }) {
                 onClick={() => setEditOpen(true)}
             >
                 <TableCell className="text-center">
-                    <VidStatusBadge status={run.vid_status} />
+                    <div className="flex flex-col items-center gap-1">
+                        <VidStatusBadge status={run.vid_status} />
+                        {run.has_import_issues && (
+                            <Badge variant="destructive" className="gap-1">
+                                <AlertTriangle className="size-3" />
+                                Issues
+                            </Badge>
+                        )}
+                    </div>
                 </TableCell>
                 <TableCell className="text-sm">
                     {run.subcategory}

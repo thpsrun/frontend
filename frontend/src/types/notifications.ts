@@ -6,6 +6,7 @@ export type NotificationKind =
     | "mod_promoted"
     | "api_key_expiring"
     | "run_review"
+    | "run_awaiting_review"
     | "user_data_export"
     | "user_data_export_ready"
     | "user_data_export_failed"
@@ -16,6 +17,10 @@ export interface RunPayload {
     game_id: string
     game_name: string
     category_name: string
+}
+
+export interface AwaitingReviewPayload extends RunPayload {
+    player_names: string[]
 }
 
 export interface ModPromotedPayload {
@@ -43,6 +48,7 @@ export interface UserDataExportFailedPayload {
 
 export type NotificationPayload =
     | RunPayload
+    | AwaitingReviewPayload
     | ModPromotedPayload
     | ApiKeyExpiringPayload
     | UserDataExportReadyPayload

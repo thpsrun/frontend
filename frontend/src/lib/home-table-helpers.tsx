@@ -65,9 +65,10 @@ interface PlayerInfo {
 
 interface PlayerCellProps {
     players: PlayerInfo[]
+    compact?: boolean
 }
 
-export const PlayerCell = ({ players }: PlayerCellProps) => {
+export const PlayerCell = ({ players, compact = false }: PlayerCellProps) => {
     if (players.length === 0) return <>Anonymous</>
 
     return (
@@ -75,7 +76,7 @@ export const PlayerCell = ({ players }: PlayerCellProps) => {
             {players.map((player, idx) => (
                 <span
                     key={player.name ?? idx}
-                    className="flex items-center mr-2"
+                    className="flex items-center min-w-0 mr-2"
                 >
                     {player.country?.id && (
                         <CountryFlag
@@ -85,6 +86,9 @@ export const PlayerCell = ({ players }: PlayerCellProps) => {
                             }
                             flagUrl={player.country.flag}
                             title={player.country.name}
+                            className={compact
+                                ? "w-5 pr-1 inline shrink-0"
+                                : undefined}
                         />
                     )}
                     <PlayerLink

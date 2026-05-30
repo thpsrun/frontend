@@ -29,8 +29,11 @@ export const VariableToggles = ({
         <>
             {variables.map((variable, vi) => {
                 const activeVal = valueSlugs[vi] || ""
+                const visibleValues = variable.values.filter(
+                    (v) => !v.archive,
+                )
                 const useDropdown =
-                    variable.values.length > dropdownThreshold
+                    visibleValues.length > dropdownThreshold
 
                 return (
                     <div
@@ -71,7 +74,7 @@ export const VariableToggles = ({
                                     <SelectContent
                                         className="max-h-60"
                                     >
-                                        {variable.values.map(
+                                        {visibleValues.map(
                                             (v) => (
                                             <SelectItem
                                                 key={v.slug}
@@ -88,7 +91,7 @@ export const VariableToggles = ({
                                 "flex flex-wrap",
                                 "gap-1",
                             )}>
-                                {variable.values.map((v) => {
+                                {visibleValues.map((v) => {
                                     const active =
                                         activeVal === v.slug
                                     return (

@@ -49,6 +49,11 @@ import {
     ChangePlayersDialog,
 } from "@/components/submissions/change-players-dialog"
 import { ReviewNotesBanner } from "@/components/submissions/review-notes-banner"
+import { ImportIssuesBanner } from "@/components/submissions/import-issues-banner"
+import {
+    computeUnresolvedIssues,
+    formatTimingMethods,
+} from "@/components/submissions/import-issues"
 import {
     ModeratorVerdictSection,
     type RunStatusChoice,
@@ -306,6 +311,7 @@ function EditRunForm({
     const [igt, setIgt] = useState<TimeFields>(
         () => parseTimeSecs(detail.times.timeigt_secs),
     )
+    const [videoAcknowledged, setVideoAcknowledged] = useState(false)
 
     const [variableValues, setVariableValues] = useState<Record<string, string>>(
         () => ({ ...detail.variables }),
@@ -319,6 +325,12 @@ function EditRunForm({
             (g) => g.slug === run.game.slug,
         ) ?? false,
         [player, run.game.slug],
+    )
+    const unresolvedImportIssues = useMemo(
+        () => computeUnresolvedIssues(run.import_issues, {
+            video, rta, nl, igt,
+        }),
+        [run.import_issues, video, rta, nl, igt],
     )
     const [runStatus, setRunStatus] = useState<RunStatusChoice>("unchanged")
     const [denyReason, setDenyReason] = useState("")
@@ -436,8 +448,22 @@ function EditRunForm({
         setVariableValues((prev) => ({ ...prev, [variableId]: value }))
     }
 
+    const handleSendBack = () => {
+        setRunStatus("review")
+        if (!reviewNotes.trim()) {
+            setReviewNotes(
+                "Missing required timing method(s): "
+                + formatTimingMethods(
+                    unresolvedImportIssues.missingTimingMethods,
+                )
+                + ". Please resubmit with complete times.",
+            )
+        }
+    }
+
     const handleSave = () => {
         setError(null)
+        const isSendBack = isModerator && runStatus === "review"
 
         if (runtype === "il" && !levelId) {
             setError("Select a level for IL runs.")
@@ -447,9 +473,34 @@ function EditRunForm({
             setError("Pick a platform before saving.")
             return
         }
-        if (video && !isValidYouTubeUrl(video)) {
-            setError("Video URL must be a valid YouTube link.")
+        // A run still missing a required timing method cannot be saved (the
+        // API 422s). Block the save and point the moderator at send-back.
+        // Checked before the video gate: timing is the hard blocker.
+        if (
+            !isSendBack
+            && unresolvedImportIssues.missingTimingMethods.length > 0
+        ) {
+            setError(
+                "This run is missing required timing ("
+                + formatTimingMethods(
+                    unresolvedImportIssues.missingTimingMethods,
+                )
+                + "). Send it back to the runner.",
+            )
             return
+        }
+        if (!isSendBack && video && !isValidYouTubeUrl(video)) {
+            const canBypass = unresolvedImportIssues.video !== null
+                && videoAcknowledged
+            if (!canBypass) {
+                setError(
+                    unresolvedImportIssues.video !== null
+                        ? "Acknowledge the video issue, or replace it with a"
+                            + " YouTube link, to save."
+                        : "Video URL must be a valid YouTube link.",
+                )
+                return
+            }
         }
 
         const placeNum = parseInt(place, 10)
@@ -498,6 +549,25 @@ function EditRunForm({
             }
             if (err instanceof Error) return err.message
             return "Save Failed..."
+        }
+
+        // Sending back a timing-incomplete run: the PUT would 422, so call the
+        // review endpoint directly and skip saving edits.
+        if (
+            isSendBack
+            && unresolvedImportIssues.missingTimingMethods.length > 0
+        ) {
+            sendBack.mutate(
+                { runId: run.id, notes: reviewNotes },
+                {
+                    onSuccess: () => {
+                        toast.success("Run sent back to runner.")
+                        onClose()
+                    },
+                    onError: (err) => setError(formatErr(err)),
+                },
+            )
+            return
         }
 
         updateRun.mutate(
@@ -587,6 +657,13 @@ function EditRunForm({
 
     return (
         <>
+            <ImportIssuesBanner
+                unresolved={unresolvedImportIssues}
+                videoAcknowledged={videoAcknowledged}
+                onVideoAcknowledgedChange={setVideoAcknowledged}
+                onSendBack={handleSendBack}
+                isModerator={isModerator}
+            />
             <div className="grid md:grid-cols-[576fr_426fr] gap-x-6 gap-y-4">
                 <div className="md:sticky md:top-2 md:self-start space-y-3">
                     {embedUrl ? (

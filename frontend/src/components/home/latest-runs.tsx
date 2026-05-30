@@ -1,7 +1,7 @@
 import { useCallback } from "react"
 import { Link } from "react-router"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { cn, truncate } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import { buildLeaderboardPath } from "@/lib/leaderboard-helpers"
 import { useGameGroupSpans, PlayerCell } from "@/lib/home-table-helpers"
 import type React from "react"
@@ -29,11 +29,14 @@ export const LatestRuns: React.FC<LatestRunsProps> = ({ title, data }) => {
         useGameGroupSpans(data, getGameKey)
 
     return (
-        <div className="flex-1 min-w-0 rounded-lg p-4 md:p-6 flex flex-col">
+        <div className="flex-1 min-w-0 rounded-lg p-3 md:p-4 flex flex-col">
             <h1 className="text-xl font-semibold mb-4">
                 {title}
             </h1>
-            <Table containerClassName="overflow-x-hidden" className="table-fixed">
+            <Table
+                containerClassName="overflow-x-hidden"
+                className="table-fixed [&_th]:h-8 [&_th]:px-1.5 [&_td]:px-1.5 [&_td]:py-1.5"
+            >
                 <TableHeader>
                     <TableRow>
                         <TableHead className="w-[20%]">Game</TableHead>
@@ -91,15 +94,15 @@ export const LatestRuns: React.FC<LatestRunsProps> = ({ title, data }) => {
                                                 )
                                             }
                                             title={fullName}
-                                            className="text-link hover:underline"
+                                            className="block truncate text-link hover:underline"
                                         >
-                                            {truncate(fullName, 20)}
+                                            {fullName}
                                         </Link>
                                     )
                                 })()}
                             </TableCell>
-                            <TableCell className="flex items-center">
-                                <PlayerCell players={run.players} />
+                            <TableCell className="flex items-center min-w-0 overflow-hidden">
+                                <PlayerCell players={run.players} compact />
                             </TableCell>
                             <TableCell>
                                 {run.video ? (

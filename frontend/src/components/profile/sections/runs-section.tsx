@@ -99,6 +99,8 @@ function runToPendingRun(
         review_notes: "",
         description: run.description,
         src_sync: [],
+        import_issues: [],
+        has_import_issues: false,
     }
 }
 

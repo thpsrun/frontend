@@ -10,7 +10,6 @@ import {
     GameRecentPanel,
 } from "@/components/game/game-sidebar"
 import { RulesDialog } from "@/components/rules/rules-dialog"
-import { Button } from "@/components/ui/button"
 
 import { useILOverview } from "@/hooks/leaderboard/useILOverview"
 import { useILLeaderboard } from "@/hooks/leaderboard/useILLeaderboard"
@@ -20,8 +19,6 @@ import {
     buildActiveSelection,
     buildRulesSections,
 } from "@/lib/rules"
-
-import { BookOpen } from "lucide-react"
 
 import type { GameDetail } from "@/types/api"
 
@@ -94,11 +91,6 @@ export const ILOverview = ({
             : [],
         [overviewCategory],
     )
-
-    // Quick check to see if the filter panel needs to be shown.
-    const hasFilters =
-        ilCategories.length > 1
-        || overviewVariables.length > 0
 
     // For Rules: when a level is selected use the URL-driven category + level;
     // when in overview mode use the overview category (no active level).
@@ -220,19 +212,6 @@ export const ILOverview = ({
                         isILView={true}
                     />
                 </div>
-                {!levelSlug && !hasFilters && rulesView.hasAny && (
-                    <div className="flex justify-end">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setShowRules(true)}
-                            className="shrink-0 text-xs"
-                        >
-                            <BookOpen className="size-3.5" />
-                            Rules
-                        </Button>
-                    </div>
-                )}
                 {levelSlug ? (
                     <ILDetail
                         gameSlug={gameSlug}
@@ -248,7 +227,7 @@ export const ILOverview = ({
                     />
                 ) : (
                     <>
-                        {hasFilters && !gameLoading && (
+                        {ilCategories.length > 0 && !gameLoading && (
                             <ILFilterPanel
                                 ilCategories={
                                     ilCategories
