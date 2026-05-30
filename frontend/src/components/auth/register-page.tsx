@@ -23,7 +23,11 @@ import { SiDiscord, SiTwitch } from "@icons-pack/react-simple-icons"
 import { useOauthSignup } from "@/hooks/auth/useOauthSignup"
 import { ApiError } from "@/lib/api-client"
 import { oauthSignupErrorMessage, turnstileErrorMessage } from "@/lib/auth-errors"
-import { mapFinalizeSignupError } from "@/lib/oauth-signup-errors"
+import {
+    mapFinalizeSignupError,
+    EMAIL_TAKEN_PROVIDER_MESSAGE,
+    EMAIL_TAKEN_TYPED_MESSAGE,
+} from "@/lib/oauth-signup-errors"
 import { isTurnstileEnabled } from "@/lib/turnstile"
 import { stashSignupVerification } from "@/lib/signup-verification-state"
 import {
@@ -110,8 +114,10 @@ export function RegisterPage() {
         const errors: Record<string, string> = {}
         const usernameErr = validateUsername(username)
         if (usernameErr) errors.username = usernameErr
-        const emailErr = validateEmail(email)
-        if (emailErr) errors.email = emailErr
+        if (email.trim()) {
+            const emailErr = validateEmail(email)
+            if (emailErr) errors.email = emailErr
+        }
         if (!srcApiKey.trim()) {
             errors.srcApiKey = "SRC API key is required..."
         }
@@ -186,7 +192,7 @@ export function RegisterPage() {
             provider,
             {
                 username,
-                email,
+                email: email.trim() || undefined,
                 src_api_key: srcApiKey,
                 save_key: saveKey,
             },
@@ -195,11 +201,31 @@ export function RegisterPage() {
         resetTurnstile()
         if (result.ok) {
             if (result.verificationRequired) {
-                stashSignupVerification({ email, username, provider })
+                stashSignupVerification({
+                    email: result.providerEmail ?? (email.trim() || undefined),
+                    username,
+                    provider,
+                })
                 navigate("/verify-email")
                 return
             }
             navigate(returnTo)
+            return
+        }
+        if (result.kind === "email_required") {
+            setFieldErrors({
+                email: `This ${PROVIDER_LABEL[provider]} account didn't share an email. `
+                    + "Enter one and click the button again.",
+            })
+            document.getElementById("email")?.focus()
+            return
+        }
+        if (result.kind === "email_taken") {
+            if (result.providerEmail) {
+                setError(EMAIL_TAKEN_PROVIDER_MESSAGE)
+            } else {
+                setFieldErrors({ email: EMAIL_TAKEN_TYPED_MESSAGE })
+            }
             return
         }
         if (result.kind === "finalize") {
@@ -242,7 +268,7 @@ export function RegisterPage() {
                                 <p>
                                     thps.run requires users to have at least one Tony Hawk speedrun
                                     pulled in from Speedrun.com. If you do not have one at LEAST
-                                    submitted, you cannot register. This registration process will
+                                    approved, you cannot register. This registration process will
                                     bind a brand new login with the data pulled in from your SRC profile.
                                 </p>
                                 <p>
@@ -359,7 +385,7 @@ export function RegisterPage() {
                                     setEmail(e.target.value)
                                 }
                                 error={fieldErrors.email}
-                                required
+                                description="Required for email signup. Optional for Discord and Twitch."
                             />
                             <FormField
                                 label="Password"

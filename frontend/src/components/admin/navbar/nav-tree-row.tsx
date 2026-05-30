@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
 import type { NavbarAdminItem } from "@/types/admin-navbar"
 
-export const MAX_NAV_DEPTH = 2
+export const MAX_NAV_DEPTH = 4
 
 interface Props {
     item: NavbarAdminItem

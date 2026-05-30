@@ -32,6 +32,25 @@ export interface SrcSyncEntry {
 }
 
 
+export interface MissingTimingMethodsIssue {
+    type: "missing_timing_methods"
+    methods: TimingMethodType[]
+}
+
+export interface InvalidVideoHostIssue {
+    type: "invalid_video_host"
+    url: string
+}
+
+export interface UnknownImportIssue {
+    type: string
+}
+
+export type ImportIssue =
+    | MissingTimingMethodsIssue
+    | InvalidVideoHostIssue
+    | UnknownImportIssue
+
 // Utilized on /api/v1/auth/submissions
 export type VidStatus = "new" | "verified" | "rejected" | "review"
 export interface PendingRun {
@@ -55,6 +74,8 @@ export interface PendingRun {
     review_notes: string
     description: string | null
     src_sync: SrcSyncEntry[]
+    import_issues: ImportIssue[]
+    has_import_issues: boolean
 }
 
 // Utilized on /api/v1/auth/submissions

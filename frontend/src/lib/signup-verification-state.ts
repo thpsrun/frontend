@@ -1,7 +1,7 @@
 const STORAGE_KEY = "thps:signup-verification"
 
 export interface SignupVerificationState {
-    email: string
+    email?: string
     username: string
     src_user_id?: string
     provider?: string
@@ -23,7 +23,6 @@ export function readSignupVerification(): SignupVerificationState | null {
         if (
             typeof parsed === "object"
             && parsed !== null
-            && typeof (parsed as SignupVerificationState).email === "string"
             && typeof (parsed as SignupVerificationState).username === "string"
         ) {
             return parsed as SignupVerificationState

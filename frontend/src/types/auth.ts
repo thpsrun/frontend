@@ -176,7 +176,7 @@ export interface AuthMethodsSummary {
 
 export interface OauthSignupRequest {
     username: string
-    email: string
+    email?: string
     src_api_key: string
     save_key: boolean
 }

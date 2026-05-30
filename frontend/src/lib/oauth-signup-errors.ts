@@ -14,6 +14,12 @@ const FINALIZE_ERROR_TABLE: Record<OauthSignupErrorCode, string> = {
 
 const UNKNOWN_FINALIZE_MESSAGE = "Something went wrong. Please try again."
 
+export const EMAIL_TAKEN_PROVIDER_MESSAGE =
+    "An account with this email already exists. Try logging in."
+
+export const EMAIL_TAKEN_TYPED_MESSAGE =
+    "That email is already in use. Try a different one."
+
 export function mapFinalizeSignupError(code: string | null): string {
     if (code !== null && code in FINALIZE_ERROR_TABLE) {
         return FINALIZE_ERROR_TABLE[code as OauthSignupErrorCode]

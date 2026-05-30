@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Link } from "react-router"
 import { ChevronRight } from "lucide-react"
 import {
@@ -13,6 +13,8 @@ import {
 import { useNavbar } from "@/hooks/home/useNavbar"
 import type { NavItem } from "@/types/api"
 import { cn } from "@/lib/utils"
+
+const SUBMENU_WIDTH_ESTIMATE = 224
 
 function isExternalUrl(url: string): boolean {
     return (
@@ -56,133 +58,107 @@ function NavItemLink({
     )
 }
 
-function NavItemList({
-    items,
-    onFlyout,
-    activeFlyout,
-}: {
-    items: NavItem[]
-    onFlyout: (item: NavItem | null) => void
-    activeFlyout: NavItem | null
-}) {
+// One dropdown row. Leaf items render as a link or label; items with children
+// defer to FlyoutBranch, which reveals the next level on hover/focus.
+function FlyoutNode({ item }: { item: NavItem }) {
+    if (item.children.length === 0) {
+        return (
+            <li>
+                <NavItemLink
+                    item={item}
+                    className={cn(
+                        "block rounded-md px-2 py-1.5 text-sm",
+                        "hover:bg-accent",
+                    )}
+                />
+            </li>
+        )
+    }
+
+    return <FlyoutBranch item={item} />
+}
+
+function FlyoutBranch({ item }: { item: NavItem }) {
+    const rowRef = useRef<HTMLDivElement>(null)
+    const [side, setSide] = useState<"right" | "left">("right")
+    const [hovered, setHovered] = useState(false)
+    const [focused, setFocused] = useState(false)
+    const open = hovered || focused
+
+    const decideSide = () => {
+        const row = rowRef.current
+        if (!row) return
+        const rect = row.getBoundingClientRect()
+        const overflowsRight =
+            rect.right + SUBMENU_WIDTH_ESTIMATE > window.innerWidth
+        setSide(overflowsRight ? "left" : "right")
+    }
+
     return (
-        <ul className="grid gap-0.5">
-            {items.map(item => {
-                const hasChildren = item.children.length > 0
-
-                if (hasChildren && !item.url) {
-                    return (
-                        <li
-                            key={item.name}
-                            className="mt-2 first:mt-0"
-                        >
-                            <div className={cn(
-                                "text-xs font-semibold",
-                                "uppercase tracking-wider",
-                                "px-2 py-1",
-                                "text-muted-foreground",
-                            )}>
-                                {item.name}
-                            </div>
-                            <NavItemList
-                                items={item.children}
-                                onFlyout={onFlyout}
-                                activeFlyout={activeFlyout}
-                            />
-                        </li>
-                    )
+        <li
+            className="relative"
+            onMouseEnter={() => {
+                decideSide()
+                setHovered(true)
+            }}
+            onMouseLeave={() => setHovered(false)}
+            onFocus={() => {
+                decideSide()
+                setFocused(true)
+            }}
+            onBlur={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                    setFocused(false)
                 }
+            }}
+        >
+            <div
+                ref={rowRef}
+                className={cn(
+                    "flex items-center rounded-md hover:bg-accent",
+                    open && "bg-accent",
+                )}
+            >
+                <NavItemLink
+                    item={item}
+                    className="flex-1 px-2 py-1.5 text-sm"
+                />
+                <ChevronRight
+                    className={cn(
+                        "mr-2 h-3 w-3 shrink-0 text-muted-foreground",
+                        side === "left" && "rotate-180",
+                    )}
+                />
+            </div>
 
-                if (hasChildren) {
-                    const isActive =
-                        activeFlyout?.name === item.name
-                    return (
-                        <li
-                            key={item.name}
-                            onMouseEnter={() => onFlyout(item)}
-                        >
-                            <div className={cn(
-                                "flex items-center",
-                                "rounded-md",
-                                isActive
-                                    ? "bg-accent"
-                                    : "hover:bg-accent",
-                            )}>
-                                <NavItemLink
-                                    item={item}
-                                    className={cn(
-                                        "flex-1 px-2",
-                                        "py-1.5 text-sm",
-                                    )}
-                                />
-                                <ChevronRight className={cn(
-                                    "h-3 w-3 mr-2",
-                                    "text-muted-foreground",
-                                )} />
-                            </div>
-                        </li>
-                    )
-                }
-
-                return (
-                    <li
-                        key={item.name}
-                        onMouseEnter={() => onFlyout(null)}
-                    >
-                        <NavItemLink
-                            item={item}
-                            className={cn(
-                                "block rounded-md px-2",
-                                "py-1.5 text-sm",
-                                "hover:bg-accent",
-                            )}
-                        />
-                    </li>
-                )
-            })}
-        </ul>
+            <div
+                className={cn(
+                    "absolute top-0 z-50 min-w-44",
+                    "rounded-md border bg-popover p-1 shadow-md",
+                    "transition-opacity duration-100",
+                    open
+                        ? "visible opacity-100"
+                        : "invisible opacity-0 pointer-events-none",
+                    side === "right" ? "left-full" : "right-full",
+                )}
+            >
+                <ul className="grid gap-0.5">
+                    {item.children.map(child => (
+                        <FlyoutNode key={child.name} item={child} />
+                    ))}
+                </ul>
+            </div>
+        </li>
     )
 }
 
 function NavDropdown({ items }: { items: NavItem[] }) {
-    const [flyout, setFlyout] = useState<NavItem | null>(
-        null,
-    )
-
     return (
-        <div
-            className="flex"
-            onMouseLeave={() => setFlyout(null)}
-        >
-            <NavItemList
-                items={items}
-                onFlyout={setFlyout}
-                activeFlyout={flyout}
-            />
-            {flyout && flyout.children.length > 0 && (
-                <div className={cn(
-                    "border-l pl-2 ml-2",
-                    "min-w-35",
-                )}>
-                    <ul className="grid gap-0.5">
-                        {flyout.children.map(child => (
-                            <li key={child.name}>
-                                <NavItemLink
-                                    item={child}
-                                    className={cn(
-                                        "block rounded-md",
-                                        "px-2 py-1 text-sm",
-                                        "text-muted-foreground",
-                                        "hover:bg-accent",
-                                        "hover:text-foreground",
-                                    )}
-                                />
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-        </div>
+        <ul className="grid min-w-44 gap-0.5">
+            {items.map(item => (
+                <FlyoutNode key={item.name} item={item} />
+            ))}
+        </ul>
     )
 }
 
@@ -220,7 +196,10 @@ export function NavMenu() {
                             <NavigationMenuTrigger>
                                 {item.name}
                             </NavigationMenuTrigger>
-                            <NavigationMenuContent>
+                            {/* overflow-visible lets the cascading submenus escape the panel's clip */}
+                            <NavigationMenuContent
+                                style={{ overflow: "visible" }}
+                            >
                                 <NavDropdown
                                     items={item.children}
                                 />
