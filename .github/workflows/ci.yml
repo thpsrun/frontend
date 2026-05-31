@@ -67,7 +67,7 @@ jobs:
           port: 22
           script: /
             set -e
-            cd ~/deploy
+            cd ~/
             git pull origin dev
             
             echo "Executing frontend..."
@@ -105,8 +105,8 @@ jobs:
           port: 22
           script: /
             set -e
-            cd ~/deploy
-            git pull origin dev
+            cd ~/
+            git pull origin main
             
             echo "Executing frontend..."
             docker compose -f docker-compose.PROD.yml down
