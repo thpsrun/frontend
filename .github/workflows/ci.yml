@@ -71,25 +71,27 @@ jobs:
           tags: tag:ci
           version: latest
 
-      - name: Set up SSH
-        env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEV_SERVER_SSH_KEY }}
-          DEPLOY_HOST: ${{ secrets.DEV_SERVER_IP }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+        with:
+          ref: dev
 
-      - name: Deploy to Dev
-        env:
-          DEPLOY_HOST: ${{ secrets.DEV_SERVER_IP }}
-          DEPLOY_USER: ${{ secrets.DEV_SERVER_USER }}
-          DEPLOY_PATH: "~/frontend"
-        run: |
-          ssh -i ~/.ssh/id_ed25519 \
-            "$DEPLOY_USER@$DEPLOY_HOST" \
-            "cd '$DEPLOY_PATH' && git pull --ff-only origin dev && docker compose -f docker-compose.yml up -d --build"
+      - name: SSH - Deploy to Dev
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.DEV_SERVER_IP }}
+          username: ${{ secrets.DEV_SERVER_USER }}
+          key: ${{ secrets.DEV_SERVER_SSH_KEY }}
+          port: 22
+          script: /
+            set -e
+            cd ~/deploy
+            git pull origin dev
+            
+            echo "Executing frontend..."
+            docker compose -f docker-compose.PROD.yml down
+            docker compose -f docker-compose.PROD.yml up -d --build
+
 
   deploy-prod:
     needs: [lint-and-build, validate-container]
@@ -109,22 +111,23 @@ jobs:
           tags: tag:ci
           version: latest
 
-      - name: Set up SSH
-        env:
-          DEPLOY_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
-          DEPLOY_HOST: ${{ secrets.SERVER_IP }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+        with:
+          ref: dev
 
-      - name: Deploy to Production
-        env:
-          DEPLOY_HOST: ${{ secrets.SERVER_IP }}
-          DEPLOY_USER: ${{ secrets.SERVER_USER }}
-          DEPLOY_PATH: "~/frontend"
-        run: |
-          ssh -i ~/.ssh/id_ed25519 \
-            "$DEPLOY_USER@$DEPLOY_HOST" \
-            "cd '$DEPLOY_PATH' && git pull --ff-only origin main && docker compose -f docker-compose.PROD.yml up -d --build"
+      - name: SSH - Deploy to Dev
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          script: /
+            set -e
+            cd ~/deploy
+            git pull origin dev
+            
+            echo "Executing frontend..."
+            docker compose -f docker-compose.PROD.yml down
+            docker compose -f docker-compose.PROD.yml up -d --build

@@ -21,5 +21,11 @@ services:
       - /tmp
     security_opt:
       - no-new-privileges:true
+    env_file:
+      - .env
+    tty: true
+    volumes:
+      - ./frontend:/srv/app:rw
+      - node_modules:/srv/app/node_modules:rw
     networks:
       - thpsrun
