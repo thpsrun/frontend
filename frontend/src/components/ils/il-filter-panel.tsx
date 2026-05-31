@@ -1,11 +1,9 @@
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Panel } from "@/components/ui/panel"
 import { Button } from "@/components/ui/button"
 import { BookOpen } from "lucide-react"
 
-import { cn } from "@/lib/utils"
-
 import { VariableToggles } from "@/components/leaderboard/variable-toggles"
+import { ILCategorySelector } from "@/components/ils/il-category-selector"
 
 import type {
     GameCategory,
@@ -38,49 +36,12 @@ export const ILFilterPanel = ({
         <Panel className="px-4 py-3">
             <div className="flex items-start gap-3">
                 <div className="flex-1 flex flex-col gap-3">
-                    {ilCategories.length > 1 ? (
-                        <Tabs
-                            value={activeCatSlug}
-                            onValueChange={onCategoryChange}
-                        >
-                            <TabsList className={cn(
-                                "flex flex-wrap gap-1",
-                                "bg-muted/20 p-1",
-                                "rounded-md",
-                            )}>
-                                {ilCategories.map((cat) => (
-                                    <TabsTrigger
-                                        key={cat.id}
-                                        value={cat.slug}
-                                        className={cn(
-                                            "px-3 py-1",
-                                            "rounded-sm",
-                                            "text-xs",
-                                            "data-[state=active]:bg-background",
-                                            "data-[state=active]:shadow",
-                                        )}
-                                    >
-                                        {cat.name}
-                                    </TabsTrigger>
-                                ))}
-                            </TabsList>
-                        </Tabs>
-                    ) : ilCategories.length === 1 ? (
-                        <div className={cn(
-                            "flex self-start",
-                            "bg-muted/20 p-1",
-                            "rounded-md",
-                        )}>
-                            <div className={cn(
-                                "px-3 py-1",
-                                "rounded-sm",
-                                "text-xs",
-                                "bg-background shadow",
-                            )}>
-                                {ilCategories[0].name}
-                            </div>
-                        </div>
-                    ) : null}
+                    <ILCategorySelector
+                        categories={ilCategories}
+                        activeCatSlug={activeCatSlug}
+                        onCategoryChange={onCategoryChange}
+                        showSingle
+                    />
                     {variables.length > 0 && (
                         <div>
                             <VariableToggles

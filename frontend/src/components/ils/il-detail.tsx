@@ -8,13 +8,13 @@ import {
     SelectContent,
     SelectItem,
 } from "@/components/ui/select"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Panel } from "@/components/ui/panel"
 import { Skeleton } from "@/components/ui/skeleton"
 
 import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table"
 import { WRHistoryChart } from "@/components/leaderboard/wr-history-chart"
 import { VariableToggles } from "@/components/leaderboard/variable-toggles"
+import { ILCategorySelector } from "@/components/ils/il-category-selector"
 import { Button } from "@/components/ui/button"
 import { BookOpen, ChartLine, Send } from "lucide-react"
 
@@ -277,37 +277,11 @@ export const ILDetail = ({
                     </Select>
                 </div>
 
-                {ilCategories.length > 1 && (
-                    <Tabs
-                        value={categorySlug}
-                        onValueChange={
-                            handleCategoryChange
-                        }
-                    >
-                        <TabsList className={cn(
-                            "flex flex-wrap gap-1",
-                            "bg-muted/20 p-1",
-                            "rounded-md",
-                        )}>
-                            {ilCategories.map(
-                                (cat) => (
-                                <TabsTrigger
-                                    key={cat.id}
-                                    value={cat.slug}
-                                    className={cn(
-                                        "px-3 py-1",
-                                        "rounded-sm",
-                                        "text-xs",
-                                        "data-[state=active]:bg-background",
-                                        "data-[state=active]:shadow",
-                                    )}
-                                >
-                                    {cat.name}
-                                </TabsTrigger>
-                            ))}
-                        </TabsList>
-                    </Tabs>
-                )}
+                <ILCategorySelector
+                    categories={ilCategories}
+                    activeCatSlug={categorySlug}
+                    onCategoryChange={handleCategoryChange}
+                />
 
                 <div className="flex items-start gap-3">
                     <div className="flex-1">

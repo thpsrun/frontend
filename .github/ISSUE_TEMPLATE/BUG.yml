@@ -1,0 +1,128 @@
+name: Bug Report
+description: Report a problem or bug you have encountered!
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for submitting!
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Guidelines
+      description: By submitting this issue, you agree to follow the [thps.run Contributing Guidelines](https://github.com/thpsrun/frontend/blob/main/.github/CONTRIBUTING.md).
+      options:
+        - label: I agree to follow this project's Contributing Guidelines.
+          required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Which version is affected?
+      placeholder: Production, development, self-hosted...
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: Platform/OS Version
+      description: Which operating systems and/or devices are affected?
+      placeholder: iOS 15.4, Windows 11 25H2, popOS! 22.04, ...
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      description: What browser and version was the bug found in?
+      placeholder: Mozilla Firefox 1XX, Google Chrome 1XX, Microsoft Edge whatever...
+    validations:
+      required: true
+
+  - type: input
+    id: devices
+    attributes:
+      label: Devices
+      description: Does this affect SPECIFIC devices? If so, what?
+      placeholder: All, iPhone Pro Max 15, iPad Air, MacBook Pro M1, ...
+    validations:
+      required: true
+
+  - type: input
+    id: existing-issues
+    attributes:
+      label: Existing Issues
+      description: Are there any similar existing issues?
+      placeholder: "#420"
+    validations:
+      required: false
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe what happened.
+      placeholder: I did the thing and somehow the thing blew up and then Tony appeared!?
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro-steps
+    attributes:
+      label: Steps to Reproduce the Issue
+      value: |
+        1.
+        2.
+        3.
+        ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+      placeholder: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser Console / Network Errors
+      description: Open DevTools (F12) and paste any red errors from the Console or failing Network requests.
+      placeholder: Paste console output, stack traces, or failed API responses here.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: attachments
+    attributes:
+      label: Attachments
+      description: Please include code snippets, stack traces, or anything else useful.
+      placeholder: Paste code, stack traces, and whatever else needed here! The more, the better!
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or Videos
+      description: Add screenshots, gifs, or videos to help explain your problem.
+      placeholder: Upload screenshots, gifs, and videos here
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Add any other useful information about the problem here.
+      placeholder: And then everyone clapped...
+    validations:
+      required: false
