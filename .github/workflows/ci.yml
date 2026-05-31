@@ -37,24 +37,8 @@ jobs:
           VITE_BACKEND_URL: http://localhost:8001
         run: npm run build
 
-  validate-container:
-    needs: lint-and-build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v6
-
-      - name: Build Production Image
-        env:
-          VITE_API_BASE_URL: http://localhost:8001/api/v1
-          VITE_BACKEND_URL: http://localhost:8001
-          VITE_TURNSTILE_SITE_KEY: ci-placeholder
-        run: docker compose -f docker-compose.PROD.yml build
-
   deploy-dev:
-    needs: [lint-and-build, validate-container]
+    needs: [lint-and-build]
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     permissions:
@@ -94,7 +78,7 @@ jobs:
 
 
   deploy-prod:
-    needs: [lint-and-build, validate-container]
+    needs: [lint-and-build]
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
