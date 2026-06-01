@@ -1,11 +1,11 @@
 networks:
   thpsrun:
-    name: v2_thpsrun
+    name: thpsrun
     external: true
 
 services:
   react:
-    container_name: v2-react
+    container_name: react
     restart: unless-stopped
     ports:
       - "8081:80"
