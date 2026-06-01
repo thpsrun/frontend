@@ -1,12 +1,14 @@
 networks:
   thpsrun:
-    name: thpsrun
+    name: v2_thpsrun
     external: true
 
 services:
   react:
-    container_name: react
+    container_name: v2-react
     restart: unless-stopped
+    ports:
+      - "8081:80"
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
