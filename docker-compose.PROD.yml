@@ -3,6 +3,10 @@ networks:
     name: thpsrun
     external: true
 
+volumes:
+    node_modules:
+      name: node_modules
+
 services:
   react:
     container_name: react
