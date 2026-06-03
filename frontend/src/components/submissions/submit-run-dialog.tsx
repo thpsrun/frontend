@@ -152,6 +152,19 @@ export function SubmitRunDialog({
     const resolvedRequired = timing?.resolved_required_methods
         ?? (["rta", "lrt", "igt"] as const)
 
+    // Required timing methods with no time entered yet. The backend rejects a
+    // submission missing any required method, so block until these are filled.
+    const missingRequiredTimes: string[] = []
+    if (resolvedRequired.includes("rta") && assembleTime(rtaTime) === null) {
+        missingRequiredTimes.push("Real Time (RTA)")
+    }
+    if (resolvedRequired.includes("lrt") && assembleTime(nlTime) === null) {
+        missingRequiredTimes.push("Loads Removed (LRT)")
+    }
+    if (resolvedRequired.includes("igt") && assembleTime(igtTime) === null) {
+        missingRequiredTimes.push("In-Game Time (IGT)")
+    }
+
     const [rulesOpen, setRulesOpen] = useState(false)
     const isWide = useIsWide()
 
@@ -209,23 +222,27 @@ export function SubmitRunDialog({
         }))
     }
 
+    const resetForm = () => {
+        setSelectedCategoryId(activeCategory.id)
+        setSelectedVarValues(
+            buildInitialVarValues(activeCategory, valueSlugs),
+        )
+        setSelectedPlatformId("")
+        setEmulated(false)
+        setPlayers(makeInitialPlayers())
+        setRtaTime(EMPTY_TIME)
+        setNlTime(EMPTY_TIME)
+        setIgtTime(EMPTY_TIME)
+        setVideo("")
+        setDate(getTodayString())
+        setComment("")
+        setError(null)
+        setActiveSearchIdx(null)
+    }
+
     const handleOpenChange = (next: boolean) => {
         if (next) {
-            setSelectedCategoryId(activeCategory.id)
-            setSelectedVarValues(
-                buildInitialVarValues(activeCategory, valueSlugs),
-            )
-            setSelectedPlatformId("")
-            setEmulated(false)
-            setPlayers(makeInitialPlayers())
-            setRtaTime(EMPTY_TIME)
-            setNlTime(EMPTY_TIME)
-            setIgtTime(EMPTY_TIME)
-            setVideo("")
-            setDate(getTodayString())
-            setComment("")
-            setError(null)
-            setActiveSearchIdx(null)
+            resetForm()
         } else {
             setRulesOpen(false)
         }
@@ -277,6 +294,15 @@ export function SubmitRunDialog({
             }
         }
 
+        if (missingRequiredTimes.length > 0) {
+            setError(
+                "Please enter a time for: "
+                + missingRequiredTimes.join(", ")
+                + ".",
+            )
+            return
+        }
+
         const payload: SubmitRunPayload = {
             game_id: gameDetail.id,
             category_id: selectedCategory.id,
@@ -307,6 +333,7 @@ export function SubmitRunDialog({
 
         submitRun.mutate(payload, {
             onSuccess: (data) => {
+                resetForm()
                 onOpenChange(false)
                 toast.success("Run submitted.", {
                     description: data.message,
@@ -626,6 +653,7 @@ export function SubmitRunDialog({
                             submitRun.isPending
                             || !selectedPlatformId
                             || !video.trim()
+                            || missingRequiredTimes.length > 0
                             || players.some((p) =>
                                 p.rel === "user"
                                     ? !p.id
