@@ -14,6 +14,7 @@ export function useSession() {
     return {
         isAuthenticated: sessionQuery.data?.isAuthenticated ?? false,
         isLoading: sessionQuery.isLoading,
+        mfaPending: sessionQuery.data?.mfaPending ?? false,
         user: sessionQuery.data?.isAuthenticated
             ? sessionQuery.data.user
             : null,

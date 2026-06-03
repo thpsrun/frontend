@@ -129,6 +129,9 @@ export interface PfpResponse {
 export interface SessionState {
     isAuthenticated: boolean
     user?: AllauthUser
+    // Set when the session is in allauth's `mfa_authenticate` pending state (primary
+    // auth done, second factor still required) -- e.g. after OAuth login for a TOTP user.
+    mfaPending?: boolean
 }
 
 export interface RememberMeOption {
@@ -172,6 +175,20 @@ export interface AuthMethodsSummary {
     has_usable_password: boolean
     social_accounts: AuthMethodsSocialAccount[]
     authenticators: AuthMethodsAuthenticator[]
+}
+
+export interface TotpSetup {
+    secret: string
+    totpUrl: string
+}
+
+export interface RecoveryCodesGenerated {
+    type: "recovery_codes"
+    created_at: number
+    last_used_at: number | null
+    total_code_count: number
+    unused_code_count: number
+    unused_codes: string[]
 }
 
 export interface OauthSignupRequest {

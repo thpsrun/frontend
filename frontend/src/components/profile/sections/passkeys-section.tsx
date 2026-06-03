@@ -7,25 +7,9 @@ import type { Authenticator } from "@/types/auth"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/common/empty-state"
 import { SectionPanel } from "@/components/profile/section-panel"
-import { cn } from "@/lib/utils"
 import { EnrollPasskeyDialog } from "./enroll-passkey-dialog"
 import { RemovePasskeyDialog } from "./remove-passkey-dialog"
-
-const ROW_CLASS = cn(
-    "flex items-center",
-    "justify-between",
-    "rounded-md",
-    "border border-border/40",
-    "px-4 py-3",
-)
-
-function formatAddedAt(epochSeconds: number): string {
-    return new Date(epochSeconds * 1000).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-    })
-}
+import { ROW_CLASS, formatAddedAt } from "./settings-row"
 
 export function PasskeysSection() {
     const { data: methods } = useAuthMethods()

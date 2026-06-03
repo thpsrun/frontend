@@ -15,6 +15,7 @@ import { useOauthLogin } from "@/hooks/auth/useOauthLogin"
 import { ApiError } from "@/lib/api-client"
 import { oauthLoginErrorMessage, turnstileErrorMessage } from "@/lib/auth-errors"
 import { isTurnstileEnabled } from "@/lib/turnstile"
+import { cn } from "@/lib/utils"
 import {
     TurnstileWidget,
     type TurnstileWidgetHandle,
@@ -24,8 +25,6 @@ import {
     peekRememberMeStash,
     stashRememberMe,
 } from "@/lib/remember-me"
-
-type LoginStep = "login" | "totp"
 
 const PROVIDER_LABEL: Record<AuthProvider, string> = {
     discord: "Discord",
@@ -60,7 +59,7 @@ function getReturnTo(state: unknown): string {
 export function LoginPage() {
     const navigate = useNavigate()
     const location = useLocation()
-    const { isAuthenticated } = useSession()
+    const { isAuthenticated, mfaPending } = useSession()
     const login = useLogin()
     const submitTotp = useSubmitTotp()
     const { login: oauthLogin, pending: oauthPending } = useOauthLogin()
@@ -73,10 +72,16 @@ export function LoginPage() {
     const [rememberMe, setRememberMe] = useState<boolean>(() =>
         peekRememberMeStash(),
     )
-    const [step, setStep] = useState<LoginStep>("login")
+    const [mfaTriggered, setMfaTriggered] = useState(false)
+    const [mfaMode, setMfaMode] = useState<"totp" | "recovery">("totp")
     const [error, setError] = useState<string | null>(null)
     const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
     const turnstileRef = useRef<TurnstileWidgetHandle>(null)
+
+    // Show the 2FA section if a login attempt here asked for it, or if the backend
+    // already has an mfa_authenticate challenge pending for this session (e.g. after
+    // a refresh or OAuth login).
+    const mfaActive = mfaTriggered || mfaPending
 
     const turnstileEnabled = isTurnstileEnabled()
     const turnstileReady = !turnstileEnabled || turnstileToken !== null
@@ -112,7 +117,7 @@ export function LoginPage() {
                 turnstileToken,
             })
             if (result.mfaRequired) {
-                setStep("totp")
+                setMfaTriggered(true)
             } else if (result.emailVerificationRequired) {
                 navigate("/verify-email")
                 return
@@ -131,7 +136,7 @@ export function LoginPage() {
         setError(null)
 
         try {
-            await submitTotp.mutateAsync(totpCode)
+            await submitTotp.mutateAsync(totpCode.trim())
             navigate(returnTo)
         } catch (err) {
             setError(
@@ -148,6 +153,10 @@ export function LoginPage() {
         const result = await oauthLogin(provider, tokenForCall)
         resetTurnstile()
         if (result.ok) {
+            if (result.mfaRequired) {
+                setMfaTriggered(true)
+                return
+            }
             navigate(returnTo)
             return
         }
@@ -159,18 +168,11 @@ export function LoginPage() {
         stashRememberMe(checked)
     }
 
-    const titles: Record<LoginStep, string> = {
-        "login": "Log In",
-        "totp": "Two-Factor Authentication",
-    }
-
     return (
         <div className="flex justify-center">
             <Card className="w-full max-w-100">
                 <CardHeader>
-                    <CardTitle className="text-xl">
-                        {titles[step]}
-                    </CardTitle>
+                    <CardTitle className="text-xl">Log In</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-6">
                     {error && (
@@ -179,141 +181,187 @@ export function LoginPage() {
                         </AlertBanner>
                     )}
 
-                    {step === "totp" ? (
-                        <form onSubmit={handleTotp} className="flex flex-col gap-4">
-                            <p className="text-sm text-muted-foreground">
-                                Enter the 6-digit code from your authenticator app.
-                            </p>
-                            <FormField
-                                label="Code"
-                                id="totp-code"
-                                type="text"
-                                inputMode="numeric"
-                                autoComplete="one-time-code"
-                                maxLength={6}
-                                placeholder="000000"
-                                value={totpCode}
-                                onChange={(e) => setTotpCode(e.target.value)}
-                                required
-                            />
-                            <Button
-                                type="submit"
-                                disabled={
-                                    submitTotp.isPending
-                                    || totpCode.length !== 6
-                                }
+                    <form
+                        onSubmit={handleLogin}
+                        className={cn(
+                            "flex flex-col gap-4 transition-opacity",
+                            mfaActive
+                                && "opacity-50 hover:opacity-100 focus-within:opacity-100",
+                        )}
+                    >
+                        <FormField
+                            label="Username/Email"
+                            id="login"
+                            type="text"
+                            autoComplete="username"
+                            placeholder="Username/Email"
+                            value={loginValue}
+                            onChange={(e) => setLoginValue(e.target.value)}
+                            required
+                        />
+                        <FormField
+                            label="Password"
+                            id="password"
+                            type="password"
+                            autoComplete="current-password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    id="remember-me"
+                                    checked={rememberMe}
+                                    onCheckedChange={(value) =>
+                                        handleRememberMeChange(value === true)
+                                    }
+                                />
+                                <Label
+                                    htmlFor="remember-me"
+                                    className="cursor-pointer"
+                                >
+                                    Log In For 30 Days
+                                </Label>
+                            </div>
+                            <Link
+                                to="/forgot-password"
+                                className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                             >
-                                {submitTotp.isPending ? "Verifying..." : "Verify"}
-                            </Button>
-                            <button
-                                type="button"
-                                className="text-sm text-muted-foreground hover:text-foreground"
-                                onClick={() => {
-                                    setStep("login")
-                                    setTotpCode("")
-                                    setError(null)
-                                }}
+                                Forgot Password?
+                            </Link>
+                        </div>
+                        <TurnstileWidget
+                            ref={turnstileRef}
+                            onToken={setTurnstileToken}
+                            className="flex justify-center"
+                        />
+                        <Button
+                            type="submit"
+                            disabled={
+                                login.isPending
+                                || !loginValue.trim()
+                                || !password
+                                || !turnstileReady
+                            }
+                        >
+                            {login.isPending ? "Logging In..." : "Log In"}
+                        </Button>
+                    </form>
+
+                    <div
+                        className={cn(
+                            "flex flex-col gap-2 transition-opacity",
+                            mfaActive
+                                && "opacity-50 hover:opacity-100 focus-within:opacity-100",
+                        )}
+                    >
+                        <PasskeyLoginButton rememberMe={rememberMe} />
+                        {(["discord", "twitch"] as const).map((p) => {
+                            const Icon = PROVIDER_ICON[p]
+                            const isPending = oauthPending === p
+                            return (
+                                <Button
+                                    key={p}
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => handleOauthLogin(p)}
+                                    disabled={
+                                        oauthPending !== null
+                                        || !turnstileReady
+                                    }
+                                    className="w-full"
+                                >
+                                    <Icon
+                                        size={16}
+                                        color={PROVIDER_BRAND[p]}
+                                        className="mr-1"
+                                    />
+                                    {isPending
+                                        ? `Logging In With ${PROVIDER_LABEL[p]}...`
+                                        : `Log In With ${PROVIDER_LABEL[p]}`}
+                                </Button>
+                            )
+                        })}
+                        <p className="text-xs text-muted-foreground">
+                            Discord and Twitch sign-ins stay signed in for 7 days.
+                        </p>
+                    </div>
+
+                    {mfaActive && (
+                        <div className="flex flex-col gap-3 border-t border-border/40 pt-6">
+                            <div className="flex flex-col gap-1">
+                                <p className="text-sm font-medium">
+                                    Two-Factor Required
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                    {mfaMode === "totp"
+                                        ? "Enter the 6-digit code from your authenticator app."
+                                        : "Enter one of your recovery codes."}
+                                </p>
+                            </div>
+                            <form
+                                onSubmit={handleTotp}
+                                className="flex flex-col gap-3"
                             >
-                                Back to Login
-                            </button>
-                        </form>
-                    ) : (
-                        <>
-                            <form onSubmit={handleLogin} className="flex flex-col gap-4">
-                                <FormField
-                                    label="Username/Email"
-                                    id="login"
-                                    type="text"
-                                    autoComplete="username"
-                                    placeholder="Username/Email"
-                                    value={loginValue}
-                                    onChange={(e) => setLoginValue(e.target.value)}
-                                    required
-                                />
-                                <FormField
-                                    label="Password"
-                                    id="password"
-                                    type="password"
-                                    autoComplete="current-password"
-                                    placeholder="Password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                />
-                                <div className="flex items-center justify-between gap-2">
-                                    <div className="flex items-center gap-2">
-                                        <Checkbox
-                                            id="remember-me"
-                                            checked={rememberMe}
-                                            onCheckedChange={(value) =>
-                                                handleRememberMeChange(value === true)
-                                            }
-                                        />
-                                        <Label
-                                            htmlFor="remember-me"
-                                            className="cursor-pointer"
-                                        >
-                                            Log In For 30 Days
-                                        </Label>
-                                    </div>
-                                    <Link
-                                        to="/forgot-password"
-                                        className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-                                    >
-                                        Forgot Password?
-                                    </Link>
-                                </div>
-                                <TurnstileWidget
-                                    ref={turnstileRef}
-                                    onToken={setTurnstileToken}
-                                    className="flex justify-center"
-                                />
+                                {mfaMode === "totp" ? (
+                                    <FormField
+                                        label="Authenticator code"
+                                        id="totp-code"
+                                        type="text"
+                                        inputMode="numeric"
+                                        autoComplete="one-time-code"
+                                        maxLength={6}
+                                        placeholder="000000"
+                                        value={totpCode}
+                                        onChange={(e) => setTotpCode(e.target.value)}
+                                        required
+                                    />
+                                ) : (
+                                    <FormField
+                                        label="Recovery code"
+                                        id="recovery-code"
+                                        type="text"
+                                        autoComplete="one-time-code"
+                                        placeholder="Recovery code"
+                                        value={totpCode}
+                                        onChange={(e) => setTotpCode(e.target.value)}
+                                        required
+                                    />
+                                )}
                                 <Button
                                     type="submit"
                                     disabled={
-                                        login.isPending
-                                        || !loginValue.trim()
-                                        || !password
-                                        || !turnstileReady
+                                        submitTotp.isPending
+                                        || (mfaMode === "totp"
+                                            ? totpCode.length !== 6
+                                            : totpCode.trim().length === 0)
                                     }
                                 >
-                                    {login.isPending ? "Logging In..." : "Log In"}
+                                    {submitTotp.isPending ? "Verifying..." : "Verify"}
                                 </Button>
+                                <button
+                                    type="button"
+                                    className="self-start text-sm text-muted-foreground hover:text-foreground"
+                                    onClick={() => {
+                                        setMfaMode((m) =>
+                                            m === "totp" ? "recovery" : "totp",
+                                        )
+                                        setTotpCode("")
+                                        setError(null)
+                                    }}
+                                >
+                                    {mfaMode === "totp"
+                                        ? "Use a recovery code"
+                                        : "Use authenticator app"}
+                                </button>
                             </form>
+                        </div>
+                    )}
 
-                            <div className="flex flex-col gap-2">
-                                <PasskeyLoginButton rememberMe={rememberMe} />
-                                {(["discord", "twitch"] as const).map((p) => {
-                                    const Icon = PROVIDER_ICON[p]
-                                    const isPending = oauthPending === p
-                                    return (
-                                        <Button
-                                            key={p}
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => handleOauthLogin(p)}
-                                            disabled={
-                                                oauthPending !== null
-                                                || !turnstileReady
-                                            }
-                                            className="w-full"
-                                        >
-                                            <Icon
-                                                size={16}
-                                                color={PROVIDER_BRAND[p]}
-                                                className="mr-1"
-                                            />
-                                            {isPending
-                                                ? `Logging In With ${PROVIDER_LABEL[p]}...`
-                                                : `Log In With ${PROVIDER_LABEL[p]}`}
-                                        </Button>
-                                    )
-                                })}
-                                <p className="text-xs text-muted-foreground">
-                                    Discord and Twitch sign-ins stay signed in for 7 days.
-                                </p>
-                            </div>
-
+                    {!mfaActive && (
+                        <>
                             <p className="text-center text-sm text-muted-foreground">
                                 Don't have an account?{" "}
                                 <Link
