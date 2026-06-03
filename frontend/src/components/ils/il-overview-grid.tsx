@@ -91,10 +91,11 @@ export const ILOverviewGrid = ({
             "gap-4",
         )}>
             {levels.map((level) => {
-                const matchedCat =
-                    level.categories.find(
+                const matchedCat = categorySlug
+                    ? level.categories.find(
                         (c) => c.slug === categorySlug,
-                    ) ?? level.categories[0]
+                    )
+                    : level.categories[0]
                 const runs = matchedCat?.runs ?? []
 
                 const linkParts = [
@@ -152,7 +153,7 @@ export const ILOverviewGrid = ({
                                     "text-xs",
                                     "text-muted-foreground",
                                 )}>
-                                    No runs yet
+                                    No Runs Yet...
                                 </div>
                             ) : (
                                 <table className={cn(

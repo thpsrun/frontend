@@ -6,6 +6,7 @@ import { Outlet, useLocation } from "react-router"
 import { Toaster } from "sonner"
 import { useMfaGate } from "@/lib/mfa-gate"
 import { MfaSetupGate } from "@/components/auth/mfa-setup-gate"
+import { CookieConsentBanner } from "@/components/common/cookie-consent-banner"
 
 function App() {
     const { pathname } = useLocation()
@@ -39,6 +40,7 @@ function App() {
             )}
 
             <Toaster richColors theme="dark" />
+            <CookieConsentBanner />
         </div>
     )
 }
