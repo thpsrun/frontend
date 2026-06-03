@@ -12,7 +12,7 @@ export const TopBar = () => {
                     <MobileNav />
                 </div>
                 <Logo />
-                <div className="hidden lg:block [&_a]:px-2.5 [&_button]:px-2.5 xl:[&_a]:px-4 xl:[&_button]:px-4">
+                <div className="hidden lg:block">
                     <NavMenu />
                 </div>
             </div>

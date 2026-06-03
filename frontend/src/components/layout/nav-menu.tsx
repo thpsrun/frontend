@@ -181,9 +181,10 @@ export function NavMenu() {
                             >
                                 <NavItemLink
                                     item={item}
-                                    className={
-                                        navigationMenuTriggerStyle()
-                                    }
+                                    className={cn(
+                                        navigationMenuTriggerStyle(),
+                                        "px-2.5 xl:px-4",
+                                    )}
                                 />
                             </NavigationMenuItem>
                         )
@@ -193,7 +194,7 @@ export function NavMenu() {
                         <NavigationMenuItem
                             key={item.name}
                         >
-                            <NavigationMenuTrigger>
+                            <NavigationMenuTrigger className="px-2.5 xl:px-4">
                                 {item.name}
                             </NavigationMenuTrigger>
                             {/* overflow-visible lets the cascading submenus escape the panel's clip */}

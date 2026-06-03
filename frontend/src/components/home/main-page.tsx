@@ -9,7 +9,6 @@ export const MainPage = () => {
 
     return (
         <div className="w-full h-full flex flex-col gap-4 min-w-0">
-            <LiveStreams />
             <div
                 className={[
                     "flex-1 min-w-0 flex flex-col gap-3",
@@ -21,6 +20,8 @@ export const MainPage = () => {
                 </div>
 
                 <div className="min-w-0 flex flex-col gap-3">
+                    <LiveStreams />
+
                     <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
                         <LatestRuns title="Latest Records" data={latestRecords} />
                     </div>

@@ -95,6 +95,7 @@ export const queryKeys = {
         authenticators: () => [...queryKeys.auth.all, "authenticators"] as const,
         exports: () => [...queryKeys.auth.all, "exports"] as const,
         email: () => [...queryKeys.auth.all, "email"] as const,
+        recoveryCodes: () => [...queryKeys.auth.all, "recovery-codes"] as const,
     },
 
     submissions: {

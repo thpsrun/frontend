@@ -19,6 +19,7 @@ import type { StatusMsg } from "@/types/shared"
 import { getErrorMessage } from "@/lib/utils"
 import { ConnectedAccountsSection } from "./connected-accounts-section"
 import { PasskeysSection } from "./passkeys-section"
+import { AuthenticatorAppSection } from "./authenticator-app-section"
 import { EmailSection } from "@/components/profile/sections/email-section"
 
 export function SecuritySection() {
@@ -166,6 +167,7 @@ export function SecuritySection() {
 
             <ConnectedAccountsSection />
             <PasskeysSection />
+            <AuthenticatorAppSection />
         </div>
     )
 }

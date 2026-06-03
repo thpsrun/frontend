@@ -68,8 +68,10 @@ export class ApiError extends Error {
 
 type AuthLostHandler = () => void
 type BannedHandler = () => void
+type MfaSetupHandler = () => void
 let authLostHandler: AuthLostHandler | null = null
 let bannedHandler: BannedHandler | null = null
+let mfaSetupHandler: MfaSetupHandler | null = null
 
 const BANNED_DETAIL = "Account disabled"
 
@@ -79,6 +81,20 @@ export function setAuthLostHandler(handler: AuthLostHandler | null): void {
 
 export function setBannedHandler(handler: BannedHandler | null): void {
     bannedHandler = handler
+}
+
+export function setMfaSetupHandler(handler: MfaSetupHandler | null): void {
+    mfaSetupHandler = handler
+}
+
+// The backend gates privileged users with no second factor by returning 403, so
+// this just detects it and asks the user to use TOTP to login.
+function isMfaSetupRequired(body: unknown): boolean {
+    const flows = (
+        body as { data?: { flows?: { id?: string }[] } } | null
+    )?.data?.flows
+    return Array.isArray(flows)
+        && flows.some((f) => f?.id === "mfa_setup_required")
 }
 
 export function triggerAuthLost(): void {
@@ -141,10 +157,9 @@ function parseRetryAfter(header: string | null): number | null {
 async function parseError(res: Response): Promise<ApiError> {
     const retryAfter = parseRetryAfter(res.headers.get("Retry-After"))
     const body = await res.json().catch(() => null)
-    // Backend ErrorResponse uses `error` for the slug (e.g. "reauth_required").
-    // Allauth and the 429 envelope use `errors[0].code` (e.g. "rate_limited",
-    // "turnstile_required"). Prefer an explicit `code`, then fall back to
-    // `error`, then to the first allauth/rate-limit error.
+    // Backend ErrorResponse uses `error`. Allauth and the 429 envelope use 
+    // `errors[0].code` (e.g. "rate_limited", "turnstile_required"). 
+    // Prefer an explicit `code`, then fall back to `error`, then to the first allauth/rate-limit error.
     const code = typeof body?.code === "string"
         ? body.code
         : typeof body?.error === "string"
@@ -218,6 +233,12 @@ export async function apiFetch<T = unknown>(
             && (error.body as { detail?: unknown } | null)?.detail === BANNED_DETAIL
         ) {
             bannedHandler?.()
+        } else if (
+            error.status === 403
+            && base === "api"
+            && isMfaSetupRequired(error.body)
+        ) {
+            mfaSetupHandler?.()
         } else if (
             error.status === 401
             && base === "api"

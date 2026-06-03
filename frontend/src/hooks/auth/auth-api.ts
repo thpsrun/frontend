@@ -31,7 +31,11 @@ export async function checkSession(signal?: AbortSignal): Promise<SessionState> 
         return { isAuthenticated: true, user: body.data.user }
     } catch (err) {
         if (err instanceof ApiError && err.isAuthRequired) {
-            return { isAuthenticated: false }
+            const body = err.body as AllauthSessionResponse | null
+            const mfaPending = body?.data?.flows?.some(
+                (f) => f.id === "mfa_authenticate",
+            ) ?? false
+            return { isAuthenticated: false, mfaPending }
         }
         throw err
     }

@@ -2,7 +2,13 @@ import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { RouterProvider } from "react-router"
-import { ApiError, setAuthLostHandler, setBannedHandler } from "@/lib/api-client"
+import {
+    ApiError,
+    setAuthLostHandler,
+    setBannedHandler,
+    setMfaSetupHandler,
+} from "@/lib/api-client"
+import { setMfaGate } from "@/lib/mfa-gate"
 import { queryKeys } from "@/lib/query-keys"
 import { router } from "./router.tsx"
 import "./index.css"
@@ -39,6 +45,10 @@ setBannedHandler(() => {
     if (bannedHandled) return
     bannedHandled = true
     window.location.assign("/login/banned")
+})
+
+setMfaSetupHandler(() => {
+    setMfaGate(true)
 })
 
 createRoot(document.getElementById("root")!).render(
