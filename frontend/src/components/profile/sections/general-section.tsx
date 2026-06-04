@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react"
 import type { ChangeEvent } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
+import { Checkbox } from "@/components/ui/checkbox"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useCountries } from "@/hooks/auth/useCountries"
 import { useUpdateProfile } from "@/hooks/auth/useUpdateProfile"
@@ -34,7 +35,6 @@ import type { StatusMsg } from "@/types/shared"
 import { cn, getErrorMessage } from "@/lib/utils"
 
 interface GeneralFormValues {
-    name: string
     nickname: string
     pronouns: string
 }
@@ -63,16 +63,34 @@ export function GeneralSection() {
 
     const profileForm = useForm<GeneralFormValues>({
         defaultValues: {
-            name: "",
             nickname: "",
             pronouns: "",
         },
     })
+        const [exStream, setExStream] = useState(false)
+    
+        useEffect(() => {
+            if (player) {
+                setExStream(player.player.ex_stream ?? false)
+            }
+        }, [player])
+    
+        const handleExStreamToggle = async (checked: boolean) => {
+            setExStream(checked)
+            try {
+                await updateProfile.mutateAsync({
+                    player: { ex_stream: checked },
+                })
+                toast.success("Preferences Updated!")
+            } catch (err) {
+                setExStream(!checked)
+                toast.error(getErrorMessage(err, "Update Failed..."))
+            }
+        }
 
     useEffect(() => {
         if (!player) return
         profileForm.reset({
-            name: player.player.name ?? "",
             nickname: player.player.nickname ?? "",
             pronouns: player.player.pronouns ?? "",
         })
@@ -105,7 +123,6 @@ export function GeneralSection() {
         try {
             await updateProfile.mutateAsync({
                 player: {
-                    name: data.name || undefined,
                     nickname: data.nickname || null,
                     pronouns: data.pronouns || null,
                     country: selectedCountry || undefined,
@@ -141,7 +158,6 @@ export function GeneralSection() {
     const handleDiscard = useCallback(() => {
         if (!player) return
         profileForm.reset({
-            name: player.player.name ?? "",
             nickname: player.player.nickname ?? "",
             pronouns: player.player.pronouns ?? "",
         })
@@ -242,78 +258,93 @@ export function GeneralSection() {
                     onSubmit={onSubmit}
                     className="flex flex-col gap-4"
                 >
-                    <div className={cn(
-                        "flex flex-col",
-                        "items-center gap-3",
-                    )}>
-                        {(pfpPreviewUrl || avatarUrl) ? (
-                            <img
-                                src={
-                                    pfpPreviewUrl
-                                        ?? avatarUrl!
-                                }
-                                alt={player.player.name}
-                                className={cn(
-                                    "size-20 rounded-full",
-                                    "object-cover",
-                                )}
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div className={cn(
+                            "flex flex-col",
+                            "items-center gap-3",
+                            "self-center",
+                        )}>
+                            {(pfpPreviewUrl || avatarUrl) ? (
+                                <img
+                                    src={
+                                        pfpPreviewUrl
+                                            ?? avatarUrl!
+                                    }
+                                    alt={player.player.name}
+                                    className={cn(
+                                        "size-32 rounded-full",
+                                        "object-cover",
+                                    )}
+                                />
+                            ) : (
+                                <div className={cn(
+                                    "size-32 rounded-full",
+                                    "bg-muted flex items-center",
+                                    "justify-center",
+                                )}>
+                                    <UserIcon className={cn(
+                                        "size-16",
+                                        "text-muted-foreground",
+                                    )} />
+                                </div>
+                            )}
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handlePfpSelect}
+                                className="hidden"
                             />
-                        ) : (
-                            <div className={cn(
-                                "size-20 rounded-full",
-                                "bg-muted flex items-center",
-                                "justify-center",
-                            )}>
-                                <UserIcon className={cn(
-                                    "size-10",
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                    fileInputRef.current?.click()
+                                }
+                            >
+                                {pendingPfpFile
+                                    ? "Change Image"
+                                    : "Upload Image"}
+                            </Button>
+                            {pendingPfpFile && (
+                                <p className={cn(
+                                    "text-xs",
                                     "text-muted-foreground",
-                                )} />
-                            </div>
-                        )}
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handlePfpSelect}
-                            className="hidden"
-                        />
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                                fileInputRef.current?.click()
-                            }
-                        >
-                            {pendingPfpFile
-                                ? "Change Image"
-                                : "Upload Image"}
-                        </Button>
-                        {pendingPfpFile && (
-                            <p className={cn(
-                                "text-xs",
-                                "text-muted-foreground",
-                            )}>
-                                New image selected. Save to apply!
-                            </p>
-                        )}
+                                )}>
+                                    New image selected. Save to apply!
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="flex flex-col gap-4">
+                            <FormField
+                                label="thps.run Username"
+                                id="username"
+                                value={player.player.username}
+                                disabled
+                                className="opacity-60"
+                                description="Your login name. Contact Ana to change it."
+                            />
+                            <FormField
+                                label="SRC Username"
+                                id="name"
+                                value={player.player.name}
+                                disabled
+                                className="opacity-60"
+                                description="Synced from your Speedrun.com account."
+                            />
+                            <FormField
+                                label="Nickname (Optional)"
+                                id="nickname"
+                                placeholder="Optional"
+                                description="Shown in place of your SRC username."
+                                {...profileForm.register("nickname")}
+                            />
+                        </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                            label="Display Name"
-                            id="name"
-                            {...profileForm.register("name")}
-                        />
-                        <FormField
-                            label="Nickname"
-                            id="nickname"
-                            placeholder="Optional"
-                            {...profileForm.register("nickname")}
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <FormField
                             label="Pronouns"
                             id="pronouns"
@@ -365,17 +396,6 @@ export function GeneralSection() {
                         </div>
                     </div>
 
-                    <SectionDivider>
-                        <FormField
-                            label="Username"
-                            id="username"
-                            value={player.player.username}
-                            disabled
-                            className="opacity-60"
-                            description="This username cannot be changed by normal means. If you wanna change it, contact Anastasia."
-                        />
-                    </SectionDivider>
-
                     {statusMsg && (
                         <AlertBanner
                             variant={statusMsg.type}
@@ -386,6 +406,27 @@ export function GeneralSection() {
 
                     <SaveButton isPending={isPending} />
                 </form>
+                <SectionDivider className="flex items-start gap-3">
+                    <Checkbox
+                        id="ex_stream"
+                        checked={exStream}
+                        disabled={updateProfile.isPending}
+                        onCheckedChange={(checked) =>
+                            handleExStreamToggle(checked === true)
+                        }
+                    />
+                    <div className="flex flex-col gap-1">
+                        <Label htmlFor="ex_stream" className="cursor-pointer">
+                            Exclude from Streams
+                        </Label>
+                        <p className={cn(
+                            "text-xs",
+                            "text-muted-foreground",
+                        )}>
+                            When checked, you will not appear on the website's streams page and not appear on the livestream channel in the Discord server.
+                        </p>
+                    </div>
+                </SectionDivider>
             </SectionPanel>
 
             <AvatarCropDialog

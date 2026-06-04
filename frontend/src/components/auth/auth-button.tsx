@@ -38,7 +38,7 @@ export function AuthButton() {
     }
 
     const displayName =
-        player?.player.name ?? player?.player.username ?? "User"
+        player?.player.nickname ?? player?.player.name ?? player?.player.username ?? "User"
     const playerProfile = `/player/${displayName}`
     const avatarUrl = player?.player.pfp
         ? `${BACKEND_URL}${player.player.pfp}`
