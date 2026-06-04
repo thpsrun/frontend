@@ -72,7 +72,6 @@ import { UsersAdminPage } from "./components/admin/users/users-admin-page.tsx"
 import { UsersAdminDetailPage } from "./components/admin/users/users-admin-detail.tsx"
 
 // Legal / misc
-import { ChangelogRedirect } from "./components/legal/changelog-redirect.tsx"
 import { PrivacyPage } from "./components/legal/privacy-page.tsx"
 import { FAQPage } from "./components/legal/faq-page.tsx"
 
@@ -186,7 +185,6 @@ export const router = createBrowserRouter([
             { path: "player/:playerName", Component: PlayerProfile },
             { path: "privacy", Component: PrivacyPage },
             { path: "faq", Component: FAQPage },
-            { path: "changelog", Component: ChangelogRedirect },
             { path: "src", element: <SocialRedirect platform="Speedrun" /> },
             { path: "discord", element: <SocialRedirect platform="Discord" /> },
             { path: "bluesky", element: <SocialRedirect platform="Bluesky" /> },

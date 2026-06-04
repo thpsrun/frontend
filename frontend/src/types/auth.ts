@@ -86,7 +86,6 @@ export interface AllauthSessionResponse {
 }
 
 export interface PlayerUpdateEmbed {
-    name?: string | null
     nickname?: string | null
     pronouns?: string | null
     country?: string | null

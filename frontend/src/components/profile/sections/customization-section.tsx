@@ -240,7 +240,7 @@ export function CustomizationSection() {
                             "justify-center py-3",
                         )}>
                             <GradientUsername
-                                name={player.player.name}
+                                name={player.player.nickname ?? player.player.name}
                                 gradients={{
                                     gradient_1: g1,
                                     gradient_2: g2,
@@ -287,15 +287,14 @@ export function CustomizationSection() {
                             />
                         </div>
                         <GradientPresetPicker
-                            username={player.player.name}
+                            username={player.player.nickname ?? player.player.name}
                             onApply={applyGradientColors}
                         />
                         <p className={cn(
                             "text-xs text-muted-foreground",
                             "text-center",
                         )}>
-                            Click a swatch to open color
-                            picker. Clear a slot to reduce
+                            Click a swatch to open color picker. Clear a slot to reduce
                             gradient stops.
                         </p>
                     </div>

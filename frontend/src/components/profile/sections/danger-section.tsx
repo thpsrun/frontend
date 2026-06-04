@@ -7,6 +7,7 @@ import { useLogout } from "@/hooks/auth/useLogout"
 import { AlertBanner } from "@/components/common/alert-banner"
 import { Button } from "@/components/ui/button"
 import { DataExportSection } from "@/components/profile/sections/data-export-section"
+import { ResyncSection } from "@/components/profile/sections/resync-section"
 import { FormField } from "@/components/profile/form-field"
 import { SaveButton } from "@/components/profile/save-button"
 import { SectionPanel } from "@/components/profile/section-panel"
@@ -74,6 +75,7 @@ export function DangerSection() {
     return (
         <div className="space-y-6">
             <DataExportSection />
+            <ResyncSection />
             <SectionPanel
                 title="Danger Zone"
                 description={

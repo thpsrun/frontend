@@ -4,8 +4,6 @@ import { toast } from "sonner"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useUpdateProfile } from "@/hooks/auth/useUpdateProfile"
 import { AlertBanner } from "@/components/common/alert-banner"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
 import { SectionDivider } from "@/components/ui/section-divider"
 import { FormField } from "@/components/profile/form-field"
 import { SaveButton } from "@/components/profile/save-button"
@@ -29,26 +27,6 @@ export function SocialSection() {
     const updateProfile = useUpdateProfile()
 
     const [statusMsg, setStatusMsg] = useState<StatusMsg>(null)
-    const [exStream, setExStream] = useState(false)
-
-    useEffect(() => {
-        if (player) {
-            setExStream(player.player.ex_stream ?? false)
-        }
-    }, [player])
-
-    const handleExStreamToggle = async (checked: boolean) => {
-        setExStream(checked)
-        try {
-            await updateProfile.mutateAsync({
-                player: { ex_stream: checked },
-            })
-            toast.success("Preferences Updated!")
-        } catch (err) {
-            setExStream(!checked)
-            toast.error(getErrorMessage(err, "Update Failed..."))
-        }
-    }
 
     const socialForm = useForm<SocialFormValues>({
         defaultValues: {
@@ -59,7 +37,6 @@ export function SocialSection() {
         },
     })
 
-    // Sync form with player data when it arrives
     useEffect(() => {
         if (!player) return
         socialForm.reset({
@@ -206,27 +183,6 @@ export function SocialSection() {
                 </form>
             </SectionPanel>
 
-            <SectionPanel title="Preferences">
-                <div className="flex items-center gap-2">
-                    <Checkbox
-                        id="ex_stream"
-                        checked={exStream}
-                        disabled={updateProfile.isPending}
-                        onCheckedChange={(checked) =>
-                            handleExStreamToggle(checked === true)
-                        }
-                    />
-                    <Label htmlFor="ex_stream" className="cursor-pointer">
-                        Exclude from Streams
-                    </Label>
-                    <span title="When checked, you will not appear on the website's streams page and not appear on the livestream channel in the Discord server.">
-                        <Info className={cn(
-                            "size-4",
-                            "text-muted-foreground",
-                        )} />
-                    </span>
-                </div>
-            </SectionPanel>
 
             <UnsavedChangesGuard
                 isDirty={socialForm.formState.isDirty}

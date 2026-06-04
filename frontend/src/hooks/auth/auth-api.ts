@@ -135,6 +135,12 @@ export const updateProfileFn = (data: UpdateProfileRequest): Promise<AuthMe> =>
         { method: "PATCH", json: data },
     )
 
+export const resyncProfileFn = (): Promise<AuthMe> =>
+    apiFetch<AuthMe>(
+        "/auth/me/resync",
+        { method: "POST" },
+    )
+
 export const uploadPfpFn = (file: File): Promise<PfpResponse> => {
     const formData = new FormData()
     formData.append("file", file)
