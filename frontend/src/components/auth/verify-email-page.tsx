@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 
 const RESEND_COOLDOWN_SECONDS = 60
 
@@ -42,6 +43,7 @@ function CardShell({ title, children }: { title: string; children: ReactNode }) 
 }
 
 export function VerifyEmailPage() {
+    useDocumentTitle("Verify Email")
     const status = useEmailStatus()
     const { key } = useParams<{ key?: string }>()
     const [hasStashedSignup] = useState(() => readSignupVerification() !== null)

@@ -35,6 +35,7 @@ import {
     type TurnstileWidgetHandle,
 } from "@/components/auth/turnstile-widget"
 import type { AuthProvider } from "@/types/auth"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 
 function getReturnTo(state: unknown): string {
     if (
@@ -67,6 +68,7 @@ const PROVIDER_BRAND: Record<AuthProvider, string> = {
 }
 
 export function RegisterPage() {
+    useDocumentTitle("Register")
     const navigate = useNavigate()
     const location = useLocation()
     const { isAuthenticated } = useSession()

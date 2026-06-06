@@ -10,8 +10,10 @@ import {
 import { Panel } from "@/components/ui/panel"
 import { PageShell } from "@/components/common/page-shell"
 import { FAQ_ENTRIES } from "@/data/faq"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 
 export function FAQPage() {
+    useDocumentTitle("FAQ")
     const location = useLocation()
     const [openItems, setOpenItems] = useState<string[]>([])
 

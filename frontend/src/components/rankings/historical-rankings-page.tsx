@@ -22,7 +22,10 @@ import {
     formatPeriod,
     isHistoryMode,
     parseYearMonth,
+    periodLabel,
 } from "@/lib/rankings-modes"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
+import { gameShortName } from "@/lib/game-name"
 import type { HistoryMode } from "@/types/api"
 
 const todayYearMonth = (): YearMonth => {
@@ -123,6 +126,10 @@ export const HistoricalRankingsPage = () => {
 
     const { data: games } = useGames()
     const game = games?.find((g) => g.slug === safeGameSlug)
+    useDocumentTitle(
+        `${safeGameSlug ? `${gameShortName(safeGameSlug)} Rankings` : "Rankings"}`
+        + ` · ${periodLabel(safeMode, safeYear, safeMonth)}`,
+    )
 
     if (parsed === null) {
         return (

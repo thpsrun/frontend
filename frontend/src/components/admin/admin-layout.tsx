@@ -1,4 +1,7 @@
+import { useLocation } from "react-router"
 import { SidebarLayout, type NavGroup } from "@/components/layout/sidebar-layout"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
+import { sectionTitle } from "@/lib/page-title"
 
 const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     {
@@ -25,7 +28,19 @@ const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     },
 ]
 
+const ADMIN_LABELS: Record<string, string> = {
+    "sync-logs": "Sync Logs",
+    thpsbot: "Bot",
+    reconcile: "Reconcile",
+    tags: "Tags",
+    navbar: "Navbar",
+    "game-display": "Game Display",
+    users: "Users",
+}
+
 export function AdminLayout() {
+    const { pathname } = useLocation()
+    useDocumentTitle(sectionTitle(pathname, "/admin", "Admin", ADMIN_LABELS))
     return (
         <SidebarLayout
             navGroups={NAV_GROUPS}

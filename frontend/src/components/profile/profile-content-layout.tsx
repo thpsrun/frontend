@@ -1,4 +1,7 @@
+import { useLocation } from "react-router"
 import { SidebarLayout, type NavGroup } from "@/components/layout/sidebar-layout"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
+import { sectionTitle } from "@/lib/page-title"
 
 const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     {
@@ -10,7 +13,16 @@ const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     },
 ]
 
+const CONTENT_LABELS: Record<string, string> = {
+    guides: "Guides",
+    runs: "Runs",
+}
+
 export function ProfileContentLayout() {
+    const { pathname } = useLocation()
+    useDocumentTitle(
+        sectionTitle(pathname, "/profile/content", "Content", CONTENT_LABELS),
+    )
     return (
         <SidebarLayout
             navGroups={NAV_GROUPS}

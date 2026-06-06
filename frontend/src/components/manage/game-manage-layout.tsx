@@ -1,4 +1,4 @@
-import { useParams, Navigate } from "react-router"
+import { useParams, Navigate, useLocation } from "react-router"
 import {
     SidebarLayout,
     type NavGroup,
@@ -8,9 +8,25 @@ import { useIsGameMod } from "@/hooks/game/useIsGameMod"
 import { useGameDetail } from "@/hooks/game/useGameDetail"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useHasCapability } from "@/hooks/auth/useHasCapability"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
+import { sectionTitle } from "@/lib/page-title"
+
+const MANAGE_LABELS: Record<string, string> = {
+    general: "General",
+    timing: "Timing",
+    categories: "Categories",
+    variables: "Variables",
+    audit: "Audit",
+    moderators: "Moderators",
+    "display-order": "Display Order",
+}
 
 export function GameManageLayout() {
     const { gameSlug } = useParams<{ gameSlug: string }>()
+    const { pathname } = useLocation()
+    useDocumentTitle(
+        sectionTitle(pathname, `/${gameSlug}/manage`, "Manage", MANAGE_LABELS),
+    )
     const { isMod, isLoading } = useIsGameMod(gameSlug)
     const { player } = useCurrentPlayer()
     const {

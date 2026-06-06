@@ -22,6 +22,7 @@ import { AlertBanner } from "@/components/common/alert-banner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FormField } from "@/components/profile/form-field"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 
 const SUCCESS_COPY = "If an account exists for that email, a reset link is on "
     + "its way. Check your inbox (and spam folder)."
@@ -33,6 +34,7 @@ function formatCooldown(seconds: number): string {
 }
 
 export function ForgotPasswordPage() {
+    useDocumentTitle("Reset Password")
     const { isAuthenticated } = useSession()
     const requestReset = useRequestPasswordReset()
 

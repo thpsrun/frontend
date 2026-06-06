@@ -4,16 +4,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils"
 import { buildLeaderboardPath } from "@/lib/leaderboard-helpers"
 import { useGameGroupSpans, PlayerCell } from "@/lib/home-table-helpers"
+import { gameShortName } from "@/lib/game-name"
 import type React from "react"
 import type { LatestRun } from "@/types/api"
-
-// Display name overrides for THPS remake slugs (e.g. thps12 -> THPS1+2)
-const DISPLAY_NAME_OVERRIDES: Record<string, string> = {
-    "thps12": "THPS1+2",
-    "thps12ce": "THPS1+2CE",
-    "thps34": "THPS3+4",
-    "thps34ce": "THPS3+4CE",
-}
 
 type LatestRunsProps = {
     title: string
@@ -75,8 +68,7 @@ export const LatestRuns: React.FC<LatestRunsProps> = ({ title, data }) => {
                                         to={`/${run.game_slug}`}
                                         className="hover:underline"
                                     >
-                                        {DISPLAY_NAME_OVERRIDES[run.game_slug]
-                                            ?? run.game_slug.toUpperCase()}
+                                        {gameShortName(run.game_slug)}
                                     </Link>
                                 </TableCell>
                             )}

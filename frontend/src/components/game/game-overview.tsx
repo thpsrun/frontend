@@ -29,6 +29,8 @@ import { ApiError } from "@/lib/api-client"
 import { useSession } from "@/hooks/auth/useSession"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { useReadByTarget } from "@/hooks/notifications/useReadByTarget"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
+import { gameShortName } from "@/lib/game-name"
 import { SubmitRunDialog } from "@/components/submissions/submit-run-dialog"
 import { RulesDialog } from "@/components/rules/rules-dialog"
 
@@ -89,6 +91,8 @@ export const GameOverview = () => {
         isLoading: gameLoading,
         error: gameError,
     } = useGameDetail(safeGameSlug)
+
+    useDocumentTitle(gameDetail ? `${gameShortName(gameDetail.slug)} Speedruns` : undefined)
 
     const {
         data: lbData,

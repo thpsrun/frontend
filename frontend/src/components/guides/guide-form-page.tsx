@@ -7,6 +7,7 @@ import { SectionPanel } from "@/components/profile/section-panel"
 import { useGuide } from "@/hooks/guides/useGuide"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { ApiError } from "@/lib/api-client"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 import { buildGuideUrl } from "@/lib/guide-urls"
 import { GuideForm } from "./guide-form"
 
@@ -17,6 +18,7 @@ interface Props {
 export function GuideFormPage({ mode }: Props) {
     const { guideSlug } = useParams<{ guideSlug: string }>()
     const { player } = useCurrentPlayer()
+    useDocumentTitle(mode === "create" ? "New Guide" : "Edit Guide")
 
     if (mode === "create") {
         return (

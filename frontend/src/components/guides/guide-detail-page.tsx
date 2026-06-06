@@ -13,6 +13,7 @@ import { useTags } from "@/hooks/guides/useTags"
 import { useDeleteGuide } from "@/hooks/guides/useDeleteGuide"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
 import { ApiError } from "@/lib/api-client"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 import { cn } from "@/lib/utils"
 import { buildGuideEditUrl, buildGuideUrl, resolveGuideTags } from "@/lib/guide-urls"
 import type { Guide } from "@/types/guides"
@@ -64,6 +65,12 @@ export function GuideDetailPage() {
     useEffect(() => {
         if (guide && typeof guide.can_edit !== "boolean") warnFallbackOnce()
     }, [guide])
+
+    const guideNotFound =
+        isError
+        && error instanceof ApiError
+        && (error.status === 404 || error.status === 403)
+    useDocumentTitle(guide?.title ?? (guideNotFound ? "Guide Not Found" : undefined))
 
     if (isError) {
         const status = error instanceof ApiError ? error.status : null

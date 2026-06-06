@@ -1,6 +1,8 @@
-import { NavLink } from "react-router"
+import { NavLink, useLocation } from "react-router"
 import { SidebarLayout, type NavGroup } from "@/components/layout/sidebar-layout"
 import { cn } from "@/lib/utils"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
+import { sectionTitle } from "@/lib/page-title"
 
 const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     {
@@ -21,6 +23,16 @@ const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     },
 ]
 
+const SETTINGS_LABELS: Record<string, string> = {
+    general: "General",
+    notifications: "Notifications",
+    social: "Social",
+    security: "Security",
+    "src-api": "Speedrun.com API",
+    "api-keys": "API Keys",
+    danger: "Danger Zone",
+}
+
 const DANGER_ITEM = {
     label: "Danger Zone",
     to: "/profile/settings/danger",
@@ -34,6 +46,10 @@ const dangerLinkClass = ({ isActive }: { isActive: boolean }) => cn(
 )
 
 export function ProfileSettingsLayout() {
+    const { pathname } = useLocation()
+    useDocumentTitle(
+        sectionTitle(pathname, "/profile/settings", "Settings", SETTINGS_LABELS),
+    )
     return (
         <SidebarLayout
             navGroups={NAV_GROUPS}

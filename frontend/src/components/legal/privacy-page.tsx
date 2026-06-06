@@ -2,6 +2,7 @@ import { Link } from "react-router"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Panel } from "@/components/ui/panel"
 import { PageShell } from "@/components/common/page-shell"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 
 type PrivacySection = {
     id: string,
@@ -21,6 +22,7 @@ const PRIVACY_SECTIONS: PrivacySection[] = [
 ]
 
 export function PrivacyPage() {
+    useDocumentTitle("Privacy Policy")
     return (
         <PageShell width="lg">
             <div className="flex w-full flex-col gap-6 lg:flex-row lg:gap-8">
