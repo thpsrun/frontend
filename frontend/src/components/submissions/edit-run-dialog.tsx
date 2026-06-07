@@ -12,7 +12,6 @@ import {
     Select, SelectContent, SelectItem,
     SelectTrigger, SelectValue,
 } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
 import { AlertBanner } from "@/components/common/alert-banner"
 import { Textarea } from "@/components/ui/textarea"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
@@ -290,8 +289,6 @@ function EditRunForm({
     const [levelId, setLevelId] = useState<string | null>(detail.level)
     const [platformId, setPlatformId] = useState<string>(detail.platform)
     const [emulated, setEmulated] = useState<boolean>(detail.emulated)
-    const [obsolete, setObsolete] = useState<boolean>(detail.obsolete)
-    const [place, setPlace] = useState<string>(String(detail.place))
     const [video, setVideo] = useState<string>(detail.video ?? "")
     const [archVideo, setArchVideo] = useState<string>(detail.arch_video ?? "")
     const [srcUrl, setSrcUrl] = useState<string>(detail.url ?? "")
@@ -340,9 +337,7 @@ function EditRunForm({
         categoryId: detail.category,
         levelId: detail.level,
         platformId: detail.platform,
-        obsolete: detail.obsolete,
         emulated: detail.emulated,
-        place: String(detail.place),
         video: detail.video ?? "",
         archVideo: detail.arch_video ?? "",
         srcUrl: detail.url ?? "",
@@ -355,9 +350,7 @@ function EditRunForm({
         categoryId !== initial.categoryId
         || levelId !== initial.levelId
         || platformId !== initial.platformId
-        || obsolete !== initial.obsolete
         || emulated !== initial.emulated
-        || place !== initial.place
         || video !== initial.video
         || archVideo !== initial.archVideo
         || srcUrl !== initial.srcUrl
@@ -503,11 +496,6 @@ function EditRunForm({
             }
         }
 
-        const placeNum = parseInt(place, 10)
-        if (!Number.isFinite(placeNum) || placeNum < 1) {
-            setError("Place must be 1 or greater.")
-            return
-        }
         if (isModerator && runStatus === "rejected" && !denyReason.trim()) {
             setError("Provide a reason when denying a run.")
             return
@@ -524,13 +512,11 @@ function EditRunForm({
             category_id: categoryId,
             level_id: runtype === "il" ? levelId : null,
             runtype,
-            place: placeNum,
             time_secs: timeFieldsToSecs(rta),
             timenl_secs: timeFieldsToSecs(nl),
             timeigt_secs: timeFieldsToSecs(igt),
             video: video.trim() || null,
             arch_video: archVideo.trim() || null,
-            obsolete,
             platform_id: platformId,
             description: description.trim() || null,
             emulated,
@@ -857,33 +843,14 @@ function EditRunForm({
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1">
-                                <Label className="text-xs">Date</Label>
-                                <Input
-                                    type="date"
-                                    value={date}
-                                    onChange={(e) => setDate(e.target.value)}
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <Label className="text-xs">Place</Label>
-                                <Input
-                                    type="number"
-                                    min={1}
-                                    value={place}
-                                    onChange={(e) => setPlace(e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <Checkbox
-                                checked={obsolete}
-                                onCheckedChange={(v) => setObsolete(v === true)}
+                        <div className="space-y-1">
+                            <Label className="text-xs">Date</Label>
+                            <Input
+                                type="date"
+                                value={date}
+                                onChange={(e) => setDate(e.target.value)}
                             />
-                            <span className="text-sm">Obsolete</span>
-                        </label>
+                        </div>
 
                         {isModerator && (
                             <ModeratorVerdictSection

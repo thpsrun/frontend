@@ -15,12 +15,12 @@ export function Footer() {
                         Privacy Policy
                     </Link>
                     <span>&bull;</span>
-                    <Link
-                        to="/changelog"
+                    <a
+                        href="/changelog"
                         className="hover:text-foreground transition-colors"
                     >
                         Changelog
-                    </Link>
+                    </a>
                     <span>&bull;</span>
                     <Link
                         to="/faq"

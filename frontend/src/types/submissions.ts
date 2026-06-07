@@ -250,13 +250,11 @@ export interface RunUpdateRequest {
     category_id?: string
     level_id?: string | null
     runtype?: "main" | "il"
-    place?: number
     time_secs?: number | null
     timenl_secs?: number | null
     timeigt_secs?: number | null
     video?: string | null
     arch_video?: string | null
-    obsolete?: boolean
     platform_id?: string
     description?: string | null
     emulated?: boolean
