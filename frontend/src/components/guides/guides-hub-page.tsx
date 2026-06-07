@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Link } from "react-router"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Panel } from "@/components/ui/panel"
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export function GuidesHubPage({ pinnedGameSlug }: Props) {
+    useDocumentTitle("Guides", { enabled: !pinnedGameSlug })
     const { isAuthenticated } = useSession()
     const gameDetail = useGameDetail(pinnedGameSlug ?? "")
     const [filters, setFilters] = useState<FiltersState>({

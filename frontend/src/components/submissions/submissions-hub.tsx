@@ -25,6 +25,7 @@ import {
 import { ReviewGroupsSection } from "@/components/submissions/review-groups-section"
 import { VidStatusBadge } from "@/components/submissions/vid-status-badge"
 import type { PendingRun, ReviewGameGroup } from "@/types/submissions"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 
 interface RowData {
     run: PendingRun
@@ -242,6 +243,7 @@ function GroupedRunsPanel({
 }
 
 export function SubmissionsHub() {
+    useDocumentTitle("Submissions")
     const { data, isLoading, error, refetch } = useSubmissions()
 
     const {

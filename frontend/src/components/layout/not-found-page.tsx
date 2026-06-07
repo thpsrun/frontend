@@ -1,8 +1,10 @@
 import { Link } from "react-router"
 import { Button } from "@/components/ui/button"
 import { Compass } from "lucide-react"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 
 export function NotFoundPage() {
+    useDocumentTitle("Page Not Found")
     return (
         <div className="flex flex-col items-center gap-4 text-center">
             <Compass className="size-8 text-muted-foreground" />

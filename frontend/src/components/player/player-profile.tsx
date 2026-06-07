@@ -34,6 +34,7 @@ import {
 import { Panel } from "@/components/ui/panel"
 
 import { usePlayerProfile, PlayerNotFoundError } from "@/hooks/player/usePlayerProfile"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 import { useGames } from "@/hooks/game/useGames"
 import { GradientUsername } from "@/components/profile/gradient-username"
 import { BACKEND_URL } from "@/constants"
@@ -492,6 +493,14 @@ export function PlayerProfile() {
             overlayEl.style.backgroundColor = origOverlay
         }
     }, [profileBgUrl])
+
+    useDocumentTitle(
+        profile
+            ? `${profile.player.nickname || profile.player.name}'s Profile`
+            : error instanceof PlayerNotFoundError
+                ? "Player Not Found"
+                : undefined,
+    )
 
     if (isLoading) return <ProfileSkeleton />
 

@@ -14,8 +14,10 @@ import { AlertBanner } from "@/components/common/alert-banner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FormField } from "@/components/profile/form-field"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 
 export function ResetPasswordPage() {
+    useDocumentTitle("Reset Password")
     const navigate = useNavigate()
     const { uidb36, key } = useParams<{ uidb36: string, key: string }>()
     const confirmReset = useConfirmPasswordReset()

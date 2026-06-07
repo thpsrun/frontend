@@ -47,13 +47,13 @@ interface Props {
 }
 
 const SCOPE_HINT: Record<ReconcileScope, string> = {
-    GAME: "Reconciles all leaderboards under a game.",
+    GAME: "Reconciles all leaderboards under a game. This is now the only supported reconcile scope.",
     LEADERBOARD: "Reconciles a single leaderboard (category, optional level + variables).",
     RUN: "Reconciles a single run by ID.",
     SERIES: "Scans a series for newly added games on Speedrun.com. Existing games are skipped, refresh those with the GAME scope.",
 }
 
-const SCOPE_OPTIONS: ReconcileScope[] = ["GAME", "LEADERBOARD", "RUN", "SERIES"]
+const SCOPE_OPTIONS: ReconcileScope[] = ["GAME"]
 const SOURCE_OPTIONS: SourceOfTruth[] = ["SRC", "THPS_RUN"]
 
 function otherSide(source: SourceOfTruth): string {
@@ -280,7 +280,7 @@ function StartReconcileForm({
                                 setConflict(null)
                                 setScope(v as ReconcileScope)
                             }}
-                            disabled={isPending}
+                            disabled
                         >
                             <SelectTrigger id="reconcile-scope">
                                 <SelectValue />

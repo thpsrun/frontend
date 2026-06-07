@@ -19,6 +19,7 @@ import { useUnreadCount } from "@/hooks/notifications/useUnreadCount"
 import { useNotificationKinds } from "@/hooks/notifications/useNotificationPrefs"
 import { useMarkAllRead } from "@/hooks/notifications/useNotificationMutations"
 import { NotificationItemRow } from "./notification-item-row"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 
 const PAGE_SIZE = 25
 
@@ -28,6 +29,7 @@ function parseTypes(value: string | null): string[] {
 }
 
 export function NotificationsPage() {
+    useDocumentTitle("Notifications")
     const [searchParams, setSearchParams] = useSearchParams()
     const unreadOnly = searchParams.get("unread") === "1"
     const types = useMemo(

@@ -2,8 +2,6 @@ import { AlertTriangle } from "lucide-react"
 
 import { AlertBanner } from "@/components/common/alert-banner"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
 import {
     formatTimingMethods,
     type UnresolvedIssues,
@@ -11,16 +9,12 @@ import {
 
 interface ImportIssuesBannerProps {
     unresolved: UnresolvedIssues
-    videoAcknowledged: boolean
-    onVideoAcknowledgedChange: (value: boolean) => void
     onSendBack: () => void
     isModerator: boolean
 }
 
 export function ImportIssuesBanner({
     unresolved,
-    videoAcknowledged,
-    onVideoAcknowledgedChange,
     onSendBack,
     isModerator,
 }: ImportIssuesBannerProps) {
@@ -45,37 +39,22 @@ export function ImportIssuesBanner({
                 )}
             </ul>
 
-            {hasVideo && (
-                <Label className="flex items-start gap-2 font-normal cursor-pointer">
-                    <Checkbox
-                        checked={videoAcknowledged}
-                        onCheckedChange={(v) =>
-                            onVideoAcknowledgedChange(v === true)
-                        }
-                        className="mt-0.5"
-                    />
-                    <span>
-                        I confirm and understand this video issue and want to
-                        save the run anyway.
-                    </span>
-                </Label>
+            {hasTiming && (
+                <p>
+                    This run can't be approved while a required timing method
+                    is missing. Enter it in the Timing section below, or send it
+                    back to the runner to fix.
+                </p>
             )}
 
-            {hasTiming && isModerator && (
-                <div className="space-y-2">
-                    <p>
-                        This run cannot be saved while a required timing method
-                        is missing. Send it back to the runner to fix.
-                    </p>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={onSendBack}
-                    >
-                        Send Back to Runner
-                    </Button>
-                </div>
+            {isModerator && (
+                <Button
+                    type="button"
+                    size="sm"
+                    onClick={onSendBack}
+                >
+                    Send Back to Runner
+                </Button>
             )}
         </AlertBanner>
     )

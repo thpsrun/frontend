@@ -2,8 +2,10 @@ import { useTHPSNewRuns, useTHPSNewWRs } from "@/hooks/home/useTHPSData"
 import { CurrentRecords } from "@/components/home/current-records"
 import { LatestRuns } from "@/components/home/latest-runs"
 import { LiveStreams } from "@/components/home/live-streams"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 
 export const MainPage = () => {
+    useDocumentTitle()
     const { data: latestRecords } = useTHPSNewWRs()
     const { data: latestRuns } = useTHPSNewRuns()
 

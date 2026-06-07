@@ -12,7 +12,6 @@ import {
     Select, SelectContent, SelectItem,
     SelectTrigger, SelectValue,
 } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
 import { AlertBanner } from "@/components/common/alert-banner"
 import { Textarea } from "@/components/ui/textarea"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
@@ -50,6 +49,8 @@ import {
 } from "@/components/submissions/change-players-dialog"
 import { ReviewNotesBanner } from "@/components/submissions/review-notes-banner"
 import { ImportIssuesBanner } from "@/components/submissions/import-issues-banner"
+import { SendBackDialog } from "@/components/submissions/send-back-dialog"
+import { AcceptVideoDialog } from "@/components/submissions/accept-video-dialog"
 import {
     computeUnresolvedIssues,
     formatTimingMethods,
@@ -290,8 +291,6 @@ function EditRunForm({
     const [levelId, setLevelId] = useState<string | null>(detail.level)
     const [platformId, setPlatformId] = useState<string>(detail.platform)
     const [emulated, setEmulated] = useState<boolean>(detail.emulated)
-    const [obsolete, setObsolete] = useState<boolean>(detail.obsolete)
-    const [place, setPlace] = useState<string>(String(detail.place))
     const [video, setVideo] = useState<string>(detail.video ?? "")
     const [archVideo, setArchVideo] = useState<string>(detail.arch_video ?? "")
     const [srcUrl, setSrcUrl] = useState<string>(detail.url ?? "")
@@ -311,13 +310,14 @@ function EditRunForm({
     const [igt, setIgt] = useState<TimeFields>(
         () => parseTimeSecs(detail.times.timeigt_secs),
     )
-    const [videoAcknowledged, setVideoAcknowledged] = useState(false)
 
     const [variableValues, setVariableValues] = useState<Record<string, string>>(
         () => ({ ...detail.variables }),
     )
     const [error, setError] = useState<string | null>(null)
     const [playersOpen, setPlayersOpen] = useState(false)
+    const [sendBackOpen, setSendBackOpen] = useState(false)
+    const [acceptVideoOpen, setAcceptVideoOpen] = useState(false)
 
     const { player } = useCurrentPlayer()
     const isModerator = useMemo(
@@ -332,6 +332,23 @@ function EditRunForm({
         }),
         [run.import_issues, video, rta, nl, igt],
     )
+    const sendBackDefaultNotes = useMemo(() => {
+        const parts: string[] = []
+        if (unresolvedImportIssues.missingTimingMethods.length > 0) {
+            parts.push(
+                "Missing required timing method(s): "
+                + formatTimingMethods(
+                    unresolvedImportIssues.missingTimingMethods,
+                )
+                + ".",
+            )
+        }
+        if (unresolvedImportIssues.video !== null) {
+            parts.push("Video is not a valid YouTube link.")
+        }
+        if (parts.length === 0) return ""
+        return parts.join(" ") + " Please fix then resubmit."
+    }, [unresolvedImportIssues])
     const [runStatus, setRunStatus] = useState<RunStatusChoice>("unchanged")
     const [denyReason, setDenyReason] = useState("")
     const [reviewNotes, setReviewNotes] = useState(run.review_notes ?? "")
@@ -340,9 +357,7 @@ function EditRunForm({
         categoryId: detail.category,
         levelId: detail.level,
         platformId: detail.platform,
-        obsolete: detail.obsolete,
         emulated: detail.emulated,
-        place: String(detail.place),
         video: detail.video ?? "",
         archVideo: detail.arch_video ?? "",
         srcUrl: detail.url ?? "",
@@ -355,9 +370,7 @@ function EditRunForm({
         categoryId !== initial.categoryId
         || levelId !== initial.levelId
         || platformId !== initial.platformId
-        || obsolete !== initial.obsolete
         || emulated !== initial.emulated
-        || place !== initial.place
         || video !== initial.video
         || archVideo !== initial.archVideo
         || srcUrl !== initial.srcUrl
@@ -448,89 +461,22 @@ function EditRunForm({
         setVariableValues((prev) => ({ ...prev, [variableId]: value }))
     }
 
-    const handleSendBack = () => {
-        setRunStatus("review")
-        if (!reviewNotes.trim()) {
-            setReviewNotes(
-                "Missing required timing method(s): "
-                + formatTimingMethods(
-                    unresolvedImportIssues.missingTimingMethods,
-                )
-                + ". Please resubmit with complete times.",
-            )
-        }
-    }
-
-    const handleSave = () => {
-        setError(null)
+    // Builds the payload and dispatches the save / verify / deny / send-back
+    // mutations. All validation and the import-issue gates live in handleSave;
+    // this runs only once they pass, or once the moderator confirms a video
+    // override in the accept-video dialog.
+    const submitRun = () => {
         const isSendBack = isModerator && runStatus === "review"
-
-        if (runtype === "il" && !levelId) {
-            setError("Select a level for IL runs.")
-            return
-        }
-        if (!platformId) {
-            setError("Pick a platform before saving.")
-            return
-        }
-        // A run still missing a required timing method cannot be saved (the
-        // API 422s). Block the save and point the moderator at send-back.
-        // Checked before the video gate: timing is the hard blocker.
-        if (
-            !isSendBack
-            && unresolvedImportIssues.missingTimingMethods.length > 0
-        ) {
-            setError(
-                "This run is missing required timing ("
-                + formatTimingMethods(
-                    unresolvedImportIssues.missingTimingMethods,
-                )
-                + "). Send it back to the runner.",
-            )
-            return
-        }
-        if (!isSendBack && video && !isValidYouTubeUrl(video)) {
-            const canBypass = unresolvedImportIssues.video !== null
-                && videoAcknowledged
-            if (!canBypass) {
-                setError(
-                    unresolvedImportIssues.video !== null
-                        ? "Acknowledge the video issue, or replace it with a"
-                            + " YouTube link, to save."
-                        : "Video URL must be a valid YouTube link.",
-                )
-                return
-            }
-        }
-
-        const placeNum = parseInt(place, 10)
-        if (!Number.isFinite(placeNum) || placeNum < 1) {
-            setError("Place must be 1 or greater.")
-            return
-        }
-        if (isModerator && runStatus === "rejected" && !denyReason.trim()) {
-            setError("Provide a reason when denying a run.")
-            return
-        }
-        if (isModerator && runStatus === "review") {
-            const notesError = validateReviewNotes(reviewNotes)
-            if (notesError) {
-                setError(notesError)
-                return
-            }
-        }
 
         const payload: RunUpdateRequest = {
             category_id: categoryId,
             level_id: runtype === "il" ? levelId : null,
             runtype,
-            place: placeNum,
             time_secs: timeFieldsToSecs(rta),
             timenl_secs: timeFieldsToSecs(nl),
             timeigt_secs: timeFieldsToSecs(igt),
             video: video.trim() || null,
             arch_video: archVideo.trim() || null,
-            obsolete,
             platform_id: platformId,
             description: description.trim() || null,
             emulated,
@@ -640,6 +586,63 @@ function EditRunForm({
         )
     }
 
+    const handleSave = () => {
+        setError(null)
+        const isSendBack = isModerator && runStatus === "review"
+
+        if (runtype === "il" && !levelId) {
+            setError("Select a level for IL runs.")
+            return
+        }
+        if (!platformId) {
+            setError("Pick a platform before saving.")
+            return
+        }
+        // A run still missing a required timing method cannot be saved (422).
+        if (
+            !isSendBack
+            && unresolvedImportIssues.missingTimingMethods.length > 0
+        ) {
+            setError(
+                "This run is missing required timing ("
+                + formatTimingMethods(
+                    unresolvedImportIssues.missingTimingMethods,
+                )
+                + "). Send it back to the runner.",
+            )
+            return
+        }
+
+        const videoBad = !isSendBack && !!video && !isValidYouTubeUrl(video)
+        const videoOverridable = videoBad
+            && unresolvedImportIssues.video !== null
+        if (videoBad && !videoOverridable) {
+            setError("Video URL must be a valid YouTube link.")
+            return
+        }
+
+        if (isModerator && runStatus === "rejected" && !denyReason.trim()) {
+            setError("Provide a reason when denying a run.")
+            return
+        }
+        if (isModerator && runStatus === "review") {
+            const notesError = validateReviewNotes(reviewNotes)
+            if (notesError) {
+                setError(notesError)
+                return
+            }
+        }
+
+        // Surfaced last, so the override prompt only appears when accepting the
+        // bad video is the one remaining thing to confirm.
+        if (videoOverridable) {
+            setAcceptVideoOpen(true)
+            return
+        }
+
+        submitRun()
+    }
+
     // Sync dirty flag and save handle up to the parent dialog so it can
     // intercept dialog-close attempts and offer save-or-discard.
     useEffect(() => {
@@ -659,9 +662,7 @@ function EditRunForm({
         <>
             <ImportIssuesBanner
                 unresolved={unresolvedImportIssues}
-                videoAcknowledged={videoAcknowledged}
-                onVideoAcknowledgedChange={setVideoAcknowledged}
-                onSendBack={handleSendBack}
+                onSendBack={() => setSendBackOpen(true)}
                 isModerator={isModerator}
             />
             <div className="grid md:grid-cols-[576fr_426fr] gap-x-6 gap-y-4">
@@ -857,33 +858,14 @@ function EditRunForm({
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1">
-                                <Label className="text-xs">Date</Label>
-                                <Input
-                                    type="date"
-                                    value={date}
-                                    onChange={(e) => setDate(e.target.value)}
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <Label className="text-xs">Place</Label>
-                                <Input
-                                    type="number"
-                                    min={1}
-                                    value={place}
-                                    onChange={(e) => setPlace(e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <Checkbox
-                                checked={obsolete}
-                                onCheckedChange={(v) => setObsolete(v === true)}
+                        <div className="space-y-1">
+                            <Label className="text-xs">Date</Label>
+                            <Input
+                                type="date"
+                                value={date}
+                                onChange={(e) => setDate(e.target.value)}
                             />
-                            <span className="text-sm">Obsolete</span>
-                        </label>
+                        </div>
 
                         {isModerator && (
                             <ModeratorVerdictSection
@@ -922,6 +904,27 @@ function EditRunForm({
                     onOpenChange={setPlayersOpen}
                 />
             )}
+
+            {isModerator && (
+                <SendBackDialog
+                    open={sendBackOpen}
+                    onOpenChange={setSendBackOpen}
+                    runId={run.id}
+                    defaultNotes={sendBackDefaultNotes}
+                    sendBack={sendBack}
+                    onSent={onClose}
+                />
+            )}
+
+            <AcceptVideoDialog
+                open={acceptVideoOpen}
+                onOpenChange={setAcceptVideoOpen}
+                videoUrl={video}
+                onConfirm={() => {
+                    setAcceptVideoOpen(false)
+                    submitRun()
+                }}
+            />
         </>
     )
 }

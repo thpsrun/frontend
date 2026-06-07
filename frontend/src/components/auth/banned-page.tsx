@@ -1,6 +1,8 @@
 import { OAuthResultPage } from "@/components/auth/oauth-result-page"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 
 export function BannedPage() {
+    useDocumentTitle("Account Suspended")
     return (
         <OAuthResultPage
             title="Account Banned"

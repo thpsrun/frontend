@@ -25,6 +25,7 @@ import {
     peekRememberMeStash,
     stashRememberMe,
 } from "@/lib/remember-me"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 
 const PROVIDER_LABEL: Record<AuthProvider, string> = {
     discord: "Discord",
@@ -57,6 +58,7 @@ function getReturnTo(state: unknown): string {
 }
 
 export function LoginPage() {
+    useDocumentTitle("Login")
     const navigate = useNavigate()
     const location = useLocation()
     const { isAuthenticated, mfaPending } = useSession()
