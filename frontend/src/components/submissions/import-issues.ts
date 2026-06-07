@@ -1,3 +1,5 @@
+export const VIDEO_CONFIRM_WORD = "ACCEPT"
+
 import {
     isValidYouTubeUrl,
     timeFieldsToSecs,
@@ -20,6 +22,10 @@ export function isMissingTimingIssue(
     issue: ImportIssue,
 ): issue is MissingTimingMethodsIssue {
     return issue.type === "missing_timing_methods"
+}
+
+export function isVideoConfirmed(text: string): boolean {
+    return text.trim().toUpperCase() === VIDEO_CONFIRM_WORD
 }
 
 const TIMING_LABELS: Record<TimingMethodType, string> = {
