@@ -17,6 +17,8 @@ export function Footer() {
                     <span>&bull;</span>
                     <a
                         href="/changelog"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="hover:text-foreground transition-colors"
                     >
                         Changelog
