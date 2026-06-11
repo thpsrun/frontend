@@ -1,4 +1,6 @@
 import "./App.css"
+import { Suspense } from "react"
+import { Loader2 } from "lucide-react"
 import { TopBar } from "@/components/layout/top-bar"
 import { Footer } from "@/components/layout/footer"
 import { ErrorBoundary } from "@/components/layout/error-boundary"
@@ -31,7 +33,15 @@ function App() {
                         <TopBar />
                         <main id="main">
                             <ErrorBoundary key={pathname}>
-                                <Outlet />
+                                <Suspense
+                                    fallback={
+                                        <div className="flex justify-center p-8 text-muted-foreground">
+                                            <Loader2 className="size-5 animate-spin" />
+                                        </div>
+                                    }
+                                >
+                                    <Outlet />
+                                </Suspense>
                             </ErrorBoundary>
                         </main>
                         <Footer />

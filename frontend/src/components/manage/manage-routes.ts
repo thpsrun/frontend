@@ -1,0 +1,8 @@
+export { GameManageLayout } from "./game-manage-layout.tsx"
+export { GeneralSection as ManageGeneralSection } from "./sections/general-section.tsx"
+export { TimingSection } from "./sections/timing-section.tsx"
+export { CategoriesSection } from "./sections/categories-section.tsx"
+export { VariablesSection } from "./sections/variables-section.tsx"
+export { DisplayOrderSection } from "./sections/display-order-section.tsx"
+export { AuditSection } from "./sections/audit-section.tsx"
+export { ModeratorsSection } from "./sections/moderators-section.tsx"

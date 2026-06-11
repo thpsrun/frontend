@@ -19,7 +19,7 @@ import {
     GameRecentPanel,
 } from "@/components/game/game-sidebar"
 import { ILOverview } from "@/components/ils/il-overview"
-import { WRHistoryChart } from "@/components/leaderboard/wr-history-chart"
+import { WRHistoryChart } from "@/components/leaderboard/wr-history-chart-lazy"
 import { GuidesHubPage } from "@/components/guides/guides-hub-page"
 
 import { useGameDetail } from "@/hooks/game/useGameDetail"

@@ -17,7 +17,7 @@ import { useWRHistory } from "@/hooks/leaderboard/useWRHistory"
 import type { WRHistoryEntry } from "@/types/api"
 
 
-interface WRHistoryChartProps {
+export interface WRHistoryChartProps {
     gameSlug: string
     categorySlug: string
     levelSlug?: string

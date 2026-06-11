@@ -92,9 +92,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v6
         with:
-          ref: dev
+          ref: main
 
-      - name: SSH - Deploy to Dev
+      - name: SSH - Deploy to Prod
         uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.SERVER_IP }}
