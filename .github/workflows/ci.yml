@@ -64,7 +64,7 @@ jobs:
           username: ${{ secrets.DEV_SERVER_USER }}
           key: ${{ secrets.DEV_SERVER_SSH_KEY }}
           port: 22
-          script: /
+          script: |
             set -e
             cd ~/frontend
             git pull origin dev
@@ -101,7 +101,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
-          script: /
+          script: |
             set -e
             cd ~/frontend
             git pull origin main
