@@ -19,6 +19,7 @@ interface AcceptVideoDialogProps {
     onConfirm: () => void
 }
 
+// Type-to-confirm guard for keeping a non-YouTube video on an imported run.
 export function AcceptVideoDialog({
     open, onOpenChange, videoUrl, onConfirm,
 }: AcceptVideoDialogProps) {

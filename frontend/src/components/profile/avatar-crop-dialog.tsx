@@ -26,6 +26,7 @@ interface AvatarCropDialogProps {
     onCancel: () => void
 }
 
+// Avatars are exported at a fixed 256x256 PNG no matter the source image's resolution.
 const OUTPUT_SIZE = 256
 
 async function getCroppedImage(

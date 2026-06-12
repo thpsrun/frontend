@@ -140,9 +140,9 @@ export function TimeRow({
             <p className="text-xs text-muted-foreground">{label}</p>
             <div className="flex gap-2">
                 {inputs.map(({ key, unit }) => (
-                    <div key={key} className="flex flex-col items-center gap-0.5">
+                    <div key={key} className="flex flex-1 min-w-0 flex-col items-center gap-0.5">
                         <Input
-                            className="w-20 text-center font-mono"
+                            className="w-full text-center font-mono"
                             type="number"
                             min={0}
                             placeholder="0"
@@ -199,7 +199,7 @@ export function CategoryVariableGrid({
 }: CategoryVariableGridProps) {
     if (variables.length === 0) return null
     return (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {variables.map((variable) => (
                 <div
                     key={variable.id}
@@ -214,7 +214,7 @@ export function CategoryVariableGrid({
                             onChange(variable.id, v)
                         }
                     >
-                        <SelectTrigger className="min-w-35 w-fit">
+                        <SelectTrigger className="min-w-35 w-full sm:w-fit">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>

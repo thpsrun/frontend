@@ -10,6 +10,7 @@ import { useGames } from "@/hooks/game/useGames"
 import { useHistoricalRankings } from "@/hooks/leaderboard/useHistoricalRankings"
 import { useOldestRuns } from "@/hooks/leaderboard/useOldestRuns"
 import { RankingsTable } from "@/components/rankings/rankings-table"
+import { RankingsMobileList } from "@/components/rankings/rankings-mobile-list"
 import { OldestRunsList } from "@/components/rankings/oldest-runs-list"
 import { GAMES_WITH_OLDEST_RUNS } from "@/components/rankings/oldest-runs-config"
 import {
@@ -25,6 +26,7 @@ import {
     periodLabel,
 } from "@/lib/rankings-modes"
 import { useDocumentTitle } from "@/hooks/useDocumentTitle"
+import { useIsMobile } from "@/hooks/useIsMobile"
 import { gameShortName } from "@/lib/game-name"
 import type { HistoryMode } from "@/types/api"
 
@@ -126,6 +128,7 @@ export const HistoricalRankingsPage = () => {
 
     const { data: games } = useGames()
     const game = games?.find((g) => g.slug === safeGameSlug)
+    const isMobile = useIsMobile()
     useDocumentTitle(
         `${safeGameSlug ? `${gameShortName(safeGameSlug)} Rankings` : "Rankings"}`
         + ` · ${periodLabel(safeMode, safeYear, safeMonth)}`,
@@ -197,7 +200,7 @@ export const HistoricalRankingsPage = () => {
                     </div>
                     <div className={cn(
                         "flex flex-col gap-3 shrink-0",
-                        "sm:flex-row sm:items-center",
+                        "lg:flex-row lg:items-center",
                     )}>
                         <ModeToggle value={safeMode} onChange={onModeChange} />
                         <div className="flex items-center gap-2">
@@ -239,10 +242,11 @@ export const HistoricalRankingsPage = () => {
                     )}
 
                     {data && !isLoading && !error && (
-                        <RankingsTable
-                            entries={rankings}
-                            defaultSort="total"
-                        />
+                        isMobile ? (
+                            <RankingsMobileList entries={rankings} defaultSort="total" />
+                        ) : (
+                            <RankingsTable entries={rankings} defaultSort="total" />
+                        )
                     )}
                 </div>
 

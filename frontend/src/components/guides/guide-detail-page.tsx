@@ -23,6 +23,9 @@ import { extractTocHeadings, TOC_MIN_HEADINGS } from "./guide-toc-headings"
 import { DeleteGuideDialog } from "./delete-guide-dialog"
 import { PlayerLink } from "@/components/common/player-link"
 
+// Older backend responses can omit can_edit; fall back to superuser and game-moderator checks.
+// The author-owns-it case is not detectable client-side, so authors may not see their edit
+// buttons when the flag is missing (see warnFallbackOnce).
 function canEditFallback(
     guide: Guide,
     isSuperuser: boolean,
@@ -34,6 +37,7 @@ function canEditFallback(
     return false
 }
 
+// Module-level flag so the warning logs once per page load, not on every render.
 let warnedAboutFallback = false
 function warnFallbackOnce() {
     if (warnedAboutFallback) return
@@ -66,6 +70,9 @@ export function GuideDetailPage() {
         if (guide && typeof guide.can_edit !== "boolean") warnFallbackOnce()
     }, [guide])
 
+    // Computed before the early returns so useDocumentTitle runs unconditionally (hooks must be
+    // called in the same order every render). 403 is treated the same as 404: guides the viewer
+    // can't access render as not found rather than as a permission error.
     const guideNotFound =
         isError
         && error instanceof ApiError
@@ -114,6 +121,8 @@ export function GuideDetailPage() {
     const updatedDate = guide.updated_at ? new Date(guide.updated_at) : null
     const slug = guide.slug
 
+    // Guides are fetched by slug alone, so a wrong game segment in the URL still resolves.
+    // Redirect to the canonical /guides/:game/:slug URL instead of rendering under it.
     if (
         guide.game?.slug
         && gameSlug
@@ -129,6 +138,7 @@ export function GuideDetailPage() {
             navigate("/guides")
         } catch (e) {
             toast.error(e instanceof Error ? e.message : "Delete failed.")
+            // Rethrow so ConfirmDeleteDialog stays open and shows the error inline.
             throw e
         }
     }

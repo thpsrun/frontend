@@ -395,7 +395,7 @@ export function SubmitRunDialog({
 
                 <div className="space-y-3">
                     <SectionLabel>Run Info</SectionLabel>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <ReadOnlyField label="Game" value={gameDetail.name} />
                         <div className="space-y-1">
                             <p className="text-xs text-muted-foreground">
@@ -405,7 +405,7 @@ export function SubmitRunDialog({
                                 value={selectedCategoryId}
                                 onValueChange={handleCategoryChange}
                             >
-                                <SelectTrigger className="min-w-35 w-fit">
+                                <SelectTrigger className="min-w-35 w-full sm:w-fit">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>

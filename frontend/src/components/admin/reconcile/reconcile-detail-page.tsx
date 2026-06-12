@@ -59,6 +59,8 @@ const ACTION_FILTERS: { value: "all" | string; label: string }[] = [
     { value: "failed", label: "Failed" },
 ]
 
+// A changes entry is either an {old, new} diff or a flat primitive (see ReconcileChangeValue
+// in types/reconcile.ts); render both shapes.
 function isDiffShape(
     value: ReconcileChangeValue,
 ): value is { old?: unknown; new?: unknown } {
@@ -257,6 +259,7 @@ export function ReconcileDetailPage() {
         try {
             await cancel.mutateAsync(jobId)
         } finally {
+            // Failures are already toasted by useCancelReconcile.
             setConfirmCancelOpen(false)
         }
     }
@@ -613,6 +616,8 @@ export function ReconcileDetailPage() {
                         <AlertDialogAction
                             disabled={cancel.isPending}
                             onClick={(e) => {
+                                // Radix closes the dialog on action click by default; prevent
+                                // that so the pending state stays visible until the request lands.
                                 e.preventDefault()
                                 handleConfirmCancel()
                             }}

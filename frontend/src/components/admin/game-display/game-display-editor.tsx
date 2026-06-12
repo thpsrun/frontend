@@ -14,6 +14,8 @@ import type {
 
 import { SortableSection } from "./sortable-section"
 
+// Reorders and visibility toggles are optimistic. `useGameDisplay` mutation hooks patch the
+// cached response in onMutate and roll back on error, so no local copy should exist.
 export function GameDisplayEditor({ gameId }: { gameId: string }) {
     const displayQuery = useGameDisplay(gameId)
     const reorder = useReorderDisplayItems(gameId)

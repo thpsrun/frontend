@@ -11,6 +11,7 @@ import {
     navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 import { useNavbar } from "@/hooks/home/useNavbar"
+import { useIsCoarsePointer } from "@/hooks/useIsCoarsePointer"
 import type { NavItem } from "@/types/api"
 import { cn } from "@/lib/utils"
 
@@ -83,7 +84,10 @@ function FlyoutBranch({ item }: { item: NavItem }) {
     const [side, setSide] = useState<"right" | "left">("right")
     const [hovered, setHovered] = useState(false)
     const [focused, setFocused] = useState(false)
-    const open = hovered || focused
+    const [tapped, setTapped] = useState(false)
+    // Touch devices have no hover, funnily enough. This just sets up how the menus should go with mobile devices.
+    const coarse = useIsCoarsePointer()
+    const open = coarse ? tapped : hovered || focused
 
     const decideSide = () => {
         const row = rowRef.current
@@ -94,19 +98,24 @@ function FlyoutBranch({ item }: { item: NavItem }) {
         setSide(overflowsRight ? "left" : "right")
     }
 
+    const toggleTap = () => {
+        decideSide()
+        setTapped((prev) => !prev)
+    }
+
     return (
         <li
             className="relative"
-            onMouseEnter={() => {
+            onMouseEnter={coarse ? undefined : () => {
                 decideSide()
                 setHovered(true)
             }}
-            onMouseLeave={() => setHovered(false)}
-            onFocus={() => {
+            onMouseLeave={coarse ? undefined : () => setHovered(false)}
+            onFocus={coarse ? undefined : () => {
                 decideSide()
                 setFocused(true)
             }}
-            onBlur={(e) => {
+            onBlur={coarse ? undefined : (e) => {
                 if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
                     setFocused(false)
                 }
@@ -123,12 +132,29 @@ function FlyoutBranch({ item }: { item: NavItem }) {
                     item={item}
                     className="flex-1 px-2 py-1.5 text-sm"
                 />
-                <ChevronRight
-                    className={cn(
-                        "mr-2 h-3 w-3 shrink-0 text-muted-foreground",
-                        side === "left" && "rotate-180",
-                    )}
-                />
+                {coarse ? (
+                    <button
+                        type="button"
+                        aria-label={open ? `Collapse ${item.name}` : `Expand ${item.name}`}
+                        aria-expanded={open}
+                        onClick={toggleTap}
+                        className="px-2 py-1.5"
+                    >
+                        <ChevronRight
+                            className={cn(
+                                "h-3 w-3 shrink-0 text-muted-foreground",
+                                side === "left" && "rotate-180",
+                            )}
+                        />
+                    </button>
+                ) : (
+                    <ChevronRight
+                        className={cn(
+                            "mr-2 h-3 w-3 shrink-0 text-muted-foreground",
+                            side === "left" && "rotate-180",
+                        )}
+                    />
+                )}
             </div>
 
             <div

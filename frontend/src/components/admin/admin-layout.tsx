@@ -28,6 +28,8 @@ const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     },
 ]
 
+// Maps the first path segment after /admin to the document-title suffix (sectionTitle
+// falls back to plain "Admin" for unknown segments).
 const ADMIN_LABELS: Record<string, string> = {
     "sync-logs": "Sync Logs",
     thpsbot: "Bot",
