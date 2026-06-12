@@ -183,6 +183,7 @@ export function AdminHub() {
         setFilters((prev) => ({
             ...prev,
             [key]: value,
+            // Changing a filter jumps back to the first page; the old offset may be out of range.
             offset: 0,
         }))
     }

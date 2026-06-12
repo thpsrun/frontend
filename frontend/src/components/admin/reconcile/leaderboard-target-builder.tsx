@@ -65,6 +65,8 @@ export function LeaderboardTargetBuilder({
         })
     }, [liveCategory, liveLevel, value, onChange])
 
+    // Per-level boards can carry variables on both the category and the level; merge them,
+    // with the category's copy winning on id collisions.
     const variables = useMemo<CategoryVariable[]>(() => {
         const fromCategory = liveCategory?.variables ?? []
         const fromLevel = isPerLevel ? liveLevel?.variables ?? [] : []
@@ -92,6 +94,7 @@ export function LeaderboardTargetBuilder({
         onChange({
             ...value,
             category,
+            // Keep the level when hopping between per-level categories; clear it otherwise.
             level: category?.type === "per-level" ? value.level : null,
             variableValues: {},
         })

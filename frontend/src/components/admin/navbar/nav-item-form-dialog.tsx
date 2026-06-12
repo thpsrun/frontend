@@ -64,6 +64,8 @@ function flattenWithDepth(
     ])
 }
 
+// Includes the item's own id, so the resulting set can be used directly to stop an item from
+// being parented under itself or anything in its subtree (which would create a cycle).
 function getDescendantIds(item: NavbarAdminItem): Set<number> {
     const ids = new Set<number>([item.id])
     for (const c of item.children) {
@@ -93,6 +95,8 @@ export function NavItemFormDialog({
     const create = useCreateNavItem()
     const update = useUpdateNavItem()
 
+    // The dialog stays mounted while closed, so reseed the fields on every open: from the item in
+    // edit mode, or blank with the caller's suggested parent in create mode.
     useEffect(() => {
         if (open) {
             setErrors({})
@@ -110,6 +114,8 @@ export function NavItemFormDialog({
         }
     }, [open, mode, item, defaultParentId])
 
+    // Valid parents: anything except the item's own subtree (cycle prevention) and anything
+    // already at max depth, since a child there would exceed the nesting limit.
     const parentOptions: ParentOption[] = useMemo(() => {
         const flat = flattenWithDepth(items)
         const excluded = mode === "edit" && item

@@ -223,6 +223,7 @@ export function ReconcileDetailPage() {
         }
     }
 
+    // jobActive switches the items query's 15 second polling on; finished jobs do not refetch.
     const itemsQuery = useReconcileItems(jobId, itemsFilters, {
         jobActive: Boolean(job && isJobActive(job.status)),
     })

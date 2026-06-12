@@ -15,6 +15,8 @@ import { parseValidationErrors } from "@/lib/validation-errors"
 import { validateReviewNotes } from "@/lib/validation"
 import type { useSendBackForReview } from "@/hooks/submissions/useSendBackForReview"
 
+// The mutation is owned by the parent edit-run dialog (which also uses it for its own save flow
+// and busy state), so it is passed in rather than created here.
 interface SendBackDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
@@ -27,6 +29,7 @@ interface SendBackDialogProps {
 export function SendBackDialog({
     open, onOpenChange, runId, defaultNotes, sendBack, onSent,
 }: SendBackDialogProps) {
+    // Ignore close attempts (Escape, overlay clicks) while the request is being completed.
     const handleOpenChange = (next: boolean) => {
         if (sendBack.isPending) return
         onOpenChange(next)
@@ -64,6 +67,8 @@ interface SendBackFormProps {
     onCancel: () => void
 }
 
+// Separate component so the notes state lives inside DialogContent, which Radix unmounts on
+// close; reopening therefore re-seeds the textarea from defaultNotes.
 function SendBackForm({
     runId, defaultNotes, sendBack, onSent, onCancel,
 }: SendBackFormProps) {

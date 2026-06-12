@@ -18,6 +18,8 @@ export interface TimeFields {
 
 export const EMPTY_TIME: TimeFields = { hrs: "", min: "", sec: "", ms: "" }
 
+// Builds the duration string the submissions API accepts (e.g. "1h 2m 03s 450ms"). Returns null
+// when every field is blank or zero so optional timing methods can be omitted from the payload.
 export function assembleTime(fields: TimeFields): string | null {
     const h = parseInt(fields.hrs) || 0
     const m = parseInt(fields.min) || 0
@@ -32,6 +34,8 @@ export function assembleTime(fields: TimeFields): string | null {
     return parts.join(" ")
 }
 
+// Splits a backend seconds value into the form's time fields. Works in whole milliseconds to
+// avoid floating-point drift; leading units stay blank (not "0") so the inputs show placeholders.
 export function parseTimeSecs(secs: number | null): TimeFields {
     if (secs === null || secs <= 0) return { ...EMPTY_TIME }
     const totalMs = Math.round(secs * 1000)
@@ -79,6 +83,8 @@ export function getYouTubeEmbedUrl(url: string): string | null {
                 }
             }
         }
+        // Validate the id shape before interpolating it into the embed URL, and use the
+        // privacy-enhanced nocookie domain so previews do not set YouTube tracking cookies.
         if (!id || !/^[A-Za-z0-9_-]{6,32}$/.test(id)) return null
         return `https://www.youtube-nocookie.com/embed/${id}`
     } catch {
@@ -86,6 +92,8 @@ export function getYouTubeEmbedUrl(url: string): string | null {
     }
 }
 
+// Today's date as YYYY-MM-DD. Note this is UTC (toISOString), so it can differ from the user's
+// local date around midnight.
 export function getTodayString(): string {
     return new Date().toISOString().slice(0, 10)
 }

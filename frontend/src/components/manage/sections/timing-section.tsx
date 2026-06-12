@@ -55,6 +55,8 @@ export function TimingSection() {
         },
     })
 
+    // The form mounts before the game query resolves, so seed it once data arrives (and again on
+    // refetch). Also doubles as the discard action for the unsaved-changes guard.
     const seedForm = useCallback(() => {
         if (!game.data) return
         form.reset({
@@ -79,6 +81,7 @@ export function TimingSection() {
         try {
             await update.mutateAsync({ slug: gameSlug, data: values })
             toast.success("Timing Config Saved!")
+            // Reset to the saved values so isDirty clears and the unsaved-changes guard releases.
             form.reset(values)
         } catch (e) {
             const msg = applyValidationErrors(e, form, FIELD_NAMES)
@@ -86,6 +89,8 @@ export function TimingSection() {
                 setTopError(msg)
                 toast.error(msg)
             }
+            // Rethrow so the unsaved-changes guard knows the save failed and keeps navigation
+            // blocked.
             throw e
         }
     }, [gameSlug, form, update])
@@ -127,6 +132,9 @@ export function TimingSection() {
                         control={form.control}
                         name="required_methods_fg"
                         render={({ field, fieldState }) => (
+                            // The game is the root of the inheritance chain, so the field's null
+                            // (inherit) has no parent to defer to; onChange stores it as an empty
+                            // list instead.
                             <RequiredMethodsField
                                 id="required_methods_fg"
                                 label="Required Methods"
@@ -145,6 +153,8 @@ export function TimingSection() {
                                 || "Primary timing method must be one of the required methods!",
                         }}
                         render={({ field, fieldState }) => (
+                            // With nothing required, requiredMethods falls back to the field's
+                            // full default list so the select never renders empty.
                             <TimingMethodField
                                 id="defaulttime"
                                 label="Primary timing method"

@@ -78,6 +78,8 @@ export function SubmitRunDialog({
         return [{ rel: "user", id: null, displayName: "", searchQuery: "" }]
     }
 
+    // Only categories of the same type (full-game vs individual-level) are valid alternatives
+    // in the category dropdown.
     const availableCategories = useMemo(
         () => gameDetail.categories.filter(
             (c) => c.type === activeCategory.type && !c.archive,
@@ -85,6 +87,9 @@ export function SubmitRunDialog({
         [gameDetail.categories, activeCategory.type],
     )
 
+    // valueSlugs come from the leaderboard's URL path in the same order as the category's
+    // non-archived variables, so the match is positional; unmatched slots fall back to the
+    // variable's first value.
     const buildInitialVarValues = (
         cat: GameCategory,
         slugs: string[],
@@ -149,6 +154,8 @@ export function SubmitRunDialog({
         selectedValueIds,
     )
 
+    // While the timing-resolution query is still loading, assume all three methods are required;
+    // that blocks submit rather than letting an incomplete submission through.
     const resolvedRequired = timing?.resolved_required_methods
         ?? (["rta", "lrt", "igt"] as const)
 
@@ -193,6 +200,8 @@ export function SubmitRunDialog({
         [gameDetail, activeSelectionForRules],
     )
 
+    // One search hook serves every player row: only the row currently being typed in
+    // (activeSearchIdx) feeds it, and an empty query keeps the underlying query disabled.
     const activeSearchQuery = activeSearchIdx !== null
         ? (players[activeSearchIdx]?.searchQuery ?? "")
         : ""
@@ -240,6 +249,9 @@ export function SubmitRunDialog({
         setActiveSearchIdx(null)
     }
 
+    // Reset on open, not close: this component stays mounted between opens, and the active
+    // category or signed-in player may have changed. On close, also dismiss the rules view,
+    // since the narrow-layout RulesDialog lives outside this Dialog and would stay up otherwise.
     const handleOpenChange = (next: boolean) => {
         if (next) {
             resetForm()
@@ -314,6 +326,8 @@ export function SubmitRunDialog({
                 id: p.rel === "user" ? p.id : null,
                 name: p.rel === "guest" ? p.displayName : null,
             })),
+            // Backend field names: time is RTA, timenl is LRT (no-loads), timeigt is IGT.
+            // Methods the rules do not require are sent as null even if a value was typed.
             time: resolvedRequired.includes("rta")
                 ? assembleTime(rtaTime)
                 : null,
@@ -488,6 +502,9 @@ export function SubmitRunDialog({
                                             : "Guest Name"}
                                     </Label>
                                     {row.rel === "user" ? (
+                                        /* Typing puts the row in search mode (searchQuery set,
+                                           selection cleared); picking a result empties the query
+                                           so the input shows the locked-in displayName. */
                                         <Input
                                             value={
                                                 row.searchQuery !== ""
@@ -503,6 +520,8 @@ export function SubmitRunDialog({
                                                 setActiveSearchIdx(idx)
                                             }}
                                             onFocus={() => {
+                                                // Refocusing a row that already has a selected
+                                                // player should not reopen the dropdown.
                                                 if (row.searchQuery !== "" || !row.id) {
                                                     setActiveSearchIdx(idx)
                                                 }

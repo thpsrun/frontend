@@ -35,6 +35,8 @@ import type {
     ApiKeyExpiryDays,
 } from "@/types/api-keys"
 
+// expiryDays is kept as a string in the form because ToggleGroup values are strings; it is
+// converted back to a number on submit.
 type CreateFormValues = LabelDescriptionFormValues & {
     expiryDays: `${ApiKeyExpiryDays}`
 }
@@ -59,6 +61,7 @@ export function CreateApiKeyDialog({
     const [scopeGames, setScopeGames] = useState<string[]>([])
 
     const createKey = useCreateApiKey()
+    // The capabilities query only runs while the dialog is open; it feeds the scope pickers.
     const caps = useCapabilities(open)
 
     const form = useForm<CreateFormValues>({
@@ -136,6 +139,9 @@ export function CreateApiKeyDialog({
         onOpenChange(false)
     }
 
+    // Once the key is shown, this is the only time the full secret is visible. Block every
+    // dismissal path (escape, outside click, the X button) so it cannot be closed by accident;
+    // the explicit Done button is the only way out.
     const blockClose = stage === "ready"
 
     return (

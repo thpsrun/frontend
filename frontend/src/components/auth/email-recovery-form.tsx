@@ -12,6 +12,9 @@ interface Props {
     onSuccess: (newEmail: string) => void
 }
 
+// Recovery path for a mistyped signup email: the user can't receive the verification code,
+// so the SRC API key they supplied at signup proves ownership and the backend re-sends the
+// code to the corrected address instead.
 export function EmailRecoveryForm({ onSuccess }: Props) {
     const correct = useCorrectSignupEmail()
     const form = useForm<EmailRecoveryForm>({

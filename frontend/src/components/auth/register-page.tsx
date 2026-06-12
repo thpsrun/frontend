@@ -112,6 +112,9 @@ export function RegisterPage() {
         return <Navigate to={returnTo} replace />
     }
 
+    // Pre-flight validation for the OAuth signup buttons: username and SRC key must be
+    // filled in before the popup opens, because the finalize step sends them along with
+    // the provider's identity. Email is optional here since the provider may supply one.
     const validateSharedFields = (): boolean => {
         const errors: Record<string, string> = {}
         const usernameErr = validateUsername(username)
@@ -172,6 +175,9 @@ export function RegisterPage() {
                 turnstileToken,
             })
             if ("status" in result && result.status === "verification_required") {
+                // Signup succeeded but no session exists until the email is verified.
+                // Stash the context in sessionStorage so /verify-email can show the
+                // address and offer email recovery without any authenticated calls.
                 stashSignupVerification({
                     email: result.email,
                     src_user_id: result.src_user_id,
@@ -223,6 +229,8 @@ export function RegisterPage() {
             return
         }
         if (result.kind === "email_taken") {
+            // providerEmail set means the conflict came from the provider's own address
+            // (so suggest logging in); otherwise the user typed it and can pick another.
             if (result.providerEmail) {
                 setError(EMAIL_TAKEN_PROVIDER_MESSAGE)
             } else {
@@ -237,6 +245,8 @@ export function RegisterPage() {
                 return
             }
         }
+        // "popup" failures come from the provider window flow itself; "finalize" failures
+        // come from the backend call that actually creates the account afterwards.
         const msg = result.kind === "popup"
             ? oauthSignupErrorMessage(result.reason, PROVIDER_LABEL[provider])
             : mapFinalizeSignupError(result.code)

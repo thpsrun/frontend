@@ -96,6 +96,8 @@ export function ReviewGroupsSection({ groups }: Props) {
 function ReviewRow({ run, idx }: { run: PendingRun; idx: number }) {
     const [editOpen, setEditOpen] = useState(false)
 
+    // The whole row opens the edit dialog; inner links and the notes banner stop propagation so
+    // clicking them does not also open it.
     const stop = (e: SyntheticEvent) => e.stopPropagation()
 
     return (
@@ -184,6 +186,8 @@ function ReviewRow({ run, idx }: { run: PendingRun; idx: number }) {
             <TableRow>
                 <TableCell colSpan={6} className="bg-muted/10">
                     <div onClick={stop}>
+                        {/* Resubmitting is the runner's action; this is the moderator's view of
+                            the notes, so the resubmit button is always hidden here. */}
                         <ReviewNotesBanner
                             notes={run.review_notes}
                             canResubmit={false}

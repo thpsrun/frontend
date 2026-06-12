@@ -35,6 +35,8 @@ export function GameManageLayout() {
     } = useGameDetail(gameSlug ?? "")
     const hasAuditCap = useHasCapability("games.audit.view", gameDetail?.id)
 
+    // Wait for the profile before reading isMod, otherwise a legitimate moderator would be
+    // bounced to the game page while the session query is still in flight.
     if (isLoading) return null
     if (!gameSlug) return <Navigate to="/" replace />
     if (!isMod) return <Navigate to={`/${gameSlug}`} replace />

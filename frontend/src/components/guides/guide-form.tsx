@@ -61,6 +61,8 @@ interface Props {
     guide?: Guide
 }
 
+// The key remounts the inner form whenever the mode or target guide changes; useForm only reads
+// defaultValues on mount, so without the remount stale values would survive a guide switch.
 export function GuideForm(props: Props) {
     return (
         <GuideFormInner
@@ -107,6 +109,9 @@ function GuideFormInner({ mode, guide }: Props) {
         if (match) form.setValue("game_id", match.id, { shouldDirty: false })
     }, [requestedGameSlug, games.data, form])
 
+    // defaultValues resolved tag_ids against an empty master list, which drops tags the backend
+    // sends as bare ids. Re-resolve once the tags query loads; the sameSet check keeps this from
+    // re-running (and from fighting the user) on every refetch.
     useEffect(() => {
         if (mode !== "edit" || !guide || !tags.data) return
         const resolved = resolveGuideTags(guide.tags, tags.data)
@@ -120,6 +125,7 @@ function GuideFormInner({ mode, guide }: Props) {
         }
     }, [mode, guide, tags.data, form])
 
+    // The form tracks tags by slug, but the write API expects ids; map them at submit time.
     function resolveTagIds(slugs: string[]): { ids: string[]; missing: string[] } {
         const list = tags.data ?? []
         const ids: string[] = []
@@ -156,6 +162,8 @@ function GuideFormInner({ mode, guide }: Props) {
                     tag_ids: tagIds,
                 })
                 toast.success("Guide created.")
+                // reset marks the form clean, but the router blocker can still see the dirty state
+                // when navigate fires; bypassNext skips the unsaved-changes prompt once.
                 form.reset(values)
                 guard.bypassNext()
                 navigate(buildGuideUrl(created))
@@ -170,6 +178,7 @@ function GuideFormInner({ mode, guide }: Props) {
                     },
                 })
                 toast.success("Guide saved.")
+                // Same reset-then-bypass dance as the create branch above.
                 form.reset(values)
                 guard.bypassNext()
                 navigate(buildGuideUrl(updated))
@@ -185,6 +194,8 @@ function GuideFormInner({ mode, guide }: Props) {
         }
     }
 
+    // Declared after onSubmit because it wraps it; onSubmit only runs after render, so its
+    // references to guard above are safe.
     const guard = useUnsavedChangesGuard({
         isDirty: form.formState.isDirty,
         onSave: form.handleSubmit(onSubmit),
@@ -207,6 +218,8 @@ function GuideFormInner({ mode, guide }: Props) {
     }
 
     const isPending = create.isPending || update.isPending
+    // A guide's game is fixed at creation: the update payload above sends no game_id, so edit
+    // mode shows the game read-only.
     const showGameSelect = mode === "create"
 
     return (

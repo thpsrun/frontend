@@ -47,6 +47,8 @@ function CategoryCard({ category, game }: CategoryCardProps) {
     const [topError, setTopError] = useState<string | null>(null)
     const [rulesOpen, setRulesOpen] = useState(false)
 
+    // Categories inherit from the matching game-level scope: full-game categories from the
+    // fg settings, IL categories from the il settings (idefaulttime / required_methods_il).
     const parentRequired = (category.type === "per-game"
         ? game.required_methods_fg
         : game.required_methods_il) ?? [...ALL_TIMING_METHODS]
@@ -72,6 +74,8 @@ function CategoryCard({ category, game }: CategoryCardProps) {
         },
     })
 
+    // Re-seed the form when the server values change (saving invalidates the game query, which
+    // refetches every category).
     useEffect(() => {
         form.reset({
             rules: category.rules ?? "",
@@ -101,6 +105,8 @@ function CategoryCard({ category, game }: CategoryCardProps) {
 
     const onSubmit = form.handleSubmit(handleSave)
 
+    // Resolve the effective required set from the live form value so the primary-method options
+    // and its validation rule react to required-method edits before they are saved.
     const watched = form.watch()
     const effectiveRequired = effectiveRequiredMethods(
         { required_methods: watched.required_methods },

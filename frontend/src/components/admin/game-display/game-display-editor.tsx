@@ -21,6 +21,8 @@ export function GameDisplayEditor({ gameId }: { gameId: string }) {
     const reorder = useReorderDisplayItems(gameId)
     const visibility = useSetDisplayVisibility(gameId)
 
+    // Read the in-flight mutation's variables so only the row actually being toggled shows as
+    // pending, not every row.
     const pendingVisibility = visibility.isPending && visibility.variables
         ? visibility.variables
         : null
@@ -30,6 +32,8 @@ export function GameDisplayEditor({ gameId }: { gameId: string }) {
         orderedIds: string[],
         varId?: string,
     ) => {
+        // varId identifies which variable's value list is being reordered; it only applies to
+        // the variable_value scope and is null for categories and levels.
         reorder.mutate({
             scope,
             ordered_ids: orderedIds,

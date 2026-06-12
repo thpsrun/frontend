@@ -11,6 +11,8 @@ export function DisplayOrderSection() {
     const { player, isLoading: playerLoading } = useCurrentPlayer()
     const game = useGameDetail(gameSlug ?? "")
 
+    // The sidebar only links here for superusers, but the URL is directly reachable by any game
+    // mod, so re-check once the profile has loaded.
     if (playerLoading) return null
     if (!player?.player.is_superuser) {
         return <Navigate to={`/${gameSlug}/manage/timing`} replace />

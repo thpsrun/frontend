@@ -83,6 +83,8 @@ export function computeUnresolvedIssues(
 
     for (const issue of issues) {
         if (isInvalidVideoIssue(issue)) {
+            // Clearing the video field counts as resolving the issue; only a still-present
+            // non-YouTube link keeps it alive.
             const trimmed = form.video.trim()
             const stillBad = trimmed !== "" && !isValidYouTubeUrl(trimmed)
             if (stillBad) video = issue

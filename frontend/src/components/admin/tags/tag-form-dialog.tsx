@@ -37,6 +37,8 @@ export function TagFormDialog({ open, onOpenChange, mode, tag }: Props) {
     const create = useCreateTag()
     const update = useUpdateTag()
 
+    // The dialog stays mounted while closed, so reseed the fields on every open (tag is null in
+    // create mode, which blanks them).
     useEffect(() => {
         if (open) {
             setName(tag?.name ?? "")
@@ -76,6 +78,7 @@ export function TagFormDialog({ open, onOpenChange, mode, tag }: Props) {
     const isPending = create.isPending || update.isPending
 
     return (
+        // Ignore dismissal (escape, overlay click) while a save is in flight.
         <Dialog open={open} onOpenChange={(v) => { if (!isPending) onOpenChange(v) }}>
             <DialogContent>
                 <form

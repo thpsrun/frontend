@@ -46,6 +46,8 @@ export function SecuritySection() {
     const handleChangePassword = passwordForm.handleSubmit(async (data) => {
         setPasswordMsg(null)
         try {
+            // Omitting current_password tells allauth to set a first password, which is the
+            // case for OAuth- or passkey-only accounts.
             await changePassword.mutateAsync(
                 hasPassword
                     ? {

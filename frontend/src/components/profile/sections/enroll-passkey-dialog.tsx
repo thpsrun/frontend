@@ -29,6 +29,10 @@ const PROVIDER_LABEL: Record<AuthProvider, string> = {
     twitch: "Twitch",
 }
 
+// Adding a WebAuthn credential is a sensitive allauth action that can answer 401 until the
+// session is freshly reauthenticated. The step-up is handled inline: password when the account
+// has one, otherwise an OAuth round-trip with the first linked provider, then the enrollment
+// is retried with the label the user already typed.
 export function EnrollPasskeyDialog({ open, onOpenChange }: Props) {
     const enroll = useEnrollPasskey()
     const { data: methods } = useAuthMethods()

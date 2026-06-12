@@ -15,6 +15,9 @@ interface RequiredMethodsFieldProps {
     helpText?: string
 }
 
+// Checkbox group for the timing methods runs must provide. A null value means inherit
+// parentRequired; a child level can only narrow the parent's set, never re-add a method the
+// parent excludes.
 export function RequiredMethodsField({
     id,
     label,
@@ -31,8 +34,11 @@ export function RequiredMethodsField({
         ? [...parentRequired]
         : value
 
+    // Never emit an empty list: unchecking the last method collapses back to null (inherit)
+    // instead of representing "no methods required".
     const toggle = (method: TimingMethodType) => {
         if (value == null) {
+            // Toggling while inheriting materializes the parent's set minus this method.
             const next = parentRequired.filter((m) => m !== method)
             onChange(next.length > 0 ? next : null)
             return

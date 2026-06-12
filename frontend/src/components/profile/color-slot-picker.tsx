@@ -21,6 +21,8 @@ export function ColorSlotPicker({
     onChange,
 }: ColorSlotPickerProps) {
     const [open, setOpen] = useState(false)
+    // The text field has its own state so the user can type a partial hex value; only a
+    // complete #rrggbb is committed to the parent via onChange.
     const [hexInput, setHexInput] = useState(color ?? "")
 
     const handleColorChange = (newColor: string) => {

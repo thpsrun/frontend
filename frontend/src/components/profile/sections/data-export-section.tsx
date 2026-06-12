@@ -41,6 +41,8 @@ export function DataExportSection() {
     const [requestError, setRequestError] = useState<string | null>(null)
     const [nowMs, setNowMs] = useState(() => Date.now())
 
+    // Assumes the API returns exports newest-first. Failed exports do not count toward the
+    // 24 hour cooldown, hence the separate latestNonFailed lookup.
     const list = exports ?? []
     const latest = list[0]
     const latestNonFailed = list.find((e) => e.status !== "FAILED")
@@ -57,12 +59,17 @@ export function DataExportSection() {
         && latest.expires_at !== null
         && Date.parse(latest.expires_at) > nowMs
 
+    // Tick once a minute, but only while a countdown is visible, so the cooldown and
+    // in-progress labels stay current without rerendering the section forever.
     useEffect(() => {
         if (!inCooldown && !inProgress) return
         const interval = setInterval(() => setNowMs(Date.now()), 60_000)
         return () => clearInterval(interval)
     }, [inCooldown, inProgress])
 
+    // Watch the notifications list for an export-ready or export-failed notification and
+    // refetch the exports list when one appears, so the Download button shows up without a
+    // manual refresh. The ref dedupes so each notification only triggers one invalidation.
     const lastSeenIdRef = useRef<number | null>(null)
     useEffect(() => {
         const items = notifData?.items ?? []
@@ -89,6 +96,7 @@ export function DataExportSection() {
         } catch (err) {
             if (err instanceof ApiError && err.isRateLimited) {
                 const base = err.message
+                // retryAfter comes from the Retry-After header and is in seconds.
                 if (err.retryAfter !== null) {
                     setRequestError(
                         `${base} Try again in ${formatDurationShort(err.retryAfter * 1000)}.`,
@@ -102,6 +110,9 @@ export function DataExportSection() {
         }
     }
 
+    // Deliberately a raw fetch rather than apiFetch: the endpoint streams a zip and apiFetch
+    // parses every response as JSON. The auth-lost (401) and stale-export (404) handling that
+    // apiFetch would normally provide is replicated inline.
     const onDownload = async (id: string) => {
         try {
             const res = await fetch(exportDownloadHref(id), {

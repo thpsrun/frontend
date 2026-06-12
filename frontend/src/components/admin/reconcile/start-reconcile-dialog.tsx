@@ -53,6 +53,8 @@ const SCOPE_HINT: Record<ReconcileScope, string> = {
     SERIES: "Scans a series for newly added games on Speedrun.com. Existing games are skipped, refresh those with the GAME scope.",
 }
 
+// Only GAME is offered and the scope Select is rendered disabled; the RUN, SERIES, and
+// LEADERBOARD branches below are kept intact so a scope can be restored by re-adding it here.
 const SCOPE_OPTIONS: ReconcileScope[] = ["GAME"]
 const SOURCE_OPTIONS: SourceOfTruth[] = ["SRC", "THPS_RUN"]
 
@@ -82,6 +84,7 @@ export function StartReconcileDialog({ open, onOpenChange, onCreated }: Props) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-lg">
+                {/* Mounting the form only while open resets all of its state on every reopen. */}
                 {open && (
                     <StartReconcileForm
                         onClose={() => onOpenChange(false)}
@@ -117,6 +120,8 @@ function StartReconcileForm({
     const [conflict, setConflict] = useState<ConflictState | null>(null)
     const [fieldError, setFieldError] = useState<string | null>(null)
 
+    // Submit stashes the request plus a rendered summary here and opens the confirm dialog;
+    // the mutation only fires from handleConfirm. A non-null pendingBody is what opens it.
     const [pendingBody, setPendingBody] = useState<ReconcileRequest | null>(null)
     const [pendingSummary, setPendingSummary] = useState<ReactNode>(null)
 
@@ -209,6 +214,7 @@ function StartReconcileForm({
 
     async function handleConfirm() {
         if (!pendingBody) return
+        // Capture the scope before pendingBody is nulled in either branch below.
         const submittedScope = pendingBody.scope
         try {
             const job = await start.mutateAsync(pendingBody)
@@ -219,6 +225,8 @@ function StartReconcileForm({
         } catch (err) {
             setPendingBody(null)
             setPendingSummary(null)
+            // 409 means an overlapping reconciliation is already running; the body carries the
+            // running job's id so the banner can link straight to it.
             if (err instanceof ApiError && err.isConflict) {
                 const body = err.body as ConflictOut | undefined
                 if (body && typeof body.existing_job_id === "string") {

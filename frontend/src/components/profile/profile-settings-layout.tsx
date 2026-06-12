@@ -33,6 +33,8 @@ const SETTINGS_LABELS: Record<string, string> = {
     danger: "Danger Zone",
 }
 
+// Danger Zone is kept out of NAV_GROUPS and rendered through the extras slots so it can sit
+// visually separated below the regular items and use destructive link styling.
 const DANGER_ITEM = {
     label: "Danger Zone",
     to: "/profile/settings/danger",

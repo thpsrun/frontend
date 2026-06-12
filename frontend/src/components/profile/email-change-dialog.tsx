@@ -38,6 +38,10 @@ const PROVIDER_LABEL: Record<AuthProvider, string> = {
     twitch: "Twitch",
 }
 
+// Changing email is a sensitive allauth action: the backend can answer 401 with code
+// reauth_required (which api-client deliberately does not treat as "auth lost"). This dialog
+// handles that inline, swapping to a password or OAuth verification step and then replaying
+// the email change with the address still held in the form.
 export function EmailChangeDialog({ open, onOpenChange }: Props) {
     const request = useRequestEmailChange()
     const { data: methods } = useAuthMethods()
@@ -54,6 +58,8 @@ export function EmailChangeDialog({ open, onOpenChange }: Props) {
         defaultValues: { newEmail: "" },
     })
 
+    // Reset everything only when the dialog closes; resetting on open would wipe state while
+    // the reauth step is mid-flight.
     useEffect(() => {
         if (open) return
         setStep("form")
@@ -78,6 +84,8 @@ export function EmailChangeDialog({ open, onOpenChange }: Props) {
                     && err.isAuthRequired
                     && err.code === "reauth_required"
                 ) {
+                    // OAuth-only accounts have no password to type, so verify via the first
+                    // linked social account instead.
                     setStep(hasUsablePassword ? "reauth_password" : "reauth_oauth")
                     return
                 }

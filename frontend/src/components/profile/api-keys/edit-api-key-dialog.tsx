@@ -86,6 +86,8 @@ function EditApiKeyDialogBody({
             toast.success("Key updated.")
             onOpenChange(false)
         } catch (err) {
+            // 404 means the key was revoked or deleted in the meantime (e.g. from another
+            // tab), but probably , so close with an info toast rather than an error.
             if (err instanceof ApiError && err.isNotFound) {
                 toast.info("Key was already revoked.")
                 onOpenChange(false)

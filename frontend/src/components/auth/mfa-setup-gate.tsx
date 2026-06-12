@@ -32,7 +32,6 @@ export function MfaSetupGate() {
     const hasFactor = (authenticators ?? []).some(
         (a) => a.type === "totp" || a.type === "webauthn",
     )
-
     useEffect(() => {
         if (!hasFactor || totpOpen || passkeyOpen) return
         setMfaGate(false)
@@ -41,6 +40,8 @@ export function MfaSetupGate() {
 
     const handleLogout = () => {
         logout.mutate(undefined, {
+            // onSettled, not onSuccess: drop the gate even if the logout request fails so
+            // the user can't get stuck on this screen.
             onSettled: () => {
                 setMfaGate(false)
                 navigate("/login", { replace: true })

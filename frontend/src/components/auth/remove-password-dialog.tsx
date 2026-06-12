@@ -62,6 +62,8 @@ export function RemovePasswordDialog({ open, onOpenChange }: Props) {
                 handleOpenChange(false)
             },
             onError: (err) => {
+                // Step-up reauth: the api-client deliberately skips the global auth-lost
+                // handler for reauth_required 401s so we can resolve them inline here.
                 if (
                     err instanceof ApiError
                     && err.isAuthRequired
@@ -88,6 +90,9 @@ export function RemovePasswordDialog({ open, onOpenChange }: Props) {
         attemptDelete()
     }
 
+    // Password-only reauth is always possible here (unlike ReauthStep's OAuth fallback):
+    // the account necessarily still has the password being removed. On success the delete
+    // the user already confirmed is replayed automatically.
     const handleReauth = async (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (!reauthPassword) return

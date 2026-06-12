@@ -58,6 +58,7 @@ export function SocialFormDialog({
     const create = useCreateSocial()
     const update = useUpdateSocial()
 
+    // The dialog stays mounted while closed, so reseed the fields on every open.
     useEffect(() => {
         if (open) {
             setErrors({})
@@ -73,6 +74,9 @@ export function SocialFormDialog({
         }
     }, [open, mode, link])
 
+    // Each platform may only have one link, so already-used platforms are disabled in the picker.
+    // In edit mode the link's own platform is not counted as taken, otherwise its current value
+    // would be unselectable.
     const platformOptions = useMemo(() => {
         const taken = new Set(
             existingPlatforms
@@ -128,6 +132,7 @@ export function SocialFormDialog({
     const isPending = create.isPending || update.isPending
 
     return (
+        // Ignore dismissal (escape, overlay click) while a save is in flight.
         <Dialog
             open={open}
             onOpenChange={(v) => {

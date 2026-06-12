@@ -46,11 +46,15 @@ export function ChangePlayersDialog({
     const [error, setError] = useState<string | null>(null)
     const [activeSearchIdx, setActiveSearchIdx] = useState<number | null>(null)
 
+    // One search hook serves every row: only the row currently being typed in (activeSearchIdx)
+    // feeds it, and an empty query keeps the underlying query disabled.
     const activeSearchQuery = activeSearchIdx !== null
         ? (rows[activeSearchIdx]?.value ?? "")
         : ""
     const searchResults = usePlayerSearch(activeSearchQuery)
 
+    // Re-seed the form on open rather than on close: this component stays mounted between
+    // opens, and the run's player list may have changed since the last time.
     const handleOpenChange = (next: boolean) => {
         if (next) {
             setRows(

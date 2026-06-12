@@ -24,6 +24,8 @@ export function NotificationsSection() {
     const prefsQuery = useNotificationPreferences()
     const update = useUpdatePreferences()
 
+    // Sends a single-kind, single-channel patch; useUpdatePreferences applies it optimistically
+    // and rolls back on error, so no pending state is tracked here.
     const handleToggle = (kind: string, channel: string, next: boolean) => {
         update.mutate(
             { [kind]: { [channel]: next } },
@@ -79,6 +81,8 @@ export function NotificationsSection() {
                 )}
 
                 {prefsQuery.data && prefsQuery.data.preferences.length > 0 && (() => {
+                    // The column set is the union of channels across all kinds; the backend may
+                    // not expose every channel on every kind.
                     const channelKeys = Array.from(
                         new Set(
                             prefsQuery.data.preferences.flatMap((p) => Object.keys(p.channels)),

@@ -83,6 +83,7 @@ export function SocialSection() {
 
     if (!player) return null
 
+    // Twitch socials are stored as a full twitch.tv URL; show just the channel name.
     const twitchHandle = player.socials.twitch
         ? player.socials.twitch.match(/twitch\.tv\/([^/?#]+)/i)?.[1]
             ?? player.socials.twitch

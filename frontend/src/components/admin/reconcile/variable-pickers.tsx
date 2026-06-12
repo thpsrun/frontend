@@ -20,6 +20,7 @@ export function VariablePickers({
     onChange,
     disabled,
 }: Props) {
+    // Hide archived variables, and variables whose every value is archived.
     const visible = variables.filter(
         (v) => !v.archive && v.values.some((val) => !val.archive),
     )

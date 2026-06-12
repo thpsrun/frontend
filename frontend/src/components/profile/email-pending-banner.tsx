@@ -27,6 +27,8 @@ export function EmailPendingBanner({ pendingEmail }: Props) {
         setCooldown(0)
     }, [pendingEmail])
 
+    // Counts the cooldown down one second at a time; each decrement re-runs the effect,
+    // which schedules the next tick until it hits zero.
     useEffect(() => {
         if (cooldown <= 0) return
         const id = window.setTimeout(() => setCooldown((c) => c - 1), 1000)
@@ -43,6 +45,8 @@ export function EmailPendingBanner({ pendingEmail }: Props) {
             },
             onError: (err) => {
                 if (err instanceof ApiError && err.isRateLimited) {
+                    // Prefer the server's Retry-After so the button stays disabled for the
+                    // real throttle window, not just our local default.
                     const retry = err.retryAfter ?? RESEND_COOLDOWN_SECONDS
                     setCooldown(retry)
                     setError(

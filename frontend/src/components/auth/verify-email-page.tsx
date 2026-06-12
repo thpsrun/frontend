@@ -46,6 +46,8 @@ export function VerifyEmailPage() {
     useDocumentTitle("Verify Email")
     const status = useEmailStatus()
     const { key } = useParams<{ key?: string }>()
+    // Captured once on mount: verifying clears the stash and invalidates the email query,
+    // so reading it live could flip this page to NoPendingContent mid-flow.
     const [hasStashedSignup] = useState(() => readSignupVerification() !== null)
 
     if (status.isLoading) {
@@ -118,6 +120,8 @@ function SignupVerifyContent() {
                     toast.success("Email verified. Welcome!")
                     navigate("/")
                 } else {
+                    // The default signup flow verifies the address without creating a
+                    // session (see verifySignupEmailFn), so the user still has to log in.
                     toast.success("Email verified. Please log in to continue.")
                     navigate("/login")
                 }
@@ -129,6 +133,9 @@ function SignupVerifyContent() {
             })
     }
 
+    // Auto-submit a key arriving via the URL exactly once. Verification keys are
+    // single-use, so a re-render must not POST again and turn a success into an
+    // "invalid key" error.
     useEffect(() => {
         if (autoSubmittedRef.current) return
         if (!key) return
@@ -238,6 +245,8 @@ function EmailChangeVerifyContent({ pendingEmail }: { pendingEmail: string | nul
         return () => window.clearTimeout(id)
     }, [cooldown])
 
+    // Same single-fire guard as SignupVerifyContent: change keys are single-use, so the
+    // URL key must only ever be posted once.
     useEffect(() => {
         if (autoSubmittedRef.current) return
         const trimmed = key?.trim()

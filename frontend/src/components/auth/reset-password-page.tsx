@@ -31,6 +31,8 @@ export function ResetPasswordPage() {
 
     // Both params are required by the route definition, but if a user hand-
     // edits the URL we surface a clear error rather than posting an empty key.
+    // Allauth expects the two URL segments recombined as "uidb36-key"; the API helper
+    // sends it in the X-Password-Reset-Key header rather than the body.
     const resetKey = uidb36 && key ? `${uidb36}-${key}` : null
 
     const onSubmit = form.handleSubmit(async ({ newPassword }) => {
