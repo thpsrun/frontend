@@ -41,6 +41,10 @@ function formatRetryAfter(seconds: number): string {
     return mins === 1 ? "a minute" : `${mins} minutes`
 }
 
+// Disconnecting a social account is a sensitive action: the backend may answer 401 with code
+// reauth_required. This dialog handles that step-up inline (instead of useReauthGuard) so it
+// can pick the reauth method itself: password when the account has one, otherwise an OAuth
+// round-trip with the same provider, then retry the disconnect.
 export function DisconnectProviderDialog({ target, onClose }: Props) {
     const disconnect = useDisconnectSocialAccount()
     const { data: methods } = useAuthMethods()
@@ -51,6 +55,7 @@ export function DisconnectProviderDialog({ target, onClose }: Props) {
     const [reauthing, setReauthing] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
+    // Reset to a clean confirm step whenever the dialog targets a different provider.
     useEffect(() => {
         setStep("confirm")
         setReauthPassword("")

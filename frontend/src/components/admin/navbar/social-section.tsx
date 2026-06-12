@@ -52,6 +52,8 @@ export function SocialSection({
 }: Props) {
     const sensors = useSensors(
         useSensor(PointerSensor, {
+            // Require a small drag distance before activating so plain clicks still reach the
+            // buttons and switch inside each row.
             activationConstraint: { distance: 4 },
         }),
         useSensor(KeyboardSensor, {

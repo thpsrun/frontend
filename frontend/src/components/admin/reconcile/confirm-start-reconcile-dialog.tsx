@@ -70,6 +70,8 @@ export function ConfirmStartReconcileDialog({
                     <AlertDialogAction
                         disabled={isPending}
                         onClick={(e) => {
+                            // Radix closes the dialog on action click by default; prevent that
+                            // so the queueing state stays visible until the request lands.
                             e.preventDefault()
                             onConfirm()
                         }}

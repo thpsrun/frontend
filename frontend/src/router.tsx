@@ -1,3 +1,5 @@
+import { lazy } from "react"
+import type { ComponentType, LazyExoticComponent } from "react"
 import { createBrowserRouter, Navigate } from "react-router"
 
 import App from "./App.tsx"
@@ -25,10 +27,18 @@ import { VerifyEmailPage } from "./components/auth/verify-email-page.tsx"
 import { RankingsRedirect } from "./components/rankings/rankings-redirect.tsx"
 import { HistoricalRankingsPage } from "./components/rankings/historical-rankings-page.tsx"
 
-// Guides
+// Guides hub is a plain listing that game-overview also renders inline, so it
+// stays in the main bundle (lazy-loading it here would be ineffective).
 import { GuidesHubPage } from "./components/guides/guides-hub-page.tsx"
-import { GuideDetailPage } from "./components/guides/guide-detail-page.tsx"
-import { GuideFormPage } from "./components/guides/guide-form-page.tsx"
+
+// Guide detail/form are lazy - they pull in the markdown renderer + editor
+// (react-markdown + remark/rehype) and are only reached via their own routes.
+const GuideDetailPage = lazy(() =>
+    import("./components/guides/guide-detail-page.tsx").then((m) => ({ default: m.GuideDetailPage })),
+)
+const GuideFormPage = lazy(() =>
+    import("./components/guides/guide-form-page.tsx").then((m) => ({ default: m.GuideFormPage })),
+)
 
 // Profile settings/content + sections
 import { ProfileSettingsLayout } from "./components/profile/profile-settings-layout.tsx"
@@ -48,28 +58,38 @@ import { RunsSection } from "./components/profile/sections/runs-section.tsx"
 import { SubmissionsHub } from "./components/submissions/submissions-hub.tsx"
 import { NotificationsPage } from "./components/notifications/notifications-page.tsx"
 
-// Game management (moderator)
-import { GameManageLayout } from "./components/manage/game-manage-layout.tsx"
-import { GeneralSection as ManageGeneralSection } from "./components/manage/sections/general-section.tsx"
-import { TimingSection } from "./components/manage/sections/timing-section.tsx"
-import { CategoriesSection } from "./components/manage/sections/categories-section.tsx"
-import { VariablesSection } from "./components/manage/sections/variables-section.tsx"
-import { DisplayOrderSection } from "./components/manage/sections/display-order-section.tsx"
-import { AuditSection } from "./components/manage/sections/audit-section.tsx"
-import { ModeratorsSection } from "./components/manage/sections/moderators-section.tsx"
+// Admin and game-management are tabbed areas behind a shared layout. Each loads
+// as a single chunk via its barrel module (see admin-routes / manage-routes):
+// the names below are key-checked against the barrel's exports at compile time.
+function lazyArea<M extends Record<string, unknown>>(loader: () => Promise<M>) {
+    return <K extends keyof M>(name: K): LazyExoticComponent<ComponentType> =>
+        lazy(() => loader().then((m) => ({ default: m[name] as ComponentType })))
+}
+const lazyManage = lazyArea(() => import("./components/manage/manage-routes.ts"))
+const lazyAdmin = lazyArea(() => import("./components/admin/admin-routes.ts"))
 
-// Admin
-import { AdminLayout } from "./components/admin/admin-layout.tsx"
-import { AdminHub } from "./components/admin/admin-hub.tsx"
-import { TagsAdminPage } from "./components/admin/tags/tags-admin-page.tsx"
-import { NavbarAdminPage } from "./components/admin/navbar/navbar-admin-page.tsx"
-import { BotSessionPage } from "./components/admin/thpsbot/bot-session-page.tsx"
-import { ReconcilePage } from "./components/admin/reconcile/reconcile-page.tsx"
-import { ReconcileDetailPage } from "./components/admin/reconcile/reconcile-detail-page.tsx"
-import { GameDisplayPage } from "./components/admin/game-display/game-display-page.tsx"
-import { GameDisplayDetailPage } from "./components/admin/game-display/game-display-detail-page.tsx"
-import { UsersAdminPage } from "./components/admin/users/users-admin-page.tsx"
-import { UsersAdminDetailPage } from "./components/admin/users/users-admin-detail.tsx"
+// Game management (moderator)
+const GameManageLayout = lazyManage("GameManageLayout")
+const ManageGeneralSection = lazyManage("ManageGeneralSection")
+const TimingSection = lazyManage("TimingSection")
+const CategoriesSection = lazyManage("CategoriesSection")
+const VariablesSection = lazyManage("VariablesSection")
+const DisplayOrderSection = lazyManage("DisplayOrderSection")
+const AuditSection = lazyManage("AuditSection")
+const ModeratorsSection = lazyManage("ModeratorsSection")
+
+// Admin - superuser-only
+const AdminLayout = lazyAdmin("AdminLayout")
+const AdminHub = lazyAdmin("AdminHub")
+const TagsAdminPage = lazyAdmin("TagsAdminPage")
+const NavbarAdminPage = lazyAdmin("NavbarAdminPage")
+const BotSessionPage = lazyAdmin("BotSessionPage")
+const ReconcilePage = lazyAdmin("ReconcilePage")
+const ReconcileDetailPage = lazyAdmin("ReconcileDetailPage")
+const GameDisplayPage = lazyAdmin("GameDisplayPage")
+const GameDisplayDetailPage = lazyAdmin("GameDisplayDetailPage")
+const UsersAdminPage = lazyAdmin("UsersAdminPage")
+const UsersAdminDetailPage = lazyAdmin("UsersAdminDetailPage")
 
 // Legal / misc
 import { PrivacyPage } from "./components/legal/privacy-page.tsx"

@@ -26,6 +26,8 @@ interface Props {
     runId: string
 }
 
+// Shows the moderator's send-back notes on a run in review state; when the viewer owns the run,
+// it also offers the resubmit action that puts the run back in the moderation queue.
 export function ReviewNotesBanner({ notes, canResubmit, runId }: Props) {
     const [confirmOpen, setConfirmOpen] = useState(false)
     const resubmit = useResubmitRun()
@@ -38,6 +40,9 @@ export function ReviewNotesBanner({ notes, canResubmit, runId }: Props) {
             setConfirmOpen(false)
         } catch (err) {
             if (err instanceof ApiError) {
+                // The hook only invalidates on success; an API error usually means the run's
+                // state changed server-side (403 not the owner, 404 gone, 409 no longer in
+                // review), so refetch submissions to bring the stale UI back in line.
                 queryClient.invalidateQueries({ queryKey: queryKeys.submissions.all })
                 if (err.isForbidden) {
                     toast.error("You can only resubmit your own runs!")

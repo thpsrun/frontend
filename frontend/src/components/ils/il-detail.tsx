@@ -12,7 +12,7 @@ import { Panel } from "@/components/ui/panel"
 import { Skeleton } from "@/components/ui/skeleton"
 
 import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table"
-import { WRHistoryChart } from "@/components/leaderboard/wr-history-chart"
+import { WRHistoryChart } from "@/components/leaderboard/wr-history-chart-lazy"
 import { VariableToggles } from "@/components/leaderboard/variable-toggles"
 import { ILCategorySelector } from "@/components/ils/il-category-selector"
 import { Button } from "@/components/ui/button"

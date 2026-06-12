@@ -44,6 +44,8 @@ const STATUS_FILTER_OPTIONS: ReconcileStatus[] = [
 
 const SCOPE_FILTER_OPTIONS: ReconcileScope[] = ["GAME", "LEADERBOARD", "RUN", "SERIES"]
 
+// A null end means the job is still running, so measure against now; the list's 15 second
+// poll keeps the value ticking without per-row timers.
 function formatDuration(start: string | null, end: string | null): string {
     if (!start) return "-"
     const startMs = Date.parse(start)
@@ -63,6 +65,8 @@ function shortId(id: string): string {
     return id.split("-")[0]
 }
 
+// Glyph prefixes keep the column narrow: + created, ~ updated, = skipped, ! failed.
+// Hover titles spell them out.
 function CountsCell({ job }: { job: ReconcileJob }) {
     const c = job.counts
     return (
@@ -142,6 +146,7 @@ export function ReconcilePage() {
     })
     const [dialogOpen, setDialogOpen] = useState(false)
 
+    // The hook polls every 15 seconds, so running jobs advance without the manual Refresh.
     const { data, isLoading, error, refetch } = useReconcileJobs(filters)
 
     const limit = filters.limit ?? PAGE_SIZE

@@ -19,6 +19,7 @@ interface Props {
 export function GuideMarkdownEditor({ value, onChange, placeholder }: Props) {
     const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
+    // Ctrl/Cmd+B and Ctrl/Cmd+I wrap the current selection in bold or italic markers.
     function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
         if (!(e.ctrlKey || e.metaKey)) return
         const ta = textareaRef.current
@@ -30,6 +31,8 @@ export function GuideMarkdownEditor({ value, onChange, placeholder }: Props) {
             const sel = value.slice(start, end)
             const next = `${value.slice(0, start)}${left}${sel}${right}${value.slice(end)}`
             onChange(next)
+            // Defer until React has flushed the controlled value to the DOM; setting the
+            // selection synchronously would target the pre-edit text.
             requestAnimationFrame(() => {
                 ta.focus()
                 const cursor = start + left.length + sel.length + right.length

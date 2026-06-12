@@ -63,6 +63,8 @@ export function CustomizationSection() {
         },
     })
 
+    // Seed local state whenever the profile loads or refetches. The initial* copies are the
+    // baseline for the gradientsChanged dirty check below.
     useEffect(() => {
         if (!player) return
         const c = player.customizations
@@ -95,6 +97,8 @@ export function CustomizationSection() {
             string | null,
         ] = [g1, g2, g3]
         raw[slot - 1] = value
+        // Normalizing compacts cleared slots so the chosen colors stay contiguous from slot 1,
+        // which is what getGradientStyle expects when building the stops.
         const [n1, n2, n3] = normalizeGradients(...raw)
         setG1(n1)
         setG2(n2)

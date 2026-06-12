@@ -20,6 +20,8 @@ const YOUTUBE_HOSTS = new Set([
 
 const YOUTUBE_ID_PATTERN = /^[a-zA-Z0-9_-]{11}$/
 
+// Strictly validating the 11-char id keeps arbitrary author-controlled strings out of the iframe
+// src below; anything that doesn't match renders as a plain link instead.
 function extractYouTubeId(rawHref: string): string | null {
     let url: URL
     try {
@@ -43,6 +45,8 @@ function extractYouTubeId(rawHref: string): string | null {
     return null
 }
 
+// A paragraph whose only child is a YouTube link gets upgraded to an inline player (see the p
+// renderer below); links mixed with other text stay plain links.
 function paragraphYouTubeId(node: Element | undefined): string | null {
     if (!node || node.children.length !== 1) return null
     const child = node.children[0]
@@ -68,6 +72,8 @@ function YouTubeEmbed({ videoId }: { videoId: string }) {
     )
 }
 
+// Extends the default sanitize schema: heading ids back the TOC anchor links, and the
+// language- class is what fenced code blocks carry so rehype-highlight can pick the grammar.
 const SANITIZE_SCHEMA = {
     ...defaultSchema,
     attributes: {
@@ -86,6 +92,8 @@ const SANITIZE_SCHEMA = {
 }
 
 const REMARK_PLUGINS = [remarkGfm]
+// Order matters: sanitize runs first so the markup that slug (heading ids) and highlight (hljs
+// spans, which the schema above does not allow) add afterwards is not stripped.
 const REHYPE_PLUGINS = [
     [rehypeSanitize, SANITIZE_SCHEMA],
     rehypeSlug,
@@ -102,6 +110,8 @@ function isExternalHref(href: string): boolean {
     }
 }
 
+// Fenced code block with a copy button. The plain text to copy arrives via the data-code prop
+// because the children here are React elements, not strings (see the pre renderer below).
 function CodeBlock({ children, ...rest }: React.ComponentProps<"pre">) {
     const [copied, setCopied] = useState(false)
     const timeoutRef = useRef<number | null>(null)
@@ -237,6 +247,7 @@ const COMPONENTS: Components = {
     a: ({ href, children, ...rest }) => {
         const target = href ?? ""
         const linkClass = "text-link underline underline-offset-2 hover:opacity-80"
+        // Root-relative links go through the SPA router to avoid a full page reload.
         if (target.startsWith("/")) {
             return <Link to={target} className={linkClass}>{children}</Link>
         }

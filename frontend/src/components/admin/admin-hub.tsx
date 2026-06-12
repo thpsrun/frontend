@@ -49,6 +49,8 @@ function LogRow({
     entry: SyncLogEntry
     idx: number
     onRetry: (id: number) => void
+    // True only for the row whose retry is in flight (the caller matches on the
+    // mutation's variables), so a click never spins every failed row at once.
     retrying: boolean
 }) {
     return (
@@ -156,6 +158,9 @@ function LogRow({
     )
 }
 
+// Despite the name, this is the /admin/sync-logs page: moderation actions (verify, reject,
+// change players) queued for sync between thps.run and Speedrun.com, with a manual retry for
+// failed entries. The list polls every 15 seconds via useSyncLogs.
 export function AdminHub() {
     const [filters, setFilters] = useState<SyncLogsParams>({
         limit: PAGE_SIZE,
@@ -178,6 +183,7 @@ export function AdminHub() {
         setFilters((prev) => ({
             ...prev,
             [key]: value,
+            // Changing a filter jumps back to the first page; the old offset may be out of range.
             offset: 0,
         }))
     }

@@ -20,6 +20,8 @@ import { ScopeSummary } from "./scope-summary"
 import { relativeTimeFrom } from "./relative-time"
 import type { ApiKeyResponse } from "@/types/api-keys"
 
+// Within 30 days of expiry the cell switches from a plain date to a day countdown, and
+// nearExpiry drives the amber warning styling in the table.
 function formatExpiry(iso: string | null): {
     text: string
     nearExpiry: boolean
@@ -75,6 +77,8 @@ export function ApiKeysTable({ keys, onEdit, onRevoke }: ApiKeysTableProps) {
                                 />
                             </TableCell>
                             <TableCell>
+                                {/* The backend only ever returns the prefix; the full key is
+                                    shown once, at creation time. */}
                                 <code className="text-xs text-muted-foreground">
                                     {k.prefix}…
                                 </code>

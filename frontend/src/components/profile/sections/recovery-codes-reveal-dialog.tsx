@@ -25,6 +25,8 @@ export function RecoveryCodesRevealDialog({ open, onOpenChange }: Props) {
 
     const close = () => onOpenChange(false)
 
+    // Wipe the codes when the dialog closes so reopening never shows a stale, already
+    // invalidated set.
     useEffect(() => {
         if (open) return
         setCodes([])

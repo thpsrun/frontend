@@ -75,6 +75,8 @@ export function GeneralSection() {
             }
         }, [player])
     
+        // Exclude-from-streams saves immediately on toggle instead of going through the form's
+        // Save button: flip optimistically, then revert if the update fails.
         const handleExStreamToggle = async (checked: boolean) => {
             setExStream(checked)
             try {
@@ -144,6 +146,8 @@ export function GeneralSection() {
             const text = getErrorMessage(err, "Update Failed...")
             setStatusMsg({ type: "error", text })
             toast.error(text)
+            // Rethrow so UnsavedChangesGuard keeps blocking navigation when a guard-triggered
+            // save fails.
             throw err
         }
     }, [
@@ -174,6 +178,8 @@ export function GeneralSection() {
 
     if (!player) return null
 
+    // The pfp path is stable across uploads, so pfpVersion is a cache buster: bumping it after
+    // an upload forces the browser to refetch the image.
     const avatarUrl = player.player.pfp
         ? `${BACKEND_URL}${player.player.pfp}?v=${pfpVersion}`
         : null
@@ -207,6 +213,7 @@ export function GeneralSection() {
         setRawImageUrl(URL.createObjectURL(file))
         setCropDialogOpen(true)
 
+        // Clear the input so re-selecting the same file still fires onChange.
         if (fileInputRef.current) {
             fileInputRef.current.value = ""
         }

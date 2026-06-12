@@ -268,6 +268,8 @@ export function SubmissionsHub() {
         }))
         const mineIds = new Set(myRows.map((r) => r.run.id))
 
+        // A moderator's own run shows up in both their pending runs and their moderation queue.
+        // List it once under "Your Pending Runs" but flag it so moderator controls still apply.
         for (const group of data.moderation_queue ?? []) {
             for (const run of group.pending_runs) {
                 if (mineIds.has(run.id)) {
@@ -289,6 +291,8 @@ export function SubmissionsHub() {
             }
         }
 
+        // Same de-depe for the sent-back section: runs the user owns stay in their personal list
+        // instead of appearing twice.
         const reviewGroupsFiltered = (data.review_groups ?? [])
             .map((g) => ({
                 ...g,

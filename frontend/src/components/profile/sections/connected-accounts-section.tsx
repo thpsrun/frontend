@@ -25,6 +25,8 @@ const ROW_CLASS = cn(
     "px-4 py-3",
 )
 
+// Prefer the player's socials value over the allauth account username. Twitch socials are
+// stored as a full twitch.tv URL, so extract just the channel name for display.
 function rowLabel(
     providerId: AuthProvider,
     socialsValue: string | null,

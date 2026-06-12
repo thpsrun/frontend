@@ -32,6 +32,7 @@ export function RevokeApiKeyDialog({
     const [phrase, setPhrase] = useState("")
 
     const handleOpenChange = (next: boolean) => {
+        // Ignore dismissal attempts (escape, outside click) while the revoke is in flight.
         if (revokeKey.isPending) return
         if (next) setPhrase("")
         onOpenChange(next)
@@ -59,6 +60,8 @@ export function RevokeApiKeyDialog({
             toast.success("Key Revoked!")
             onOpenChange(false)
         } catch (err) {
+            // 404 means the key was already revoked or deleted elsewhere; the goal is met,
+            // so close with an info toast instead of an error.
             if (err instanceof ApiError && err.isNotFound) {
                 toast.info("Key Already Revoked!")
                 onOpenChange(false)

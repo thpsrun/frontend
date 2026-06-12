@@ -34,6 +34,8 @@ export function FormField({
     return (
         <div className={cn("flex flex-col gap-2", fieldClassName)}>
             <Label htmlFor={id}>{label}</Label>
+            {/* Password fields get the show/hide toggle variant, which manages its own
+                input type, so type is not forwarded to it. */}
             {type === "password" ? (
                 <PasswordInput
                     id={id}

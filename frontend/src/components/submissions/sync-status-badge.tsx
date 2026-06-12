@@ -2,6 +2,8 @@ import { Badge } from "@/components/ui/badge"
 import { AlertTriangle, Loader2 } from "lucide-react"
 import type { SrcSyncEntry } from "@/types/submissions"
 
+// Surfaces a run's speedrun.com (SRC) sync state. Failed takes precedence over pending,
+// and fully synced runs render no badge at all.
 export function SyncStatusBadge({
     sync,
 }: {

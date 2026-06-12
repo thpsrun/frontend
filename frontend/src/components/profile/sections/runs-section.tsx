@@ -34,6 +34,8 @@ interface GameGroup {
     runs: Run[]
 }
 
+// Run relation fields are plain id strings unless the request used ?embed=...; these guards
+// narrow to the embedded shapes that the queries in this file always ask for.
 const isGameEmbed = (g: Run["game"]): g is RunGameEmbed =>
     typeof g === "object" && g !== null && "slug" in g
 
@@ -61,6 +63,9 @@ function buildRunLeaderboardPath(run: Run): string | null {
     )
 }
 
+// Adapts a Run to the PendingRun shape EditRunDialog was built around (it comes from the
+// submissions queue). Fields that only exist on real submissions, like review_notes and
+// src_sync, are stubbed with empty values.
 function runToPendingRun(
     run: Run,
     vidStatus: VidStatus = "verified",
@@ -113,6 +118,8 @@ function RunRow({
 }) {
     const [editOpen, setEditOpen] = useState(false)
     const stop = (e: SyntheticEvent) => e.stopPropagation()
+    // Show the time in the board's primary timing method when set (p_time_secs of 0 means it
+    // is not), otherwise the default time. Prefer the archived video copy over the original.
     const time = run.times.p_time_secs > 0
         ? run.times.p_time
         : run.times.time
@@ -277,6 +284,8 @@ interface PendingGameGroup {
     items: PendingRunData[]
 }
 
+// The runs endpoint only filters on one status at a time, so pending runs need two queries
+// ("new" and "review") that get merged and grouped client-side.
 function PendingRunsPanel({ playerId }: { playerId: string | undefined }) {
     const enabled = Boolean(playerId)
     const newQuery = useAllRunsPaginated(
@@ -436,6 +445,9 @@ export function RunsSection() {
         Boolean(playerId),
     )
 
+    // Sort all runs by verification date (missing v_date sinks to the end) before grouping:
+    // insertion order into the Map makes the game with the most recent run appear first, and
+    // rows within each game stay newest-first.
     const groups: GameGroup[] = useMemo(() => {
         if (!data) return []
         const decorated = data

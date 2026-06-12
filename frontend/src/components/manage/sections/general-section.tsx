@@ -37,6 +37,8 @@ export function GeneralSection() {
         },
     })
 
+    // The form mounts before the game query resolves, so seed it once data arrives (and again on
+    // refetch). Also doubles as the discard action for the unsaved-changes guard.
     const seedForm = useCallback(() => {
         if (!game.data) return
         form.reset({
@@ -59,7 +61,8 @@ export function GeneralSection() {
                     release: values.release || null,
                 },
             })
-            toast.success("General settings saved.")
+            toast.success("General settings saved!")
+            // Reset to the saved values so isDirty clears and the unsaved-changes guard releases.
             form.reset(values)
         } catch (e) {
             const msg = applyValidationErrors(e, form, FIELD_NAMES)
@@ -67,6 +70,8 @@ export function GeneralSection() {
                 setTopError(msg)
                 toast.error(msg)
             }
+            // Rethrow so the unsaved-changes guard knows the save failed and keeps navigation
+            // blocked.
             throw e
         }
     }, [gameSlug, form, update])

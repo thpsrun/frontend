@@ -26,6 +26,7 @@ interface AvatarCropDialogProps {
     onCancel: () => void
 }
 
+// Avatars are exported at a fixed 256x256 PNG no matter the source image's resolution.
 const OUTPUT_SIZE = 256
 
 async function getCroppedImage(
@@ -95,6 +96,7 @@ export function AvatarCropDialog({
         try {
             const blob = await getCroppedImage(imageUrl, croppedAreaPixels)
             onCrop(blob)
+            // Reset so the next image opened in this dialog starts from a fresh pan/zoom.
             setCrop({ x: 0, y: 0 })
             setZoom(1)
             setCroppedAreaPixels(null)
@@ -130,6 +132,8 @@ export function AvatarCropDialog({
                         crop={crop}
                         zoom={zoom}
                         aspect={1}
+                        // The round shape is preview-only; the exported image  is a square PNG
+                        // that gets rounded by CSS wherever the avatar is displayed.
                         cropShape="round"
                         onCropChange={setCrop}
                         onZoomChange={setZoom}

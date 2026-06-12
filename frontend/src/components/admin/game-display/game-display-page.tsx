@@ -104,6 +104,7 @@ export function GameDisplayPage() {
                                         <TableRow key={game.id}>
                                             <TableCell>
                                                 <div className="flex items-center gap-3">
+                                                    {/* boxart is a backend-relative media path, so prefix the backend origin. */}
                                                     {game.boxart && (
                                                         <img
                                                             src={`${BACKEND_URL}${game.boxart}`}

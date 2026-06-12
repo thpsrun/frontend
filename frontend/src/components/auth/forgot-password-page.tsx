@@ -49,9 +49,13 @@ export function ForgotPasswordPage() {
     const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
     const turnstileRef = useRef<TurnstileWidgetHandle>(null)
 
+    // A blank site key disables Turnstile entirely (local dev); otherwise submitting is
+    // blocked until the widget hands us a token.
     const turnstileEnabled = isTurnstileEnabled()
     const turnstileReady = !turnstileEnabled || turnstileToken !== null
 
+    // Tick the rate-limit cooldown (seeded from the backend's Retry-After) down once per
+    // second so the banner copy updates and the submit button re-enables on its own.
     useEffect(() => {
         if (cooldownSec <= 0) return
         const id = window.setInterval(() => {
@@ -94,6 +98,8 @@ export function ForgotPasswordPage() {
                     : "Something went wrong. Please try again...",
             )
         } finally {
+            // Turnstile tokens are single-use; always force a fresh challenge so a retry
+            // doesn't submit an already-consumed token.
             resetTurnstile()
         }
     })

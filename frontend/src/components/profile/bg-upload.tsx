@@ -21,6 +21,8 @@ const MIN_WIDTH = 1280
 const MIN_HEIGHT = 720
 const ACCEPTED_TYPES = ["image/jpeg", "image/png"]
 
+// Resolves with an error message, or null when the file is acceptable. The dimension check
+// has to actually load the image, hence the promise and the object URL cleanup.
 function validateFile(file: File): Promise<string | null> {
     if (!ACCEPTED_TYPES.includes(file.type)) {
         return Promise.resolve("File must be a JPG or PNG.")
@@ -90,6 +92,8 @@ export function BgUpload({
     ) => {
         const file = e.target.files?.[0]
         if (file) handleFile(file)
+        // Reset the input so picking the same file again still fires a change event
+        // (e.g. retrying after a validation error).
         if (fileInputRef.current) {
             fileInputRef.current.value = ""
         }

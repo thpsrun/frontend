@@ -13,6 +13,8 @@ export function ScopeSummary({
     scopeGames,
     className,
 }: ScopeSummaryProps) {
+    // An empty scope list means no restriction on that axis, so a key with both lists empty
+    // is fully unscoped.
     const unscoped =
         scopeCapabilities.length === 0 && scopeGames.length === 0
 

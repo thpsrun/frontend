@@ -42,6 +42,8 @@ export function GuideFormPage({ mode }: Props) {
     )
 }
 
+// Split into a child component so useGuide is only mounted in edit mode; the create branch above
+// returns early and hooks cannot be called conditionally within one component.
 function EditPage({
     slug,
     isSuperuser,
@@ -80,6 +82,8 @@ function EditPage({
         )
     }
 
+    // Same fallback as canEditFallback in guide-detail-page: older backend responses can omit
+    // can_edit, and the author-owns-it case is not detectable client-side.
     const canEdit = typeof guide.can_edit === "boolean"
         ? guide.can_edit
         : isSuperuser || (!!guide.game?.slug && moderatedSlugs.includes(guide.game.slug))

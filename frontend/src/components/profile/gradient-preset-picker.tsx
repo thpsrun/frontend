@@ -96,6 +96,9 @@ function PresetTile({
                     "justify-center",
                 )}
             >
+                {/* Presets with non-deterministic colors (the "random" one rolls fresh
+                    colors on every getColors call) show a placeholder instead of a live
+                    preview, which would change on each render. */}
                 {preset.preview === "static" ? (
                     <StaticPreview
                         preset={preset}

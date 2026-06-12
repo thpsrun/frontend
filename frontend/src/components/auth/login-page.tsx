@@ -42,6 +42,8 @@ const PROVIDER_BRAND: Record<AuthProvider, string> = {
     twitch: "#9146FF",
 }
 
+// ProtectedRoute stashes the path it bounced the user from in location.state.from. Only
+// same-site relative paths are honored so the login page can't act as an open redirect.
 function getReturnTo(state: unknown): string {
     if (
         state
@@ -71,6 +73,8 @@ export function LoginPage() {
     const [loginValue, setLoginValue] = useState("")
     const [password, setPassword] = useState("")
     const [totpCode, setTotpCode] = useState("")
+    // The remember-me choice is mirrored to sessionStorage so it survives this page
+    // unmounting and remounting within the tab (e.g. a detour through verification).
     const [rememberMe, setRememberMe] = useState<boolean>(() =>
         peekRememberMeStash(),
     )
@@ -121,6 +125,8 @@ export function LoginPage() {
             if (result.mfaRequired) {
                 setMfaTriggered(true)
             } else if (result.emailVerificationRequired) {
+                // Credentials were correct but the signup email is still unverified
+                // (the backend reports a pending verify_email flow instead of a session).
                 navigate("/verify-email")
                 return
             } else {
@@ -133,6 +139,8 @@ export function LoginPage() {
         }
     }
 
+    // The MFA/authenticate endpoint accepts authenticator and recovery codes alike, so both
+    // mfaMode variants submit through here; the mode only changes the input field.
     const handleTotp = async (e: SyntheticEvent) => {
         e.preventDefault()
         setError(null)

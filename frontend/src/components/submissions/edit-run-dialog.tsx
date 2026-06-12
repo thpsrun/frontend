@@ -93,6 +93,8 @@ export function EditRunDialog({
     const detail = runQuery.data
     const gameDetail = gameQuery.data
 
+    // Refs rather than state: the form keeps these in sync, and this parent only reads them
+    // inside the close handler, so their changes never need to trigger a re-render here.
     const [discardOpen, setDiscardOpen] = useState(false)
     const isDirtyRef = useRef(false)
     const saveRef = useRef<(() => void) | null>(null)
@@ -281,6 +283,9 @@ interface EditRunFormProps {
     onRulesViewChange: (view: RulesView) => void
 }
 
+// All form state seeds from detail/run in useState initializers, so this component must only
+// mount once both queries have resolved (the parent guards on that). Radix unmounts the dialog
+// content on close, so every open starts from a fresh snapshot of the run.
 function EditRunForm({
     run, detail, gameDetail, updateRun, verifyReject, sendBack,
     isSaving, isDirtyRef, saveRef, onClose, onRequestClose,
@@ -414,6 +419,8 @@ function EditRunForm({
         selectedValueIds,
     )
 
+    // Prefer the live resolution for the currently selected category/level/variables, fall back
+    // to the resolution stored on the run, and require all three methods while neither is known.
     const resolvedRequired = timing?.resolved_required_methods
         ?? detail.times.resolved_required_methods
         ?? (["rta", "lrt", "igt"] as const)
@@ -613,6 +620,8 @@ function EditRunForm({
             return
         }
 
+        // A bad video is only overridable (via the type-to-confirm dialog) when it arrived
+        // through import; a hand-entered non-YouTube link is a hard error.
         const videoBad = !isSendBack && !!video && !isValidYouTubeUrl(video)
         const videoOverridable = videoBad
             && unresolvedImportIssues.video !== null
@@ -672,6 +681,9 @@ function EditRunForm({
                             ratio={16 / 9}
                             className="overflow-hidden rounded-md border border-border/40 bg-black"
                         >
+                            {/* Keyed by URL so React replaces the iframe instead of mutating
+                                src; src mutation navigates the frame and pushes a browser
+                                history entry for every edit. */}
                             <iframe
                                 key={embedUrl}
                                 src={embedUrl}

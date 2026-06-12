@@ -25,6 +25,9 @@ interface Props {
 
 type Step = "loading" | "setup" | "recovery"
 
+// Every allauth call in this flow (setup fetch, activation, recovery code generation) can
+// demand step-up reauth, so each runs through runGuarded: the dialog body swaps to ReauthStep
+// and the original action replays after the user verifies.
 export function EnrollTotpDialog({ open, onOpenChange }: Props) {
     const activate = useActivateTotp()
     const { mutateAsync: genCodes, isPending: generating } =
@@ -70,6 +73,8 @@ export function EnrollTotpDialog({ open, onOpenChange }: Props) {
         }, "Couldn't generate recovery codes. Please try again...")
     }, [runGuarded, genCodes])
 
+    // Generate recovery codes exactly once per enrollment: every generation invalidates the
+    // previous set, so a rerun would silently void codes the user may have already saved.
     useEffect(() => {
         if (step === "recovery" && !generated.current) {
             generated.current = true

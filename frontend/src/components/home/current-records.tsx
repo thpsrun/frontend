@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { buildLeaderboardPath, formatLongDate } from "@/lib/leaderboard-helpers"
 import { useGameGroupSpans, PlayerCell } from "@/lib/home-table-helpers"
+import { MobileListRow } from "@/components/common/mobile-list-row"
+import { useIsMobile } from "@/hooks/useIsMobile"
 import type { RecordRun } from "@/types/api"
 
 export const CurrentRecords = () => {
@@ -16,13 +18,62 @@ export const CurrentRecords = () => {
     )
     const { gameSpans, hoveredGroup, setHoveredGroup } =
         useGameGroupSpans(runs, getGameKey)
+    const isMobile = useIsMobile()
 
     return (
         <div className="flex-1 min-w-0 rounded-lg p-4 md:p-6 flex flex-col">
             <h1 className="text-xl font-semibold mb-4">
                 Current Records
             </h1>
-            <Table containerClassName="overflow-x-hidden">
+            {isMobile ? (
+                <div className="flex flex-col gap-2">
+                    {runs.map((run, i) => (
+                        <div key={run.id} className="flex flex-col gap-2">
+                            {gameSpans[i]?.show && (
+                                <Link
+                                    to={`/${run.game.slug}`}
+                                    className="px-1 pt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground"
+                                >
+                                    {run.game.name}
+                                </Link>
+                            )}
+                            <MobileListRow
+                                title={
+                                    <Link
+                                        to={run.level
+                                            ? `/${run.game.slug}/ils/${run.level.slug}/${run.category.slug}`
+                                            : buildLeaderboardPath(
+                                                run.game.slug,
+                                                run.category.slug,
+                                                run.value_slugs,
+                                            )}
+                                        className="text-link hover:underline truncate"
+                                    >
+                                        {run.level?.name ?? run.category.name}
+                                    </Link>
+                                }
+                                subtitle={<PlayerCell players={run.players} compact />}
+                                trailing={
+                                    run.video ? (
+                                        <a
+                                            href={run.video}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-link font-mono"
+                                        >
+                                            {run.time}
+                                        </a>
+                                    ) : (
+                                        <span className="font-mono">{run.time}</span>
+                                    )
+                                }
+                                trailingSub={formatLongDate(run.date)}
+                            />
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <Table containerClassName="overflow-x-hidden">
                 <TableHeader>
                     <TableRow>
                         <TableHead className="w-25">Game</TableHead>
@@ -104,7 +155,8 @@ export const CurrentRecords = () => {
                         </TableRow>
                     ))}
                 </TableBody>
-            </Table>
+                </Table>
+            )}
         </div>
     )
 }

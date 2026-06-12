@@ -80,6 +80,8 @@ export function SortableRow({
                     <span>
                         {item.appear_on_main ? "Visible" : "Hidden"}
                     </span>
+                    {/* appear_on_main is null for items without a main-page flag (levels),
+                        hence the coalesce for the controlled switch. */}
                     <Switch
                         checked={item.appear_on_main ?? false}
                         onCheckedChange={handleSwitchChange}

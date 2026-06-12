@@ -59,6 +59,9 @@ export function DangerSection() {
         }
 
         try {
+            // useDeleteAccount reauthenticates with the password before deleting (the backend
+            // requires a fresh login). The explicit logout afterwards clears whatever session
+            // state remains before we leave the page.
             await deleteAccount.mutateAsync({ password })
             await logout.mutateAsync()
             navigate("/")

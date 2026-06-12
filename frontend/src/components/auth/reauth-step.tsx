@@ -22,6 +22,9 @@ interface Props {
     description?: string
 }
 
+// Step-up reauth form shown inside sensitive-settings dialogs (paired with useReauthGuard,
+// which replays the blocked action via onSuccess). Verifies with the password when the
+// account has one, otherwise falls back to an OAuth popup against a linked provider.
 export function ReauthStep({
     onSuccess,
     onCancel,
@@ -29,6 +32,8 @@ export function ReauthStep({
     description,
 }: Props) {
     const { data: methods } = useAuthMethods()
+    // Default to true while methods load so passworded users (the common case) don't see
+    // the OAuth variant flash in first.
     const hasUsablePassword = methods?.has_usable_password ?? true
     const firstSocial = methods?.social_accounts[0] ?? null
     const useOAuthFlow = !hasUsablePassword
@@ -57,6 +62,8 @@ export function ReauthStep({
         }
     }
 
+    // Runs the provider popup flow; the backend rejects with account_mismatch if the user
+    // authenticates as a different provider account than the one linked to their profile.
     const handleOAuth = async (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (!firstSocial) return

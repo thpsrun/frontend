@@ -52,6 +52,8 @@ export function SortableSection({
     pendingItemId = null,
 }: SortableSectionProps) {
     const sensors = useSensors(
+        // Require slight pointer travel before a drag starts so a plain click on the handle
+        // is not treated as a drag.
         useSensor(PointerSensor, {
             activationConstraint: { distance: 4 },
         }),
@@ -60,6 +62,8 @@ export function SortableSection({
         }),
     )
 
+    // The backend replaces the whole order in one request, so report the full ordered id list,
+    // not just the moved item.
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event
         if (!over || active.id === over.id) return

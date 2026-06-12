@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils"
 
 import { GameDisplayEditor } from "./game-display-editor"
 
+// Split into a param-checking wrapper and the detail component so hooks only run with a
+// valid gameId; the wrapper can early-return on a missing param without breaking hook order.
 export function GameDisplayDetailPage() {
     const { gameId } = useParams<{ gameId: string }>()
 
@@ -25,6 +27,8 @@ export function GameDisplayDetailPage() {
 }
 
 function GameDisplayDetail({ gameId }: { gameId: string }) {
+    // The editor below mounts the same query; both subscriptions share one fetch through the
+    // query cache, this one just feeds the header title.
     const displayQuery = useGameDisplay(gameId)
     const data = displayQuery.data
 

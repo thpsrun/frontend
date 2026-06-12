@@ -1,5 +1,6 @@
 import { Link } from "react-router"
 import {
+    DropdownMenuItem,
     DropdownMenuSub,
     DropdownMenuSubTrigger,
     DropdownMenuSubContent,
@@ -9,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Bell } from "lucide-react"
 import { useUnreadCount } from "@/hooks/notifications/useUnreadCount"
 import { useNotifications } from "@/hooks/notifications/useNotifications"
+import { useIsMobile } from "@/hooks/useIsMobile"
 import { NotificationItemRow } from "./notification-item-row"
 
 const SUBMENU_LIMIT = 5
@@ -19,8 +21,26 @@ interface Props {
 
 export function NotificationsMenu({ onItemSelected }: Props) {
     const unread = useUnreadCount().data?.count ?? 0
+    const isMobile = useIsMobile()
     const list = useNotifications({ limit: SUBMENU_LIMIT })
     const items = list.data?.items ?? []
+
+    if (isMobile) {
+        return (
+            <DropdownMenuItem asChild>
+                <Link to="/notifications" onClick={onItemSelected}>
+                    <Bell className="size-4" />
+                    <span>Notifications</span>
+                    {unread > 0 && (
+                        <span className="ml-1 text-xs font-medium text-muted-foreground">
+                            • {unread}
+                            <span className="sr-only"> Unread</span>
+                        </span>
+                    )}
+                </Link>
+            </DropdownMenuItem>
+        )
+    }
 
     return (
         <DropdownMenuSub>

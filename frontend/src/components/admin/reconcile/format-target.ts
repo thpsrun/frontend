@@ -14,6 +14,7 @@ function asLeaderboardTarget(
     return desc as unknown as LeaderboardTarget
 }
 
+// Compact one-line label for a job's target, shown in the jobs table and the detail overview.
 export function describeTarget(input: TargetLike): string {
     if (input.scope === "SERIES") return "(all series)"
     if (input.target_id) return input.target_id

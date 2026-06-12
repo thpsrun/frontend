@@ -25,6 +25,8 @@ export function UnsavedChangesDialog({
     isSaving,
 }: UnsavedChangesDialogProps) {
     return (
+        // Dismissing the dialog by any means (escape, outside click) counts as Cancel, which
+        // resets the router blocker so the user stays on the page with edits intact.
         <AlertDialog open={open} onOpenChange={(o) => {
             if (!o) onCancel()
         }}>

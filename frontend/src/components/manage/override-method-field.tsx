@@ -9,6 +9,8 @@ interface OverrideMethodFieldProps {
     error?: string
 }
 
+// Preconfigured TimingMethodField for overriding which timing method counts as primary on a
+// single run. A null value means inherit resolvedPrimary (the game or category default).
 export function OverrideMethodField({
     value,
     onChange,

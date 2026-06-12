@@ -16,6 +16,9 @@ import {
 import { cn, formatDate } from "@/lib/utils"
 import type { BotSessionResponse } from "@/types/bot-session"
 
+// The backend stores the kill switch override as a tri-state: null inherits the environment
+// default, true forces the bot on, false forces it off. The ToggleGroup needs string values,
+// hence the mapping helpers below.
 type OverrideValue = "auto" | "on" | "off"
 
 function overrideToValue(override: boolean | null): OverrideValue {
@@ -260,6 +263,7 @@ function BotSessionSkeletonPanel() {
 }
 
 export function BotSessionPage() {
+    // The session query polls every 20 seconds, so the status panel tracks the bot live.
     const {
         data, isLoading, error, refetch,
         refresh, updateKillSwitch,

@@ -22,6 +22,10 @@ interface ModerationSettingsProps {
     deleteSrcKey: UseMutationResult<void, Error, void>
 }
 
+// Panel for storing a Speedrun.com API key; the backend uses it to push run approvals and
+// edits made on thps.run back to SRC, so it mainly matters for game moderators. The key is
+// write-only here: the API only reports whether one exists (has_src_key), never the key
+// itself.
 export function ModerationSettings({
     player,
     setSrcKey,
@@ -73,6 +77,8 @@ export function ModerationSettings({
                 "Failed to Remove API Key...",
             )
             setMessage({ type: "error", text })
+            // Rethrow so ConfirmDeleteDialog knows the confirm failed and stays open
+            // (it only closes itself when onConfirm resolves).
             throw err
         }
     }
