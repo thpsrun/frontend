@@ -17,13 +17,17 @@ export const MainPage = () => {
                     "xl:grid xl:grid-cols-[5fr_3fr] xl:items-start",
                 ].join(" ")}
             >
-                <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
+                {/* Streaming: first in DOM so it sits at the top on mobile;
+                    pinned to the top of the right column on xl+ */}
+                <div className="min-w-0 xl:col-start-2 xl:row-start-1">
+                    <LiveStreams />
+                </div>
+
+                <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex xl:col-start-1 xl:row-start-1 xl:row-span-2">
                     <CurrentRecords />
                 </div>
 
-                <div className="min-w-0 flex flex-col gap-3">
-                    <LiveStreams />
-
+                <div className="min-w-0 flex flex-col gap-3 xl:col-start-2 xl:row-start-2">
                     <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
                         <LatestRuns title="Latest Records" data={latestRecords} />
                     </div>
