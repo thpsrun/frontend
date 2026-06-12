@@ -17,17 +17,19 @@ export const MainPage = () => {
                     "xl:grid xl:grid-cols-[5fr_3fr] xl:items-start",
                 ].join(" ")}
             >
-                {/* Streaming: first in DOM so it sits at the top on mobile;
-                    pinned to the top of the right column on xl+ */}
-                <div className="min-w-0 xl:col-start-2 xl:row-start-1">
-                    <LiveStreams />
-                </div>
-
-                <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex xl:col-start-1 xl:row-start-1 xl:row-span-2">
+                <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
                     <CurrentRecords />
                 </div>
 
-                <div className="min-w-0 flex flex-col gap-3 xl:col-start-2 xl:row-start-2">
+                {/* Right column on xl. Below xl it collapses to display:contents
+                    so its children join the page's flex-col stack directly — that
+                    lets the streaming panel be ordered above CurrentRecords on
+                    mobile without disturbing the desktop two-column grid. */}
+                <div className="min-w-0 contents xl:flex xl:flex-col xl:gap-3">
+                    <div className="min-w-0 order-first xl:order-none">
+                        <LiveStreams />
+                    </div>
+
                     <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
                         <LatestRuns title="Latest Records" data={latestRecords} />
                     </div>
