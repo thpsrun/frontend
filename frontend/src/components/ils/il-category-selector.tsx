@@ -60,9 +60,9 @@ export const ILCategorySelector = ({
                 onValueChange={onCategoryChange}
             >
                 <TabsList className={cn(
-                    "flex flex-wrap gap-1",
-                    "bg-muted/20 p-1",
-                    "rounded-md",
+                    "flex w-full gap-1 bg-muted/20 p-1 rounded-md",
+                    "flex-nowrap overflow-x-auto",
+                    "lg:flex-wrap lg:overflow-x-visible",
                 )}>
                     {categories.map((cat) => (
                         <TabsTrigger

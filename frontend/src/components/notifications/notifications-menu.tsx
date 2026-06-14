@@ -56,6 +56,7 @@ export function NotificationsMenu({ onItemSelected }: Props) {
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent
                 sideOffset={4}
+                dir="ltr"
                 className="w-80 max-h-96 overflow-auto p-1"
             >
                 {list.isLoading && (
