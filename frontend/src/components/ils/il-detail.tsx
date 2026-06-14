@@ -12,14 +12,23 @@ import { Panel } from "@/components/ui/panel"
 import { Skeleton } from "@/components/ui/skeleton"
 
 import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table"
+import { LeaderboardMobileList } from "@/components/leaderboard/leaderboard-mobile-list"
+import { LeaderboardFiltersButton } from "@/components/leaderboard/leaderboard-filters-sheet"
 import { WRHistoryChart } from "@/components/leaderboard/wr-history-chart-lazy"
 import { VariableToggles } from "@/components/leaderboard/variable-toggles"
 import { ILCategorySelector } from "@/components/ils/il-category-selector"
 import { Button } from "@/components/ui/button"
-import { BookOpen, ChartLine, Send } from "lucide-react"
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
+import { BookOpen, ChartLine, MoreHorizontal, Send } from "lucide-react"
 
 import { useSession } from "@/hooks/auth/useSession"
 import { useCurrentPlayer } from "@/hooks/auth/useCurrentPlayer"
+import { useIsMobile } from "@/hooks/useIsMobile"
 import { SubmitRunDialog } from "@/components/submissions/submit-run-dialog"
 
 import { cn } from "@/lib/utils"
@@ -102,6 +111,13 @@ export const ILDetail = ({
                 (s): s is NonNullable<typeof s> => s !== null,
             ),
         [applicableVariables, valueSlugs],
+    )
+
+    const filterSummary = useMemo(
+        () =>
+            variableSelections.map((s) => s.value.name).join(" · ")
+            || "Default",
+        [variableSelections],
     )
 
     const leaderboardMethods = useMemo(
@@ -226,6 +242,7 @@ export const ILDetail = ({
     const [showSubmit, setShowSubmit] = useState(false)
     const { isAuthenticated } = useSession()
     const { player } = useCurrentPlayer()
+    const isMobile = useIsMobile()
 
     const activeLevel = useMemo(
         () => levels.find((lvl) => lvl.slug === levelSlug) ?? null,
@@ -241,6 +258,7 @@ export const ILDetail = ({
     }
 
     return (
+        <>
         <Panel className="p-0">
             <div className={cn(
                 "border-b border-border/40",
@@ -283,17 +301,14 @@ export const ILDetail = ({
                     onCategoryChange={handleCategoryChange}
                 />
 
-                <div className="flex items-start gap-3">
+                {/* Desktop: inline toggles + action buttons (unchanged) */}
+                <div className="hidden lg:flex items-start gap-3">
                     <div className="flex-1">
                         {activeCategory && (
                             <VariableToggles
-                                variables={
-                                    applicableVariables
-                                }
+                                variables={applicableVariables}
                                 valueSlugs={valueSlugs}
-                                onValueChange={
-                                    handleValueChange
-                                }
+                                onValueChange={handleValueChange}
                             />
                         )}
                     </div>
@@ -331,16 +346,44 @@ export const ILDetail = ({
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() =>
-                            setShowHistory(
-                                (prev) => !prev,
-                            )
-                        }
+                        onClick={() => setShowHistory((prev) => !prev)}
                         className="shrink-0 text-xs"
                     >
                         <ChartLine className="size-3.5" />
                         WR History Graph
                     </Button>
+                </div>
+
+                {/* Mobile/tablet: filters pill + overflow menu */}
+                <div className="flex items-center gap-2 lg:hidden">
+                    {activeCategory && (
+                        <LeaderboardFiltersButton
+                            variables={applicableVariables}
+                            valueSlugs={valueSlugs}
+                            onValueChange={handleValueChange}
+                            summary={filterSummary}
+                        />
+                    )}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger
+                            aria-label="More Leaderboard Actions"
+                            className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-card/60"
+                        >
+                            <MoreHorizontal className="size-4" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            {rulesHasAny && (
+                                <DropdownMenuItem onSelect={onShowRules}>
+                                    <BookOpen className="size-3.5" />
+                                    Rules
+                                </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem onSelect={() => setShowHistory((prev) => !prev)}>
+                                <ChartLine className="size-3.5" />
+                                WR History Graph
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
 
@@ -378,18 +421,21 @@ export const ILDetail = ({
                 {!lbLoading && !lbError
                     && categorySlug
                     && leaderboardMethods && (
-                    <LeaderboardTable
-                        runs={runs}
-                        expectedPlayers={
-                            activeCategory?.players
-                        }
-                        requiredMethods={
-                            leaderboardMethods.requiredMethods
-                        }
-                        primaryMethod={
-                            leaderboardMethods.primaryMethod
-                        }
-                    />
+                    isMobile ? (
+                        <LeaderboardMobileList
+                            runs={runs}
+                            expectedPlayers={activeCategory?.players}
+                            requiredMethods={leaderboardMethods.requiredMethods}
+                            primaryMethod={leaderboardMethods.primaryMethod}
+                        />
+                    ) : (
+                        <LeaderboardTable
+                            runs={runs}
+                            expectedPlayers={activeCategory?.players}
+                            requiredMethods={leaderboardMethods.requiredMethods}
+                            primaryMethod={leaderboardMethods.primaryMethod}
+                        />
+                    )
                 )}
             </div>
 
@@ -404,5 +450,27 @@ export const ILDetail = ({
                 />
             )}
         </Panel>
+        {isAuthenticated && activeCategory && (
+            <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+3.5rem)] z-40 px-4 lg:hidden">
+                <span
+                    className="block"
+                    title={
+                        !player?.moderation.has_src_key
+                            ? "A valid SRC API Key is required to submit runs"
+                            : undefined
+                    }
+                >
+                    <Button
+                        onClick={() => setShowSubmit(true)}
+                        disabled={!player?.moderation.has_src_key}
+                        className="w-full shadow-lg"
+                    >
+                        <Send className="size-4" />
+                        Submit Run
+                    </Button>
+                </span>
+            </div>
+        )}
+        </>
     )
 }

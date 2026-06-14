@@ -56,7 +56,7 @@ export function AuthButton() {
     }
 
     return (
-        <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+        <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen} dir="rtl">
             <DropdownMenuTrigger asChild>
                 <button className={cn(
                     "flex items-center gap-2 rounded-md",
@@ -91,7 +91,7 @@ export function AuthButton() {
                 </button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" dir="ltr" className="w-56">
                 <DropdownMenuItem asChild>
                     <Link to={playerProfile}>
                         Player Profile
