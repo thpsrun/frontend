@@ -26,9 +26,10 @@ export const MainPage = () => {
                     lets the streaming panel be ordered above CurrentRecords on
                     mobile without disturbing the desktop two-column grid. */}
                 <div className="min-w-0 contents xl:flex xl:flex-col xl:gap-3">
-                    <div className="min-w-0 order-first xl:order-none">
-                        <LiveStreams />
-                    </div>
+                    {/* LiveStreams owns its own ordering/min-w classes and
+                        returns null when nobody is streaming, so no empty flex
+                        slot (and no phantom gap-3) is left behind. */}
+                    <LiveStreams />
 
                     <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
                         <LatestRuns title="Latest Records" data={latestRecords} />

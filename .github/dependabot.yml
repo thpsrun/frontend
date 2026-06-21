@@ -1,73 +1,44 @@
 version: 2
 updates:
-  # JS/TS dependencies for the Vite + React app.
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
     groups:
-      react:
-        applies-to: version-updates
-        patterns:
-          - "react"
-          - "react-*"
-          - "@types/react"
-          - "@types/react-*"
-      radix:
-        applies-to: version-updates
-        patterns:
-          - "@radix-ui/*"
-      tanstack:
-        applies-to: version-updates
-        patterns:
-          - "@tanstack/*"
-      tailwind:
-        applies-to: version-updates
-        patterns:
-          - "tailwindcss"
-          - "@tailwindcss/*"
-          - "tw-animate-css"
-      eslint:
-        applies-to: version-updates
-        patterns:
-          - "eslint"
-          - "eslint-*"
-          - "@eslint/*"
-          - "typescript-eslint"
-      types:
-        applies-to: version-updates
-        patterns:
-          - "@types/*"
-        exclude-patterns:
-          - "@types/react"
-          - "@types/react-*"
-      support-dependencies:
+      npm-version-updates:
         applies-to: version-updates
         patterns:
           - "*"
-        exclude-patterns:
-          - "react"
-          - "react-*"
-          - "@radix-ui/*"
-          - "@tanstack/*"
-          - "tailwindcss"
-          - "@tailwindcss/*"
-          - "tw-animate-css"
-          - "eslint"
-          - "eslint-*"
-          - "@eslint/*"
-          - "typescript-eslint"
-          - "@types/*"
+      npm-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
 
-  # GitHub Actions versions used in workflows.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      actions-version-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      actions-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
 
-  # Base image for the frontend Dockerfile.
   - package-ecosystem: "docker"
     directory: "/frontend"
     schedule:
       interval: "weekly"
+    groups:
+      docker-version-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      docker-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"

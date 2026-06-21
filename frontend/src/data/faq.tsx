@@ -72,7 +72,7 @@ export const FAQ_ENTRIES: FaqEntry[] = [
                             </li>
                             <li>Shorter Formula:
                                 <ul className="list-disc pl-6 mt-1">
-                                    <li>In Python: <br /> <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">math.floor((math.pow(math.e, (4.8284 * math.sqrt(wr_time / 60) * (wr_time/pb_secs)))) * run_type</code>
+                                    <li>In Python: <br /> <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">math.floor((math.pow(math.e, (4.8284 * math.sqrt(wr_time / 60) * (wr_time/pb_secs)))) * run_type</code> <br />
                                         Written Formula: <br /> <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">e<sup>(4.8284 * √(X/60) * (X/Y - 1))</sup> * z</code>
                                         <ul className="list-disc pl-6 mt-1">
                                             <li>X = World Record Seconds</li>
