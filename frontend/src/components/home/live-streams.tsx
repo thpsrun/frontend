@@ -71,7 +71,7 @@ export const LiveStreams = () => {
     }
 
     return (
-        <div className="rounded-lg bg-background-transparent bg-opacity-10 backdrop-blur-sm overflow-hidden">
+        <div className="min-w-0 order-first xl:order-0 rounded-lg bg-background-transparent bg-opacity-10 backdrop-blur-sm overflow-hidden">
             <button
                 type="button"
                 onClick={() => setExpanded((v) => !v)}
