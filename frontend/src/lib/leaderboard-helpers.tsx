@@ -85,11 +85,16 @@ export const CountryFlag = (
     )
 }
 
+const parseDisplayDate = (dateStr: string): Date =>
+    /^\d{4}-\d{2}-\d{2}$/.test(dateStr)
+        ? new Date(`${dateStr}T00:00:00`)
+        : new Date(dateStr)
+
 export const formatLongDate = (
     dateStr: string | null,
 ): string => {
     if (!dateStr) return ""
-    return new Date(dateStr).toLocaleDateString(
+    return parseDisplayDate(dateStr).toLocaleDateString(
         "en-US",
         {
             year: "numeric",
@@ -103,7 +108,7 @@ export const timeAgo = (dateStr: string | null): string => {
     if (!dateStr) return ""
 
     const now = new Date()
-    const then = new Date(dateStr)
+    const then = parseDisplayDate(dateStr)
     const diffMs = now.getTime() - then.getTime()
     const days = Math.floor(
         diffMs / (1000 * 60 * 60 * 24),

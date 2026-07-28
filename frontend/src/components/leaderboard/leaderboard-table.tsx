@@ -48,12 +48,12 @@ export const LeaderboardTable = (
     {
         runs,
         expectedPlayers,
-        requiredMethods,
+        allowedMethods,
         primaryMethod,
     }: {
         runs: LbsRun[];
         expectedPlayers?: number;
-        requiredMethods: TimingMethodType[];
+        allowedMethods: TimingMethodType[];
         primaryMethod: TimingMethodType;
     },
 ) => {
@@ -68,7 +68,7 @@ export const LeaderboardTable = (
     }
 
     const methodColumns = ALL_TIMING_METHODS.filter(
-        (m) => requiredMethods.includes(m),
+        (m) => allowedMethods.includes(m),
     )
 
     return (
@@ -237,6 +237,8 @@ const LeaderboardRow = (
                                 "h-6 w-6 rounded",
                                 "hover:bg-muted/40",
                             )}
+                            title="Watch Video"
+                            aria-label="Watch Video"
                         >
                             {r.video.includes("youtube.com")
                             || r.video.includes(
@@ -272,6 +274,7 @@ const LeaderboardRow = (
                                 "text-muted-foreground",
                             )}
                             title="Archive Video"
+                            aria-label="Archive Video"
                         >
                             <Cloud size={14} />
                         </a>
@@ -365,6 +368,8 @@ export const RecentRunItem = ({
                                 "h-5 w-5 rounded",
                                 "hover:bg-muted/40",
                             )}
+                            title="Watch Video"
+                            aria-label="Watch Video"
                         >
                             {r.video.includes("youtube.com")
                             || r.video.includes(
@@ -393,6 +398,7 @@ export const RecentRunItem = ({
                                 "text-muted-foreground",
                             )}
                             title="Archive Video"
+                            aria-label="Archive Video"
                         >
                             <Cloud size={11} />
                         </a>

@@ -1,16 +1,20 @@
 import { useCallback } from "react"
 import { Link } from "react-router"
+import { Trophy } from "lucide-react"
 import { useTHPSRuns } from "@/hooks/home/useTHPSData"
 import { cn } from "@/lib/utils"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { buildLeaderboardPath, formatLongDate } from "@/lib/leaderboard-helpers"
 import { useGameGroupSpans, PlayerCell } from "@/lib/home-table-helpers"
+import { EmptyState } from "@/components/common/empty-state"
 import { MobileListRow } from "@/components/common/mobile-list-row"
+import { QueryErrorBanner } from "@/components/common/query-error-banner"
+import { TableSkeleton } from "@/components/common/table-skeleton"
 import { useIsMobile } from "@/hooks/useIsMobile"
 import type { RecordRun } from "@/types/api"
 
 export const CurrentRecords = () => {
-    const { data: runs } = useTHPSRuns()
+    const { data: runs, isLoading, error, refetch } = useTHPSRuns()
 
     const getGameKey = useCallback(
         (run: RecordRun) => run.game.slug,
@@ -22,10 +26,22 @@ export const CurrentRecords = () => {
 
     return (
         <div className="flex-1 min-w-0 rounded-lg p-4 md:p-6 flex flex-col">
-            <h1 className="text-xl font-semibold mb-4">
+            <h2 className="text-xl font-semibold mb-4">
                 Current Records
-            </h1>
-            {isMobile ? (
+            </h2>
+            {isLoading ? (
+                <TableSkeleton
+                    columns={isMobile ? 2 : 5}
+                    rows={8}
+                    headers={isMobile
+                        ? undefined
+                        : ["Game", "Category", "Player", "Time", "Date"]}
+                />
+            ) : error ? (
+                <QueryErrorBanner error={error} onRetry={refetch} />
+            ) : runs.length === 0 ? (
+                <EmptyState inset icon={Trophy} title="No records yet." />
+            ) : isMobile ? (
                 <div className="flex flex-col gap-2">
                     {runs.map((run, i) => (
                         <div key={run.id} className="flex flex-col gap-2">

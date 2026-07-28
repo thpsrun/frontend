@@ -26,6 +26,7 @@ export const Socials = () => {
                         href={social.url}
                         target="_blank"
                         rel="noopener noreferrer"
+                        aria-label={entry.platform}
                     >
                         <Icon className={socialIconClass} />
                     </a>

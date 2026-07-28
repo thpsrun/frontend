@@ -36,7 +36,7 @@ export function ApiKeysSection() {
                 They can be used to create bots or programs or scripts. Up to 10 active
                 keys can be created per account, with a maximum time of 365 days.
             </p>
-            <p className="max-w-xl mt-2 text-red-500">
+            <p className="max-w-xl mt-2 text-destructive">
                 WARNING!! Anyone with these API keys can act on your behalf, INCLUDING bad actors.
                 Always make sure your keys are secured, never give them to anyone, and definitely
                 never release them onto the public Internet and/or chat!!

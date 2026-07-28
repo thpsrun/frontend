@@ -12,7 +12,9 @@ export interface SubmissionTimes {
     p_time_secs: number
     primary_method_override: TimingMethodType | null
     resolved_primary_method: TimingMethodType
+    resolved_allowed_methods: TimingMethodType[]
     resolved_required_methods: TimingMethodType[]
+    resolved_optional_methods: TimingMethodType[]
 }
 
 // Utilized on /api/v1/auth/submissions

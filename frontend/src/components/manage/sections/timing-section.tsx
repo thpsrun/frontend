@@ -15,8 +15,8 @@ import { useUpdateGame } from "@/hooks/game/useUpdateGame"
 import { applyValidationErrors } from "@/lib/validation-errors"
 
 import { GuideMarkdownEditor } from "@/components/guides/guide-markdown-editor"
-import { TimingMethodField } from "@/components/manage/timing-method-field"
-import { RequiredMethodsField } from "@/components/manage/required-methods-field"
+import { TimingMethodsEditor } from "@/components/manage/timing-methods-editor"
+import { normalizeRequired } from "@/lib/timing-inheritance"
 
 import type { TimingMethodType } from "@/types/shared"
 import { ALL_TIMING_METHODS } from "@/types/shared"
@@ -25,6 +25,8 @@ interface FormValues {
     rules: string
     defaulttime: TimingMethodType
     idefaulttime: TimingMethodType
+    allowed_methods_fg: TimingMethodType[]
+    allowed_methods_il: TimingMethodType[]
     required_methods_fg: TimingMethodType[]
     required_methods_il: TimingMethodType[]
 }
@@ -33,6 +35,8 @@ const FIELD_NAMES: Array<keyof FormValues> = [
     "rules",
     "defaulttime",
     "idefaulttime",
+    "allowed_methods_fg",
+    "allowed_methods_il",
     "required_methods_fg",
     "required_methods_il",
 ]
@@ -50,6 +54,8 @@ export function TimingSection() {
             rules: "",
             defaulttime: "rta",
             idefaulttime: "rta",
+            allowed_methods_fg: [...ALL_TIMING_METHODS],
+            allowed_methods_il: [...ALL_TIMING_METHODS],
             required_methods_fg: [...ALL_TIMING_METHODS],
             required_methods_il: [...ALL_TIMING_METHODS],
         },
@@ -63,9 +69,15 @@ export function TimingSection() {
             rules: game.data.rules ?? "",
             defaulttime: game.data.defaulttime ?? "rta",
             idefaulttime: game.data.idefaulttime ?? "rta",
+            allowed_methods_fg: game.data.allowed_methods_fg
+                ?? [...ALL_TIMING_METHODS],
+            allowed_methods_il: game.data.allowed_methods_il
+                ?? [...ALL_TIMING_METHODS],
             required_methods_fg: game.data.required_methods_fg
+                ?? game.data.allowed_methods_fg
                 ?? [...ALL_TIMING_METHODS],
             required_methods_il: game.data.required_methods_il
+                ?? game.data.allowed_methods_il
                 ?? [...ALL_TIMING_METHODS],
         })
     }, [game.data, form])
@@ -79,7 +91,22 @@ export function TimingSection() {
         const values = form.getValues()
         setTopError(null)
         try {
-            await update.mutateAsync({ slug: gameSlug, data: values })
+            await update.mutateAsync({
+                slug: gameSlug,
+                data: {
+                    ...values,
+                    required_methods_fg: normalizeRequired(
+                        values.required_methods_fg,
+                        values.allowed_methods_fg,
+                        values.defaulttime,
+                    ) ?? values.allowed_methods_fg,
+                    required_methods_il: normalizeRequired(
+                        values.required_methods_il,
+                        values.allowed_methods_il,
+                        values.idefaulttime,
+                    ) ?? values.allowed_methods_il,
+                },
+            })
             toast.success("Timing Config Saved!")
             // Reset to the saved values so isDirty clears and the unsaved-changes guard releases.
             form.reset(values)
@@ -112,9 +139,6 @@ export function TimingSection() {
         )
     }
 
-    const fg = form.watch("required_methods_fg")
-    const il = form.watch("required_methods_il")
-
     return (
         <form onSubmit={onSubmit} className="flex flex-col gap-6">
             {topError && (
@@ -128,43 +152,35 @@ export function TimingSection() {
                 }
             >
                 <div className="flex flex-col gap-4">
-                    <Controller
-                        control={form.control}
-                        name="required_methods_fg"
-                        render={({ field, fieldState }) => (
-                            // The game is the root of the inheritance chain, so the field's null
-                            // (inherit) has no parent to defer to; onChange stores it as an empty
-                            // list instead.
-                            <RequiredMethodsField
-                                id="required_methods_fg"
-                                label="Required Methods"
-                                value={field.value}
-                                onChange={(v) => field.onChange(v ?? [])}
-                                error={fieldState.error?.message}
-                            />
-                        )}
-                    />
-                    <Controller
-                        control={form.control}
-                        name="defaulttime"
-                        rules={{
-                            validate: (v) =>
-                                fg.includes(v)
-                                || "Primary timing method must be one of the required methods!",
+                    <TimingMethodsEditor
+                        id="timing-methods-fg"
+                        value={{
+                            allowed: form.watch("allowed_methods_fg"),
+                            required: form.watch("required_methods_fg"),
+                            primary: form.watch("defaulttime"),
                         }}
-                        render={({ field, fieldState }) => (
-                            // With nothing required, requiredMethods falls back to the field's
-                            // full default list so the select never renders empty.
-                            <TimingMethodField
-                                id="defaulttime"
-                                label="Primary timing method"
-                                value={field.value}
-                                onChange={(v) => v && field.onChange(v)}
-                                requiredMethods={fg.length > 0 ? fg : undefined}
-                                error={fieldState.error?.message}
-                                helpText="Must be one of the required methods above!"
-                            />
-                        )}
+                        onChange={(next) => {
+                            form.setValue(
+                                "allowed_methods_fg",
+                                next.allowed ?? [],
+                                { shouldDirty: true },
+                            )
+                            form.setValue(
+                                "required_methods_fg",
+                                next.required ?? [],
+                                { shouldDirty: true },
+                            )
+                            if (next.primary) {
+                                form.setValue("defaulttime", next.primary, {
+                                    shouldDirty: true,
+                                })
+                            }
+                        }}
+                        error={
+                            form.formState.errors.allowed_methods_fg?.message
+                            ?? form.formState.errors.required_methods_fg?.message
+                            ?? form.formState.errors.defaulttime?.message
+                        }
                     />
                     <div className="flex flex-col gap-2">
                         <Button
@@ -203,38 +219,35 @@ export function TimingSection() {
                 }
             >
                 <div className="flex flex-col gap-4">
-                    <Controller
-                        control={form.control}
-                        name="required_methods_il"
-                        render={({ field, fieldState }) => (
-                            <RequiredMethodsField
-                                id="required_methods_il"
-                                label="Required Methods"
-                                value={field.value}
-                                onChange={(v) => field.onChange(v ?? [])}
-                                error={fieldState.error?.message}
-                            />
-                        )}
-                    />
-                    <Controller
-                        control={form.control}
-                        name="idefaulttime"
-                        rules={{
-                            validate: (v) =>
-                                il.includes(v)
-                                || "Primary timing method must be one of the required methods!",
+                    <TimingMethodsEditor
+                        id="timing-methods-il"
+                        value={{
+                            allowed: form.watch("allowed_methods_il"),
+                            required: form.watch("required_methods_il"),
+                            primary: form.watch("idefaulttime"),
                         }}
-                        render={({ field, fieldState }) => (
-                            <TimingMethodField
-                                id="idefaulttime"
-                                label="Primary Timing Method"
-                                value={field.value}
-                                onChange={(v) => v && field.onChange(v)}
-                                requiredMethods={il.length > 0 ? il : undefined}
-                                error={fieldState.error?.message}
-                                helpText="Must be one of the required methods above!"
-                            />
-                        )}
+                        onChange={(next) => {
+                            form.setValue(
+                                "allowed_methods_il",
+                                next.allowed ?? [],
+                                { shouldDirty: true },
+                            )
+                            form.setValue(
+                                "required_methods_il",
+                                next.required ?? [],
+                                { shouldDirty: true },
+                            )
+                            if (next.primary) {
+                                form.setValue("idefaulttime", next.primary, {
+                                    shouldDirty: true,
+                                })
+                            }
+                        }}
+                        error={
+                            form.formState.errors.allowed_methods_il?.message
+                            ?? form.formState.errors.required_methods_il?.message
+                            ?? form.formState.errors.idefaulttime?.message
+                        }
                     />
                 </div>
             </SectionPanel>

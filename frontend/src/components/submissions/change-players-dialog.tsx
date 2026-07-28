@@ -22,9 +22,19 @@ import type {
 } from "@/types/submissions"
 
 interface PlayerRow {
+    id: number
     rel: "user" | "guest"
     value: string
 }
+
+// Stable per-row ids so React state (focus, search dropdown) stays attached to
+// the right row when a middle row is removed. Uniqueness within one list is
+// all that matters, so a module counter is enough.
+let nextRowId = 0
+const makeRow = (
+    rel: "user" | "guest",
+    value: string,
+): PlayerRow => ({ id: nextRowId++, rel, value })
 
 export function ChangePlayersDialog({
     run,
@@ -37,19 +47,18 @@ export function ChangePlayersDialog({
 }) {
     const { changePlayers } = useSubmissions()
 
-    const initialRows: PlayerRow[] = run.players.map((p) => ({
-        rel: "user" as const,
-        value: p.name,
-    }))
+    const initialRows: PlayerRow[] = run.players.map(
+        (p) => makeRow("user", p.name),
+    )
 
     const [rows, setRows] = useState<PlayerRow[]>(initialRows)
     const [error, setError] = useState<string | null>(null)
-    const [activeSearchIdx, setActiveSearchIdx] = useState<number | null>(null)
+    const [activeSearchId, setActiveSearchId] = useState<number | null>(null)
 
-    // One search hook serves every row: only the row currently being typed in (activeSearchIdx)
+    // One search hook serves every row: only the row currently being typed in (activeSearchId)
     // feeds it, and an empty query keeps the underlying query disabled.
-    const activeSearchQuery = activeSearchIdx !== null
-        ? (rows[activeSearchIdx]?.value ?? "")
+    const activeSearchQuery = activeSearchId !== null
+        ? (rows.find((r) => r.id === activeSearchId)?.value ?? "")
         : ""
     const searchResults = usePlayerSearch(activeSearchQuery)
 
@@ -58,25 +67,22 @@ export function ChangePlayersDialog({
     const handleOpenChange = (next: boolean) => {
         if (next) {
             setRows(
-                run.players.map((p) => ({
-                    rel: "user" as const,
-                    value: p.name,
-                })),
+                run.players.map((p) => makeRow("user", p.name)),
             )
             setError(null)
-            setActiveSearchIdx(null)
+            setActiveSearchId(null)
         }
         onOpenChange(next)
     }
 
     const updateRow = (
-        idx: number,
-        field: keyof PlayerRow,
+        id: number,
+        field: keyof Omit<PlayerRow, "id">,
         val: string,
     ) => {
         setRows((prev) =>
-            prev.map((r, i) =>
-                i === idx ? { ...r, [field]: val } : r,
+            prev.map((r) =>
+                r.id === id ? { ...r, [field]: val } : r,
             ),
         )
     }
@@ -84,13 +90,13 @@ export function ChangePlayersDialog({
     const addRow = () => {
         setRows((prev) => [
             ...prev,
-            { rel: "user", value: "" },
+            makeRow("user", ""),
         ])
     }
 
-    const removeRow = (idx: number) => {
-        setRows((prev) => prev.filter((_, i) => i !== idx))
-        if (activeSearchIdx === idx) setActiveSearchIdx(null)
+    const removeRow = (id: number) => {
+        setRows((prev) => prev.filter((r) => r.id !== id))
+        if (activeSearchId === id) setActiveSearchId(null)
     }
 
     const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
@@ -133,9 +139,9 @@ export function ChangePlayersDialog({
                     </DialogHeader>
 
                     <div className="space-y-3">
-                        {rows.map((row, idx) => (
+                        {rows.map((row) => (
                             <div
-                                key={idx}
+                                key={row.id}
                                 className="flex items-end gap-2"
                             >
                                 <div className="w-24 shrink-0">
@@ -145,9 +151,9 @@ export function ChangePlayersDialog({
                                     <Select
                                         value={row.rel}
                                         onValueChange={(v) => {
-                                            updateRow(idx, "rel", v)
-                                            if (activeSearchIdx === idx) {
-                                                setActiveSearchIdx(null)
+                                            updateRow(row.id, "rel", v)
+                                            if (activeSearchId === row.id) {
+                                                setActiveSearchId(null)
                                             }
                                         }}
                                     >
@@ -174,17 +180,17 @@ export function ChangePlayersDialog({
                                         value={row.value}
                                         onChange={(e) => {
                                             updateRow(
-                                                idx,
+                                                row.id,
                                                 "value",
                                                 e.target.value,
                                             )
                                             if (row.rel === "user") {
-                                                setActiveSearchIdx(idx)
+                                                setActiveSearchId(row.id)
                                             }
                                         }}
                                         onFocus={() => {
                                             if (row.rel === "user") {
-                                                setActiveSearchIdx(idx)
+                                                setActiveSearchId(row.id)
                                             }
                                         }}
                                         placeholder={
@@ -195,14 +201,14 @@ export function ChangePlayersDialog({
                                     />
 
                                     {row.rel === "user"
-                                        && activeSearchIdx === idx
+                                        && activeSearchId === row.id
                                         && searchResults.data
                                         && searchResults.data.length > 0 && (
                                             <PlayerSearchDropdown
                                                 results={searchResults.data}
                                                 onSelect={(result) => {
-                                                    updateRow(idx, "value", result.name)
-                                                    setActiveSearchIdx(null)
+                                                    updateRow(row.id, "value", result.name)
+                                                    setActiveSearchId(null)
                                                 }}
                                             />
                                         )}
@@ -212,7 +218,7 @@ export function ChangePlayersDialog({
                                     size="icon"
                                     variant="ghost"
                                     aria-label="Remove player"
-                                    onClick={() => removeRow(idx)}
+                                    onClick={() => removeRow(row.id)}
                                     disabled={rows.length <= 1}
                                     className="shrink-0"
                                 >

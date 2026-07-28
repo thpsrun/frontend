@@ -4,6 +4,7 @@ import type { TimingMethodType } from "@/types/shared"
 
 export interface UpdateCategoryRequest {
     defaulttime?: TimingMethodType | null
+    allowed_methods?: TimingMethodType[] | null
     required_methods?: TimingMethodType[] | null
     rules?: string | null
 }

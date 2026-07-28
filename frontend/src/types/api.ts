@@ -19,6 +19,8 @@ export interface Game {
     idefaulttime: TimingMethodType
     pointsmax: number
     ipointsmax: number
+    allowed_methods_fg: TimingMethodType[]
+    allowed_methods_il: TimingMethodType[]
     required_methods_fg: TimingMethodType[]
     required_methods_il: TimingMethodType[]
     rules: string | null
@@ -35,6 +37,7 @@ export interface CategoryVariableValue {
     archive: boolean
     rules: string | null
     defaulttime: TimingMethodType | null
+    allowed_methods: TimingMethodType[] | null
     required_methods: TimingMethodType[] | null
 }
 
@@ -47,6 +50,7 @@ export interface CategoryVariable {
     archive: boolean
     values: CategoryVariableValue[]
     defaulttime: TimingMethodType | null
+    allowed_methods: TimingMethodType[] | null
     required_methods: TimingMethodType[] | null
 }
 
@@ -63,6 +67,7 @@ export interface GameCategory {
     players: number
     variables: CategoryVariable[]
     defaulttime: TimingMethodType | null
+    allowed_methods: TimingMethodType[] | null
     required_methods: TimingMethodType[] | null
 }
 
@@ -92,7 +97,9 @@ export interface GameDetail extends Game {
 
 // Utilized on GET /api/v1/games/{slug}/timings
 export interface ResolveTimingResponse {
+    resolved_allowed_methods: TimingMethodType[]
     resolved_required_methods: TimingMethodType[]
+    resolved_optional_methods: TimingMethodType[]
     resolved_primary_method: TimingMethodType
 }
 
@@ -452,7 +459,9 @@ export interface RunDetailTimes {
     p_time_secs: number
     primary_method_override: TimingMethodType | null
     resolved_primary_method: TimingMethodType
+    resolved_allowed_methods: TimingMethodType[]
     resolved_required_methods: TimingMethodType[]
+    resolved_optional_methods: TimingMethodType[]
 }
 
 export interface RunDetailPlayer {

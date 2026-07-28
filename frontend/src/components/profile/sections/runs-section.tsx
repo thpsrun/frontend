@@ -4,7 +4,8 @@ import { Link } from "react-router"
 import { ExternalLink, Inbox, Pencil } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import {
-    buildLeaderboardPath, getRankBackground, StreakDagger,
+    buildLeaderboardPath, formatLongDate, getRankBackground,
+    StreakDagger, timeAgo,
 } from "@/lib/leaderboard-helpers"
 import { Label } from "@/components/ui/label"
 import { Panel } from "@/components/ui/panel"
@@ -202,9 +203,12 @@ function RunRow({
                 )}
             </TableCell>
             <TableCell className="text-xs text-center">
-                {run.v_date
-                    ? new Date(run.v_date).toLocaleDateString()
-                    : new Date(run.date).toLocaleDateString()}
+                <span
+                    title={formatLongDate(run.v_date ?? run.date)}
+                    className="cursor-help"
+                >
+                    {timeAgo(run.v_date ?? run.date)}
+                </span>
             </TableCell>
             <TableCell>
                 <div

@@ -32,6 +32,7 @@ import {
     TabsContent,
 } from "@/components/ui/tabs"
 import { Panel } from "@/components/ui/panel"
+import { AlertBanner } from "@/components/common/alert-banner"
 
 import { usePlayerProfile, PlayerNotFoundError } from "@/hooks/player/usePlayerProfile"
 import { useDocumentTitle } from "@/hooks/useDocumentTitle"
@@ -365,6 +366,8 @@ function RunsColumn({
                                                             justify-center
                                                             h-6 w-6 rounded
                                                             hover:bg-muted/40"
+                                                        title="Watch video"
+                                                        aria-label="Watch video"
                                                     >
                                                         {r.video.includes(
                                                             "youtube.com",
@@ -405,6 +408,7 @@ function RunsColumn({
                                                             hover:bg-muted/40
                                                             text-muted-foreground"
                                                         title="Archive video"
+                                                        aria-label="Archive video"
                                                     >
                                                         <Cloud size={14} />
                                                     </a>
@@ -522,13 +526,10 @@ export function PlayerProfile() {
 
     if (error) {
         return (
-            <div
-                className="text-sm text-red-500 p-4
-                    border border-red-500/20 rounded"
-            >
+            <AlertBanner variant="error">
                 Error loading player profile. If this problem persists, contact
                 Anastasia on the THPS Speedrun Discord.
-            </div>
+            </AlertBanner>
         )
     }
 
@@ -631,14 +632,7 @@ export function PlayerProfile() {
                     {profile.joined && (
                         <p className="text-xs text-muted-foreground mt-1">
                             Skater since{" "}
-                            {new Date(profile.joined).toLocaleDateString(
-                                "en-US",
-                                {
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                },
-                            )}
+                            {formatLongDate(profile.joined)}
                         </p>
                     )}
 
@@ -648,7 +642,8 @@ export function PlayerProfile() {
                         {profile.socials?.twitch && (
                             <a href={profile.socials.twitch}
                                 target="_blank"
-                                rel="noopener noreferrer">
+                                rel="noopener noreferrer"
+                                aria-label="Twitch">
                                 <FaTwitch
                                     className={socialIconClass}
                                 />
@@ -657,7 +652,8 @@ export function PlayerProfile() {
                         {profile.socials?.youtube && (
                             <a href={profile.socials.youtube}
                                 target="_blank"
-                                rel="noopener noreferrer">
+                                rel="noopener noreferrer"
+                                aria-label="YouTube">
                                 <FaYoutube
                                     className={socialIconClass}
                                 />
@@ -666,7 +662,8 @@ export function PlayerProfile() {
                         {profile.socials?.twitter && (
                             <a href={profile.socials.twitter}
                                 target="_blank"
-                                rel="noopener noreferrer">
+                                rel="noopener noreferrer"
+                                aria-label="X (Twitter)">
                                 <FaXTwitter
                                     className={socialIconClass}
                                 />
@@ -675,7 +672,8 @@ export function PlayerProfile() {
                         {profile.socials?.bluesky && (
                             <a href={profile.socials.bluesky}
                                 target="_blank"
-                                rel="noopener noreferrer">
+                                rel="noopener noreferrer"
+                                aria-label="Bluesky">
                                 <FaBluesky
                                     className={socialIconClass}
                                 />
@@ -683,7 +681,8 @@ export function PlayerProfile() {
                         )}
                         {profile.url && (
                             <a href={profile.url} target="_blank"
-                                rel="noopener noreferrer">
+                                rel="noopener noreferrer"
+                                aria-label="Speedrun.com profile">
                                 <FaTrophy
                                     className={socialIconClass}
                                 />
@@ -691,7 +690,8 @@ export function PlayerProfile() {
                         )}
                         {profile.socials?.discord && (
                             <span className="cursor-default"
-                                title={profile.socials.discord}>
+                                title={profile.socials.discord}
+                                aria-label={`Discord: ${profile.socials.discord}`}>
                                 <FaDiscord
                                     className={socialIconClass}
                                 />

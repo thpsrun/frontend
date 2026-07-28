@@ -1,3 +1,5 @@
+import { Trophy } from "lucide-react"
+
 import {
     Table,
     TableHeader,
@@ -7,6 +9,7 @@ import {
     TableCell,
 } from "@/components/ui/table"
 import { Panel } from "@/components/ui/panel"
+import { EmptyState } from "@/components/common/empty-state"
 
 import { cn } from "@/lib/utils"
 import {
@@ -24,9 +27,10 @@ interface OldestRunsListProps {
 export const OldestRunsList = ({ runs }: OldestRunsListProps) => {
     if (runs.length === 0) {
         return (
-            <Panel className="text-sm text-muted-foreground">
-                No oldest IL world records available.
-            </Panel>
+            <EmptyState
+                icon={Trophy}
+                title="No oldest IL world records available."
+            />
         )
     }
 

@@ -12,7 +12,9 @@ export interface RunTimes {
     p_time_secs: number
     primary_method_override: TimingMethodType | null
     resolved_primary_method: TimingMethodType
+    resolved_allowed_methods: TimingMethodType[]
     resolved_required_methods: TimingMethodType[]
+    resolved_optional_methods: TimingMethodType[]
 }
 
 // Embedded shapes returned when ?embed=game,category,level is used.
@@ -27,8 +29,9 @@ export interface RunGameEmbed {
     idefaulttime: TimingMethodType | null
     pointsmax: number
     ipointsmax: number
-    required_methods_fg: TimingMethodType[]
-    required_methods_il: TimingMethodType[]
+    // Embedded game object: only the allowed window is exposed here.
+    allowed_methods_fg: TimingMethodType[]
+    allowed_methods_il: TimingMethodType[]
 }
 
 export interface RunCategoryEmbed {

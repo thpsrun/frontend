@@ -24,21 +24,21 @@ const METHOD_LABEL: Record<TimingMethodType, string> = {
 interface LeaderboardMobileListProps {
     runs: LbsRun[]
     expectedPlayers?: number
-    requiredMethods: TimingMethodType[]
+    allowedMethods: TimingMethodType[]
     primaryMethod: TimingMethodType
 }
 
 export const LeaderboardMobileList = ({
     runs,
     expectedPlayers,
-    requiredMethods,
+    allowedMethods,
     primaryMethod,
 }: LeaderboardMobileListProps) => {
     if (runs.length === 0) {
         return <EmptyState inset icon={Trophy} title="No Runs Yet" />
     }
 
-    const methodColumns = ALL_TIMING_METHODS.filter((m) => requiredMethods.includes(m))
+    const methodColumns = ALL_TIMING_METHODS.filter((m) => allowedMethods.includes(m))
     const secondaryMethods = methodColumns.filter((m) => m !== primaryMethod)
 
     return (

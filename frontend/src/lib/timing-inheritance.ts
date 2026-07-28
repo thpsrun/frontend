@@ -1,6 +1,9 @@
 import type { TimingMethodType } from "@/types/shared"
 import { ALL_TIMING_METHODS } from "@/types/shared"
 
+type AllowedMethodsBearer = {
+    allowed_methods: TimingMethodType[] | null
+}
 type RequiredMethodsBearer = {
     required_methods: TimingMethodType[] | null
 }
@@ -8,15 +11,59 @@ type DefaultTimeBearer = {
     defaulttime: TimingMethodType | null
 }
 
+export function effectiveAllowedMethods(
+    entity: AllowedMethodsBearer,
+    chain: ReadonlyArray<AllowedMethodsBearer>,
+): TimingMethodType[] {
+    if (entity.allowed_methods) return entity.allowed_methods
+    for (const parent of chain) {
+        if (parent.allowed_methods) return parent.allowed_methods
+    }
+    return [...ALL_TIMING_METHODS]
+}
+
 export function effectiveRequiredMethods(
     entity: RequiredMethodsBearer,
     chain: ReadonlyArray<RequiredMethodsBearer>,
+    effectiveAllowed: ReadonlyArray<TimingMethodType>,
+    primary?: TimingMethodType | null,
 ): TimingMethodType[] {
-    if (entity.required_methods) return entity.required_methods
-    for (const parent of chain) {
-        if (parent.required_methods) return parent.required_methods
+    let resolved: TimingMethodType[] | null = null
+    if (entity.required_methods) {
+        resolved = entity.required_methods
+    } else {
+        for (const parent of chain) {
+            if (parent.required_methods) {
+                resolved = parent.required_methods
+                break
+            }
+        }
     }
-    return [...ALL_TIMING_METHODS]
+    let out = (resolved ?? [...effectiveAllowed]).filter(
+        (m) => effectiveAllowed.includes(m),
+    )
+    if (primary && effectiveAllowed.includes(primary) && !out.includes(primary)) {
+        out.push(primary)
+    }
+    // Never collapse to empty: a run must supply at least the primary.
+    if (out.length === 0) out = [...effectiveAllowed]
+    // Canonical method order for stable display.
+    return ALL_TIMING_METHODS.filter((m) => out.includes(m))
+}
+
+// Normalize a stored required value before sending it to the backend.
+export function normalizeRequired(
+    required: TimingMethodType[] | null,
+    allowed: ReadonlyArray<TimingMethodType>,
+    primary: TimingMethodType | null,
+): TimingMethodType[] | null {
+    if (required == null) return null
+    const out = required.filter((m) => allowed.includes(m))
+    if (primary && allowed.includes(primary) && !out.includes(primary)) {
+        out.push(primary)
+    }
+    const ordered = ALL_TIMING_METHODS.filter((m) => out.includes(m))
+    return ordered.length > 0 ? ordered : null
 }
 
 export function effectiveDefaultTime(
@@ -35,72 +82,69 @@ export interface LeaderboardMethodsInput {
     game: {
         defaulttime: TimingMethodType | null
         idefaulttime: TimingMethodType | null
-        required_methods_fg: TimingMethodType[]
-        required_methods_il: TimingMethodType[]
+        allowed_methods_fg: TimingMethodType[]
+        allowed_methods_il: TimingMethodType[]
     }
     category: {
         defaulttime: TimingMethodType | null
-        required_methods: TimingMethodType[] | null
+        allowed_methods: TimingMethodType[] | null
     } | null
     selections: ReadonlyArray<{
-        variable: RequiredMethodsBearer & DefaultTimeBearer
-        value: RequiredMethodsBearer & DefaultTimeBearer
+        variable: AllowedMethodsBearer & DefaultTimeBearer
+        value: AllowedMethodsBearer & DefaultTimeBearer
     }>
 }
 
 export interface LeaderboardMethodsResult {
-    requiredMethods: TimingMethodType[]
+    allowedMethods: TimingMethodType[]
     primaryMethod: TimingMethodType
 }
 
-// Resolve the display-config for a leaderboard view by walking the
-// Value > Variable > Category > Game chain for both required_methods and
-// defaulttime. For "fg" scope reads game.{defaulttime,required_methods_fg};
-// for "il" scope reads game.{idefaulttime,required_methods_il}.
+// Resolve the display-config for a leaderboard view by walking the chain for allowed_methods and defaulttime.
 export function resolveLeaderboardMethods(
     input: LeaderboardMethodsInput,
 ): LeaderboardMethodsResult {
     const gameDefault = input.scope === "fg"
         ? input.game.defaulttime
         : input.game.idefaulttime
-    const gameRequired = input.scope === "fg"
-        ? input.game.required_methods_fg
-        : input.game.required_methods_il
+    const gameAllowed = input.scope === "fg"
+        ? input.game.allowed_methods_fg
+        : input.game.allowed_methods_il
 
-    let required: TimingMethodType[] | null = null
+    let allowed: TimingMethodType[] | null = null
     let primary: TimingMethodType | null = null
 
     for (const { value } of input.selections) {
-        if (!required && value.required_methods) required = value.required_methods
+        if (!allowed && value.allowed_methods) allowed = value.allowed_methods
         if (!primary && value.defaulttime) primary = value.defaulttime
     }
     for (const { variable } of input.selections) {
-        if (!required && variable.required_methods) {
-            required = variable.required_methods
+        if (!allowed && variable.allowed_methods) {
+            allowed = variable.allowed_methods
         }
         if (!primary && variable.defaulttime) {
             primary = variable.defaulttime
         }
     }
-    if (!required && input.category?.required_methods) {
-        required = input.category.required_methods
+    if (!allowed && input.category?.allowed_methods) {
+        allowed = input.category.allowed_methods
     }
     if (!primary && input.category?.defaulttime) {
         primary = input.category.defaulttime
     }
-    if (!required) required = gameRequired
+    if (!allowed) allowed = gameAllowed
     if (!primary) primary = gameDefault
 
-    const finalRequired = required.length > 0 ? required : [...ALL_TIMING_METHODS]
-    const fallbackPrimary = finalRequired.includes("rta")
+    const finalAllowed = allowed.length > 0 ? allowed : [...ALL_TIMING_METHODS]
+    const fallbackPrimary = finalAllowed.includes("rta")
         ? "rta"
-        : finalRequired[0]
+        : finalAllowed[0]
     const finalPrimary: TimingMethodType = primary
-        && finalRequired.includes(primary)
+        && finalAllowed.includes(primary)
         ? primary
         : fallbackPrimary
 
-    return { requiredMethods: finalRequired, primaryMethod: finalPrimary }
+    return { allowedMethods: finalAllowed, primaryMethod: finalPrimary }
 }
 
 // Pick the time string for a specific method off the flat LbsRun.times

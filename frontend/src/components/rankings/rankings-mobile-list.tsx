@@ -59,6 +59,7 @@ export const RankingsMobileList = ({
                             key={m}
                             type="button"
                             onClick={() => setSortKey(m)}
+                            aria-pressed={sortKey === m}
                             className={cn(
                                 "flex-1 rounded-sm px-2 py-1.5 text-xs transition",
                                 sortKey === m

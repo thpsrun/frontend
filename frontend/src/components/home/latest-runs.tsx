@@ -1,11 +1,15 @@
 import { useCallback } from "react"
 import { Link } from "react-router"
+import { Timer } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 import { buildLeaderboardPath } from "@/lib/leaderboard-helpers"
 import { useGameGroupSpans, PlayerCell } from "@/lib/home-table-helpers"
 import { gameShortName } from "@/lib/game-name"
+import { EmptyState } from "@/components/common/empty-state"
 import { MobileListRow } from "@/components/common/mobile-list-row"
+import { QueryErrorBanner } from "@/components/common/query-error-banner"
+import { TableSkeleton } from "@/components/common/table-skeleton"
 import { useIsMobile } from "@/hooks/useIsMobile"
 import type React from "react"
 import type { LatestRun } from "@/types/api"
@@ -13,9 +17,18 @@ import type { LatestRun } from "@/types/api"
 type LatestRunsProps = {
     title: string
     data: LatestRun[]
+    isLoading?: boolean
+    error?: Error | null
+    onRetry?: () => void
 }
 
-export const LatestRuns: React.FC<LatestRunsProps> = ({ title, data }) => {
+export const LatestRuns: React.FC<LatestRunsProps> = ({
+    title,
+    data,
+    isLoading,
+    error,
+    onRetry,
+}) => {
     const getGameKey = useCallback(
         (run: LatestRun) => run.game_slug,
         [],
@@ -26,10 +39,22 @@ export const LatestRuns: React.FC<LatestRunsProps> = ({ title, data }) => {
 
     return (
         <div className="flex-1 min-w-0 rounded-lg p-3 md:p-4 flex flex-col">
-            <h1 className="text-xl font-semibold mb-4">
+            <h2 className="text-xl font-semibold mb-4">
                 {title}
-            </h1>
-            {isMobile ? (
+            </h2>
+            {isLoading ? (
+                <TableSkeleton
+                    columns={isMobile ? 2 : 4}
+                    rows={6}
+                    headers={isMobile
+                        ? undefined
+                        : ["Game", "Category", "Player", "Time"]}
+                />
+            ) : error && onRetry ? (
+                <QueryErrorBanner error={error} onRetry={onRetry} />
+            ) : data.length === 0 ? (
+                <EmptyState inset icon={Timer} title="No runs yet." />
+            ) : isMobile ? (
                 <div className="flex flex-col gap-2">
                     {data.map((run, i) => {
                         const fullName = run.level?.name ?? run.category.name

@@ -6,8 +6,18 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 
 export const MainPage = () => {
     useDocumentTitle()
-    const { data: latestRecords } = useTHPSNewWRs()
-    const { data: latestRuns } = useTHPSNewRuns()
+    const {
+        data: latestRecords,
+        isLoading: recordsLoading,
+        error: recordsError,
+        refetch: refetchRecords,
+    } = useTHPSNewWRs()
+    const {
+        data: latestRuns,
+        isLoading: runsLoading,
+        error: runsError,
+        refetch: refetchRuns,
+    } = useTHPSNewRuns()
 
     return (
         <div className="w-full h-full flex flex-col gap-4 min-w-0">
@@ -22,7 +32,7 @@ export const MainPage = () => {
                 </div>
 
                 {/* Right column on xl. Below xl it collapses to display:contents
-                    so its children join the page's flex-col stack directly — that
+                    so its children join the page's flex-col stack directly - that
                     lets the streaming panel be ordered above CurrentRecords on
                     mobile without disturbing the desktop two-column grid. */}
                 <div className="min-w-0 contents xl:flex xl:flex-col xl:gap-3">
@@ -32,11 +42,23 @@ export const MainPage = () => {
                     <LiveStreams />
 
                     <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
-                        <LatestRuns title="Latest Records" data={latestRecords} />
+                        <LatestRuns
+                            title="Latest Records"
+                            data={latestRecords}
+                            isLoading={recordsLoading}
+                            error={recordsError}
+                            onRetry={refetchRecords}
+                        />
                     </div>
 
                     <div className="min-w-0 bg-background-transparent bg-opacity-10 backdrop-blur-sm rounded-lg flex">
-                        <LatestRuns title="Latest Runs" data={latestRuns} />
+                        <LatestRuns
+                            title="Latest Runs"
+                            data={latestRuns}
+                            isLoading={runsLoading}
+                            error={runsError}
+                            onRetry={refetchRuns}
+                        />
                     </div>
                 </div>
             </div>

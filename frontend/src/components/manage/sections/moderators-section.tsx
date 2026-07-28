@@ -4,7 +4,7 @@ import { toast } from "sonner"
 import { UserIcon } from "lucide-react"
 
 import { AlertBanner } from "@/components/common/alert-banner"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -236,7 +236,12 @@ function ModeratorsContent({ gameSlug }: ModeratorsContentProps) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={onConfirmRemove}>
+                        <AlertDialogAction
+                            className={buttonVariants({
+                                variant: "destructive",
+                            })}
+                            onClick={onConfirmRemove}
+                        >
                             Remove
                         </AlertDialogAction>
                     </AlertDialogFooter>

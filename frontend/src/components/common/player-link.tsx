@@ -49,7 +49,7 @@ export function PlayerLink({
 
     return (
         <Link
-            to={`/player/${name}`}
+            to={`/player/${encodeURIComponent(name)}`}
             target={target}
             rel={target === "_blank" ? "noopener noreferrer" : undefined}
             onClick={onClick}

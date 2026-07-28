@@ -100,7 +100,8 @@ export function subtitleFor(n: Notification): string {
         case "api_key_expiring": {
             const p = n.payload as ApiKeyExpiringPayload
             if (p.key_label && typeof p.days_until_expiry === "number") {
-                return `${p.key_label} expires in ${p.days_until_expiry} days.`
+                const unit = p.days_until_expiry === 1 ? "day" : "days"
+                return `${p.key_label} expires in ${p.days_until_expiry} ${unit}.`
             }
             return n.body
         }

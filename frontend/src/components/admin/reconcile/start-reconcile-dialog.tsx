@@ -31,14 +31,17 @@ import {
 } from "./leaderboard-target-builder"
 import { ConfirmStartReconcileDialog } from "./confirm-start-reconcile-dialog"
 import {
+    MODE_LABEL,
     SCOPE_LABEL,
     SOURCE_LABEL,
     type ConflictOut,
+    type ReconcileMode,
     type ReconcileScope,
     type SourceOfTruth,
     type ReconcileRequest,
 } from "@/types/reconcile"
 import type { Game } from "@/types/api"
+import { AlertTriangle } from "lucide-react"
 
 interface Props {
     open: boolean
@@ -57,6 +60,17 @@ const SCOPE_HINT: Record<ReconcileScope, string> = {
 // LEADERBOARD branches below are kept intact so a scope can be restored by re-adding it here.
 const SCOPE_OPTIONS: ReconcileScope[] = ["GAME"]
 const SOURCE_OPTIONS: SourceOfTruth[] = ["SRC", "THPS_RUN"]
+const MODE_OPTIONS: ReconcileMode[] = ["recent", "full_game", "il"]
+
+// Server caps the recent-mode limit at RECON_SWEEP_LIMIT_MAX (default 200); we
+// validate client-side against the same range and let the 422 carry the real cap.
+const RECENT_LIMIT_MAX = 200
+
+const MODE_HINT: Record<ReconcileMode, string> = {
+    recent: "Reconcile the most recent verified runs (set a limit below, or leave blank for the server default of 20).",
+    full_game: "Sweep every full-game (main) run for this game. Long-running.",
+    il: "Sweep every individual-level run for this game. Long-running.",
+}
 
 function otherSide(source: SourceOfTruth): string {
     return source === "SRC" ? SOURCE_LABEL.THPS_RUN : SOURCE_LABEL.SRC
@@ -106,6 +120,9 @@ function StartReconcileForm({
     const [scope, setScope] = useState<ReconcileScope>("GAME")
     const [sourceOfTruth, setSourceOfTruth] = useState<SourceOfTruth>("SRC")
     const [selectedGame, setSelectedGame] = useState<Game | null>(null)
+    const [mode, setMode] = useState<ReconcileMode>("recent")
+    // Kept as a string so the field can be cleared (blank => server default).
+    const [limit, setLimit] = useState("")
     const [runIdInput, setRunIdInput] = useState("")
     const [seriesIdInput, setSeriesIdInput] = useState("")
     const [seriesAll, setSeriesAll] = useState(false)
@@ -139,15 +156,29 @@ function StartReconcileForm({
                 setFieldError("Pick a game.")
                 return
             }
+            // limit only applies to recent mode; sweeps ignore it server-side.
+            let parsedLimit: number | undefined
+            if (mode === "recent" && limit.trim()) {
+                const n = Number(limit.trim())
+                if (!Number.isInteger(n) || n < 1 || n > RECENT_LIMIT_MAX) {
+                    setFieldError(
+                        `Limit must be a whole number between 1 and ${RECENT_LIMIT_MAX}.`,
+                    )
+                    return
+                }
+                parsedLimit = n
+            }
             const body: ReconcileRequest = {
                 scope: "GAME",
                 source_of_truth: sourceOfTruth,
                 target_id: selectedGame.slug,
                 target_descriptor: null,
+                mode,
+                ...(parsedLimit !== undefined ? { limit: parsedLimit } : {}),
             }
             setPendingBody(body)
             setPendingSummary(
-                <SummaryGame game={selectedGame} />,
+                <SummaryGame game={selectedGame} mode={mode} limit={parsedLimit} />,
             )
             return
         }
@@ -331,14 +362,83 @@ function StartReconcileForm({
                     </div>
 
                     {scope === "GAME" && (
-                        <div className="space-y-1.5">
-                            <Label>Game</Label>
-                            <GamePicker
-                                selected={selectedGame}
-                                onSelect={setSelectedGame}
-                                disabled={isPending}
-                            />
-                        </div>
+                        <>
+                            <div className="space-y-1.5">
+                                <Label>Game</Label>
+                                <GamePicker
+                                    selected={selectedGame}
+                                    onSelect={setSelectedGame}
+                                    disabled={isPending}
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="reconcile-mode">Mode</Label>
+                                <Select
+                                    value={mode}
+                                    onValueChange={(v) => {
+                                        setFieldError(null)
+                                        setMode(v as ReconcileMode)
+                                    }}
+                                    disabled={isPending}
+                                >
+                                    <SelectTrigger id="reconcile-mode">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {MODE_OPTIONS.map((opt) => (
+                                            <SelectItem key={opt} value={opt}>
+                                                {MODE_LABEL[opt]}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-xs text-muted-foreground">
+                                    {MODE_HINT[mode]}
+                                </p>
+                            </div>
+
+                            {mode === "recent" && (
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="reconcile-limit">Limit</Label>
+                                    <Input
+                                        id="reconcile-limit"
+                                        type="number"
+                                        min={1}
+                                        max={RECENT_LIMIT_MAX}
+                                        value={limit}
+                                        onChange={(e) => {
+                                            setFieldError(null)
+                                            setLimit(e.target.value)
+                                        }}
+                                        placeholder="20"
+                                        autoComplete="off"
+                                        disabled={isPending}
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Number of most recent verified runs to
+                                        reconcile (1–{RECENT_LIMIT_MAX}). Blank uses
+                                        the server default (20).
+                                    </p>
+                                </div>
+                            )}
+
+                            {mode !== "recent" && (
+                                <div className="flex gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-xs text-amber-300">
+                                    <AlertTriangle className="size-4 shrink-0" />
+                                    <span>
+                                        Sweeps reconcile every{" "}
+                                        {mode === "full_game"
+                                            ? "full-game"
+                                            : "individual-level"}{" "}
+                                        run for this game - hundreds to 1000+
+                                        rate-limited SRC fetches, so expect minutes to
+                                        tens of minutes. It runs in the background; you
+                                        can cancel it from the job page.
+                                    </span>
+                                </div>
+                            )}
+                        </>
                     )}
 
                     {scope === "RUN" && (
@@ -443,7 +543,15 @@ function StartReconcileForm({
     )
 }
 
-function SummaryGame({ game }: { game: Game }) {
+function SummaryGame({
+    game,
+    mode,
+    limit,
+}: {
+    game: Game
+    mode: ReconcileMode
+    limit?: number
+}) {
     return (
         <div className="space-y-1.5">
             <MetaRow dense label="Scope">{SCOPE_LABEL.GAME}</MetaRow>
@@ -453,6 +561,12 @@ function SummaryGame({ game }: { game: Game }) {
                     ({game.slug})
                 </span>
             </MetaRow>
+            <MetaRow dense label="Mode">{MODE_LABEL[mode]}</MetaRow>
+            {mode === "recent" && (
+                <MetaRow dense label="Limit">
+                    {limit ?? "Server default (20)"}
+                </MetaRow>
+            )}
         </div>
     )
 }

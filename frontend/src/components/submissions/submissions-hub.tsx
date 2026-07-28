@@ -15,6 +15,7 @@ import { PageShell } from "@/components/common/page-shell"
 import { PlayerLink } from "@/components/common/player-link"
 import { Info, ExternalLink, Inbox, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { formatLongDate, timeAgo } from "@/lib/leaderboard-helpers"
 import {
     SyncStatusBadge,
 } from "@/components/submissions/sync-status-badge"
@@ -49,11 +50,19 @@ function PendingRunRow({
     return (
         <>
             <TableRow
+                role="button"
+                tabIndex={0}
                 className={cn(
                     "transition cursor-pointer hover:bg-muted/40",
                     idx % 2 === 1 ? "bg-muted/10" : "",
                 )}
                 onClick={() => setEditOpen(true)}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault()
+                        setEditOpen(true)
+                    }
+                }}
             >
                 <TableCell className="text-sm whitespace-normal wrap-break-word">
                     {run.subcategory}
@@ -78,7 +87,12 @@ function PendingRunRow({
                     {run.times.p_time}
                 </TableCell>
                 <TableCell className="text-xs text-center">
-                    {new Date(run.date).toLocaleDateString()}
+                    <span
+                        title={formatLongDate(run.date)}
+                        className="cursor-help"
+                    >
+                        {timeAgo(run.date)}
+                    </span>
                 </TableCell>
                 <TableCell>
                     <div className={cn(

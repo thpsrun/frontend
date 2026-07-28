@@ -42,6 +42,8 @@ import { JobStatusBadge } from "./job-status-badge"
 import { describeTarget } from "./format-target"
 import { cn, formatDate } from "@/lib/utils"
 import {
+    ACTION_LABEL,
+    MODE_LABEL,
     SCOPE_LABEL,
     type ReconcileChangeValue,
     type ReconcileItemDetail,
@@ -50,13 +52,17 @@ import {
 
 const PAGE_SIZE = 50
 
-const ACTION_FILTERS: { value: "all" | string; label: string }[] = [
+// Values must match the backend ReconAction enum exactly (lowercase). The old list
+// used "skipped", which is a coarse counts bucket, not an item action, so the filter
+// silently matched nothing.
+const ACTION_FILTERS: { value: string; label: string }[] = [
     { value: "all", label: "All Actions" },
-    { value: "created", label: "Created" },
-    { value: "updated", label: "Updated" },
-    { value: "skipped", label: "Skipped" },
-    { value: "skipped_no_change", label: "Skipped (No Change)" },
-    { value: "failed", label: "Failed" },
+    { value: "created", label: ACTION_LABEL.created },
+    { value: "updated", label: ACTION_LABEL.updated },
+    { value: "skipped_local_wins", label: ACTION_LABEL.skipped_local_wins },
+    { value: "skipped_no_change", label: ACTION_LABEL.skipped_no_change },
+    { value: "missing_on_src", label: ACTION_LABEL.missing_on_src },
+    { value: "failed", label: ACTION_LABEL.failed },
 ]
 
 // A changes entry is either an {old, new} diff or a flat primitive (see ReconcileChangeValue
@@ -148,7 +154,15 @@ function ItemRow({
             idx % 2 === 1 ? "bg-muted/10" : "",
         )}>
             <TableCell className="text-xs">
-                <span className="font-mono">{item.action}</span>
+                <span
+                    className={cn(
+                        "font-mono",
+                        item.action === "missing_on_src"
+                            && "font-semibold text-amber-400",
+                    )}
+                >
+                    {ACTION_LABEL[item.action] ?? item.action}
+                </span>
             </TableCell>
             <TableCell className="text-xs font-mono">
                 {item.record_type}
@@ -228,6 +242,15 @@ export function ReconcileDetailPage() {
         jobActive: Boolean(job && isJobActive(job.status)),
     })
     const items = itemsQuery.data
+
+    // missing_on_src items roll into the coarse "skipped" bucket, so the job summary
+    // carries no direct count. Fetch them separately to drive the dedicated panel.
+    const missingQuery = useReconcileItems(
+        jobId,
+        { action: "missing_on_src", limit: 100, offset: 0 },
+        { jobActive: Boolean(job && isJobActive(job.status)) },
+    )
+    const missingItems = missingQuery.data
 
     const cancel = useCancelReconcile()
     const [confirmCancelOpen, setConfirmCancelOpen] = useState(false)
@@ -367,6 +390,17 @@ export function ReconcileDetailPage() {
                             <MetaRow label="Source of Truth">
                                 {job.source_of_truth === "SRC" ? "Speedrun.com" : "thps.run"}
                             </MetaRow>
+                            {job.mode && (
+                                <MetaRow label="Mode">
+                                    {MODE_LABEL[job.mode]}
+                                    {job.mode === "recent"
+                                        && job.run_limit != null && (
+                                        <span className="text-muted-foreground">
+                                            {" "}(limit {job.run_limit})
+                                        </span>
+                                    )}
+                                </MetaRow>
+                            )}
                             <MetaRow label="Requested By">
                                 {job.requested_by ?? "-"}
                             </MetaRow>
@@ -414,6 +448,63 @@ export function ReconcileDetailPage() {
                     </Panel>
                 </div>
             ) : null}
+
+            {missingItems && missingItems.total > 0 && (
+                <Panel className="p-5 border-amber-500/30">
+                    <div className="flex items-start gap-2 mb-3">
+                        <AlertTriangle className="size-4 mt-0.5 shrink-0 text-amber-400" />
+                        <div>
+                            <h3 className="text-base font-semibold text-amber-300">
+                                Deleted on SRC - fix manually ({missingItems.total})
+                            </h3>
+                            <p className="text-xs text-muted-foreground">
+                                These runs exist locally but are gone from
+                                Speedrun.com (deleted or moved off the game). The
+                                reconciler leaves them in place - an admin must remove
+                                or re-home each one by hand.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="rounded-md border border-border/40 overflow-hidden">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-muted/20">
+                                    <TableHead>Record Type</TableHead>
+                                    <TableHead>Record ID</TableHead>
+                                    <TableHead>Detail</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {missingItems.items.map((item, idx) => (
+                                    <TableRow
+                                        key={item.id}
+                                        className={cn(
+                                            idx % 2 === 1 ? "bg-muted/10" : "",
+                                        )}
+                                    >
+                                        <TableCell className="text-xs font-mono">
+                                            {item.record_type}
+                                        </TableCell>
+                                        <TableCell className="text-xs font-mono break-all">
+                                            {item.record_id}
+                                        </TableCell>
+                                        <TableCell className="text-xs text-muted-foreground">
+                                            {item.error || "-"}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                    {missingItems.total > missingItems.items.length && (
+                        <p className="text-xs text-muted-foreground mt-2">
+                            Showing {missingItems.items.length} of{" "}
+                            {missingItems.total}. Filter the Items table below by
+                            “Missing on SRC” to page through the rest.
+                        </p>
+                    )}
+                </Panel>
+            )}
 
             {job?.scope === "SERIES" && job.breakdown && (
                 <Panel className="p-5">
@@ -490,6 +581,15 @@ export function ReconcileDetailPage() {
                         ))}
                     </div>
                 </Panel>
+            )}
+
+            {job?.scope === "GAME" && (
+                <p className="px-1 text-xs text-muted-foreground">
+                    Note: reconciling runs into new categories does not auto-archive the
+                    old categories, levels, or variables they came from. After a large
+                    restructure, hide or archive those stale objects manually so they
+                    stop appearing in the public API.
+                </p>
             )}
 
             <Panel className="p-5">
