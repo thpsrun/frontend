@@ -6,11 +6,13 @@ import type {
 import type { TimingMethodType } from "@/types/shared"
 
 export interface UpdateVariableRequest {
+    allowed_methods?: TimingMethodType[] | null
     required_methods?: TimingMethodType[] | null
     defaulttime?: TimingMethodType | null
 }
 
 export interface UpdateVariableValueRequest {
+    allowed_methods?: TimingMethodType[] | null
     required_methods?: TimingMethodType[] | null
     defaulttime?: TimingMethodType | null
     rules?: string | null

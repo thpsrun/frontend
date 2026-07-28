@@ -113,6 +113,11 @@ export const GameCardPanel = ({
                                 onClick={() => navigate(
                                     `/${gameSlug}`,
                                 )}
+                                aria-current={
+                                    !isILView && !isGuidesView && !isManageView
+                                        ? "page"
+                                        : undefined
+                                }
                                 className={cn(
                                     "flex-1 px-3 py-1.5",
                                     "text-xs font-semibold",
@@ -130,6 +135,7 @@ export const GameCardPanel = ({
                                 onClick={() => navigate(
                                     `/${gameSlug}/ils`,
                                 )}
+                                aria-current={isILView ? "page" : undefined}
                                 className={cn(
                                     "flex-1 px-3 py-1.5",
                                     "text-xs font-semibold",
@@ -148,6 +154,7 @@ export const GameCardPanel = ({
                     onClick={() => navigate(
                         `/${gameSlug}/guides`,
                     )}
+                    aria-current={isGuidesView ? "page" : undefined}
                     className={cn(
                         "w-full px-3 py-1.5",
                         "text-xs font-semibold",
@@ -234,6 +241,14 @@ export const GameStatsPanel = ({
                     <div className="h-4 rounded bg-muted/30 w-1/2" />
                     <div className="h-4 rounded bg-muted/30 w-3/4" />
                 </div>
+            )}
+            {!statsLoading && statsError && (
+                <p className={cn(
+                    "text-xs text-muted-foreground",
+                    "text-center",
+                )}>
+                    Couldn't load stats...
+                </p>
             )}
             {!statsLoading && !statsError && stats && (
                 <div className={cn(

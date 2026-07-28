@@ -191,7 +191,7 @@ export const HistoricalRankingsPage = () => {
                     "lg:flex-row lg:items-center lg:justify-between",
                 )}>
                     <div className="min-w-0">
-                        <h1 className="text-2xl font-bold leading-tight">
+                        <h1 className="text-2xl font-semibold leading-tight">
                             {safeGameSlug ? `${gameName} Rankings` : "Rankings"}
                         </h1>
                         <p className="text-sm text-muted-foreground">

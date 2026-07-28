@@ -154,8 +154,12 @@ export function SubmitRunDialog({
         selectedValueIds,
     )
 
-    // While the timing-resolution query is still loading, assume all three methods are required;
-    // that blocks submit rather than letting an incomplete submission through.
+    // The allowed window drives which timing inputs are shown; the strict required subset drives
+    // which must be filled before submit (optional = allowed − required, accepted if left blank).
+    // While the query is still loading, assume all three are allowed and required so an
+    // incomplete submission is blocked rather than let through.
+    const resolvedAllowed = timing?.resolved_allowed_methods
+        ?? (["rta", "lrt", "igt"] as const)
     const resolvedRequired = timing?.resolved_required_methods
         ?? (["rta", "lrt", "igt"] as const)
 
@@ -326,15 +330,14 @@ export function SubmitRunDialog({
                 id: p.rel === "user" ? p.id : null,
                 name: p.rel === "guest" ? p.displayName : null,
             })),
-            // Backend field names: time is RTA, timenl is LRT (no-loads), timeigt is IGT.
-            // Methods the rules do not require are sent as null even if a value was typed.
-            time: resolvedRequired.includes("rta")
+            // Backend field names: rtaTime is RTA, nlTime is LRT (no-loads), igtTime is IGT.
+            time: resolvedAllowed.includes("rta")
                 ? assembleTime(rtaTime)
                 : null,
-            timenl: resolvedRequired.includes("lrt")
+            timenl: resolvedAllowed.includes("lrt")
                 ? assembleTime(nlTime)
                 : null,
-            timeigt: resolvedRequired.includes("igt")
+            timeigt: resolvedAllowed.includes("igt")
                 ? assembleTime(igtTime)
                 : null,
             video,
@@ -349,7 +352,7 @@ export function SubmitRunDialog({
             onSuccess: (data) => {
                 resetForm()
                 onOpenChange(false)
-                toast.success("Run submitted.", {
+                toast.success("Run Submitted.", {
                     description: data.message,
                     action: {
                         label: "View on SRC",
@@ -496,7 +499,10 @@ export function SubmitRunDialog({
                                 </div>
 
                                 <div className="flex-1 relative">
-                                    <Label className="text-xs">
+                                    <Label
+                                        className="text-xs"
+                                        htmlFor={`run-player-${idx}`}
+                                    >
                                         {row.rel === "user"
                                             ? "Player Name"
                                             : "Guest Name"}
@@ -506,6 +512,7 @@ export function SubmitRunDialog({
                                            selection cleared); picking a result empties the query
                                            so the input shows the locked-in displayName. */
                                         <Input
+                                            id={`run-player-${idx}`}
                                             value={
                                                 row.searchQuery !== ""
                                                     ? row.searchQuery
@@ -530,6 +537,7 @@ export function SubmitRunDialog({
                                         />
                                     ) : (
                                         <Input
+                                            id={`run-player-${idx}`}
                                             value={row.displayName}
                                             onChange={(e) =>
                                                 updatePlayerField(idx, {
@@ -590,23 +598,26 @@ export function SubmitRunDialog({
 
                 <div className="space-y-3">
                     <SectionLabel>Timing</SectionLabel>
-                    {resolvedRequired.includes("rta") && (
+                    {resolvedAllowed.includes("rta") && (
                         <TimeRow
-                            label="Real Time (RTA)"
+                            label={"Real Time (RTA)"
+                                + (resolvedRequired.includes("rta") ? "" : " (optional)")}
                             fields={rtaTime}
                             onChange={setRtaTime}
                         />
                     )}
-                    {resolvedRequired.includes("lrt") && (
+                    {resolvedAllowed.includes("lrt") && (
                         <TimeRow
-                            label="Loads Removed (LRT)"
+                            label={"Loads Removed (LRT)"
+                                + (resolvedRequired.includes("lrt") ? "" : " (optional)")}
                             fields={nlTime}
                             onChange={setNlTime}
                         />
                     )}
-                    {resolvedRequired.includes("igt") && (
+                    {resolvedAllowed.includes("igt") && (
                         <TimeRow
-                            label="In-Game Time (IGT)"
+                            label={"In-Game Time (IGT)"
+                                + (resolvedRequired.includes("igt") ? "" : " (optional)")}
                             fields={igtTime}
                             onChange={setIgtTime}
                         />
@@ -619,10 +630,11 @@ export function SubmitRunDialog({
                     <SectionLabel>Details</SectionLabel>
 
                     <div className="space-y-1">
-                        <Label className="text-xs">
+                        <Label className="text-xs" htmlFor="run-video">
                             Video URL <span className="text-destructive">*</span>
                         </Label>
                         <Input
+                            id="run-video"
                             value={video}
                             onChange={(e) => setVideo(e.target.value)}
                             placeholder="https://youtube.com/watch?v=..."
@@ -633,8 +645,11 @@ export function SubmitRunDialog({
                     </div>
 
                     <div className="space-y-1">
-                        <Label className="text-xs">Date</Label>
+                        <Label className="text-xs" htmlFor="run-date">
+                            Date
+                        </Label>
                         <Input
+                            id="run-date"
                             type="date"
                             value={date}
                             onChange={(e) => setDate(e.target.value)}

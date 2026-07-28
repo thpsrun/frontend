@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { ChevronDown, ChevronUp } from "lucide-react"
+import { ChevronDown, ChevronUp, Trophy } from "lucide-react"
 
 import {
     Table,
@@ -10,6 +10,7 @@ import {
     TableCell,
 } from "@/components/ui/table"
 import { Panel } from "@/components/ui/panel"
+import { EmptyState } from "@/components/common/empty-state"
 
 import { cn } from "@/lib/utils"
 import {
@@ -60,11 +61,7 @@ export const RankingsTable = (
     }, [entries, sortKey])
 
     if (entries.length === 0) {
-        return (
-            <Panel className="text-sm text-muted-foreground">
-                No rankings found.
-            </Panel>
-        )
+        return <EmptyState icon={Trophy} title="No rankings found." />
     }
 
     return (
@@ -131,7 +128,10 @@ const MetricHeader = (
         )
     }
     return (
-        <TableHead className="text-center">
+        <TableHead
+            className="text-center"
+            aria-sort={isActive ? "descending" : "none"}
+        >
             <button
                 type="button"
                 onClick={() => onSelect(metric)}

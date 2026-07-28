@@ -118,7 +118,7 @@ export const GameOverview = () => {
 
     const categories = useMemo(
         () => (gameDetail?.categories ?? []).filter(
-            (c) => c.type === "per-game",
+            (c) => c.type === "per-game" && !c.archive,
         ),
         [gameDetail],
     )
@@ -539,14 +539,14 @@ export const GameOverview = () => {
                                 <LeaderboardMobileList
                                     runs={runs}
                                     expectedPlayers={activeCategory?.players}
-                                    requiredMethods={leaderboardMethods.requiredMethods}
+                                    allowedMethods={leaderboardMethods.allowedMethods}
                                     primaryMethod={leaderboardMethods.primaryMethod}
                                 />
                             ) : (
                                 <LeaderboardTable
                                     runs={runs}
                                     expectedPlayers={activeCategory?.players}
-                                    requiredMethods={leaderboardMethods.requiredMethods}
+                                    allowedMethods={leaderboardMethods.allowedMethods}
                                     primaryMethod={leaderboardMethods.primaryMethod}
                                 />
                             )

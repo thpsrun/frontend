@@ -18,6 +18,7 @@ import { VidStatusBadge } from "@/components/submissions/vid-status-badge"
 import { EditRunDialog } from "@/components/submissions/edit-run-dialog"
 import { PlayerLink } from "@/components/common/player-link"
 import { cn } from "@/lib/utils"
+import { formatLongDate, timeAgo } from "@/lib/leaderboard-helpers"
 import type { PendingRun, ReviewGameGroup } from "@/types/submissions"
 
 interface Props {
@@ -103,11 +104,19 @@ function ReviewRow({ run, idx }: { run: PendingRun; idx: number }) {
     return (
         <>
             <TableRow
+                role="button"
+                tabIndex={0}
                 className={cn(
                     "transition cursor-pointer hover:bg-muted/40",
                     idx % 2 === 1 ? "bg-muted/10" : "",
                 )}
                 onClick={() => setEditOpen(true)}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault()
+                        setEditOpen(true)
+                    }
+                }}
             >
                 <TableCell className="text-center">
                     <div className="flex flex-col items-center gap-1">
@@ -143,7 +152,12 @@ function ReviewRow({ run, idx }: { run: PendingRun; idx: number }) {
                     {run.times.p_time}
                 </TableCell>
                 <TableCell className="text-xs text-center">
-                    {new Date(run.date).toLocaleDateString()}
+                    <span
+                        title={formatLongDate(run.date)}
+                        className="cursor-help"
+                    >
+                        {timeAgo(run.date)}
+                    </span>
                 </TableCell>
                 <TableCell>
                     <div className={cn(

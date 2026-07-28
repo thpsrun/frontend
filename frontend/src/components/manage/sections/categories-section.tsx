@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useMemo, useState, useCallback } from "react"
 import { useParams } from "react-router"
 import { useForm, Controller } from "react-hook-form"
 import { toast } from "sonner"
@@ -13,12 +13,13 @@ import { useGameDetail } from "@/hooks/game/useGameDetail"
 import { useUpdateCategory } from "@/hooks/game/useUpdateCategory"
 import { applyValidationErrors } from "@/lib/validation-errors"
 import {
+    effectiveAllowedMethods,
     effectiveRequiredMethods,
     effectiveDefaultTime,
+    normalizeRequired,
 } from "@/lib/timing-inheritance"
 
-import { TimingMethodField } from "@/components/manage/timing-method-field"
-import { RequiredMethodsField } from "@/components/manage/required-methods-field"
+import { TimingMethodsEditor } from "@/components/manage/timing-methods-editor"
 import { GuideMarkdownEditor } from "@/components/guides/guide-markdown-editor"
 
 import type { GameCategory, GameDetail } from "@/types/api"
@@ -28,12 +29,14 @@ import { ALL_TIMING_METHODS } from "@/types/shared"
 interface CategoryFormValues {
     rules: string
     defaulttime: TimingMethodType | null
+    allowed_methods: TimingMethodType[] | null
     required_methods: TimingMethodType[] | null
 }
 
 const CATEGORY_FIELDS: Array<keyof CategoryFormValues> = [
     "rules",
     "defaulttime",
+    "allowed_methods",
     "required_methods",
 ]
 
@@ -47,18 +50,24 @@ function CategoryCard({ category, game }: CategoryCardProps) {
     const [topError, setTopError] = useState<string | null>(null)
     const [rulesOpen, setRulesOpen] = useState(false)
 
-    // Categories inherit from the matching game-level scope: full-game categories from the
-    // fg settings, IL categories from the il settings (idefaulttime / required_methods_il).
-    const parentRequired = (category.type === "per-game"
-        ? game.required_methods_fg
-        : game.required_methods_il) ?? [...ALL_TIMING_METHODS]
+    const parentAllowed = useMemo(
+        () => (category.type === "per-game"
+            ? game.allowed_methods_fg
+            : game.allowed_methods_il) ?? [...ALL_TIMING_METHODS],
+        [category.type, game.allowed_methods_fg, game.allowed_methods_il],
+    )
 
     const parentChain = [{
         defaulttime: (category.type === "per-game"
             ? game.defaulttime
             : game.idefaulttime) ?? null,
-        required_methods: parentRequired,
+        allowed_methods: parentAllowed,
     }]
+
+    // The game-scope required subset this category inherits from.
+    const parentRequired = (category.type === "per-game"
+        ? game.required_methods_fg
+        : game.required_methods_il) ?? parentAllowed
 
     const inheritedDefault = effectiveDefaultTime(
         { defaulttime: null },
@@ -70,6 +79,7 @@ function CategoryCard({ category, game }: CategoryCardProps) {
         defaultValues: {
             rules: category.rules ?? "",
             defaulttime: category.defaulttime ?? null,
+            allowed_methods: category.allowed_methods ?? null,
             required_methods: category.required_methods ?? null,
         },
     })
@@ -80,17 +90,33 @@ function CategoryCard({ category, game }: CategoryCardProps) {
         form.reset({
             rules: category.rules ?? "",
             defaulttime: category.defaulttime ?? null,
+            allowed_methods: category.allowed_methods ?? null,
             required_methods: category.required_methods ?? null,
         })
-    }, [category.rules, category.defaulttime, category.required_methods, form])
+    }, [
+        category.rules, category.defaulttime,
+        category.allowed_methods, category.required_methods, form,
+    ])
 
     const handleSave = useCallback(async () => {
         const values = form.getValues()
         setTopError(null)
+        // Clamp the required subset to the effective allowed window and guarantee the effective
+        // primary before sending; a null stays null (inherit) for the server to resolve.
+        const effAllowed = effectiveAllowedMethods(
+            { allowed_methods: values.allowed_methods },
+            [{ allowed_methods: parentAllowed }],
+        )
+        const effPrimary = values.defaulttime ?? inheritedDefault
         try {
             await update.mutateAsync({
                 categoryId: category.id,
-                data: values,
+                data: {
+                    ...values,
+                    required_methods: normalizeRequired(
+                        values.required_methods, effAllowed, effPrimary,
+                    ),
+                },
             })
             toast.success(`Saved ${category.name}.`)
             form.reset(values)
@@ -101,16 +127,20 @@ function CategoryCard({ category, game }: CategoryCardProps) {
                 toast.error(msg)
             }
         }
-    }, [form, update, category.id, category.name])
+    }, [
+        form, update, category.id, category.name,
+        parentAllowed, inheritedDefault,
+    ])
 
     const onSubmit = form.handleSubmit(handleSave)
 
-    // Resolve the effective required set from the live form value so the primary-method options
-    // and its validation rule react to required-method edits before they are saved.
     const watched = form.watch()
-    const effectiveRequired = effectiveRequiredMethods(
-        { required_methods: watched.required_methods },
+    // What "inherit" resolves to when selected in the editor.
+    const inheritedRequired = effectiveRequiredMethods(
+        { required_methods: null },
         [{ required_methods: parentRequired }],
+        parentAllowed,
+        inheritedDefault,
     )
 
     const description = category.type === "per-game"
@@ -123,43 +153,36 @@ function CategoryCard({ category, game }: CategoryCardProps) {
                 {topError && (
                     <AlertBanner variant="error">{topError}</AlertBanner>
                 )}
-                <Controller
-                    control={form.control}
-                    name="required_methods"
-                    render={({ field, fieldState }) => (
-                        <RequiredMethodsField
-                            id={`category-${category.id}-required`}
-                            label="Required methods"
-                            value={field.value}
-                            onChange={field.onChange}
-                            parentRequired={parentRequired}
-                            allowInherit
-                            error={fieldState.error?.message}
-                        />
-                    )}
-                />
-                <Controller
-                    control={form.control}
-                    name="defaulttime"
-                    rules={{
-                        validate: (v) => {
-                            if (v === null) return true
-                            return effectiveRequired.includes(v)
-                                || "Primary timing method must be in the required set!"
-                        },
+                <TimingMethodsEditor
+                    id={`category-${category.id}-timing`}
+                    value={{
+                        allowed: watched.allowed_methods,
+                        required: watched.required_methods,
+                        primary: watched.defaulttime,
                     }}
-                    render={({ field, fieldState }) => (
-                        <TimingMethodField
-                            id={`category-${category.id}-default`}
-                            label="Primary timing method"
-                            value={field.value}
-                            onChange={field.onChange}
-                            requiredMethods={effectiveRequired}
-                            allowInherit
-                            inheritedValue={inheritedDefault}
-                            error={fieldState.error?.message}
-                        />
-                    )}
+                    onChange={(next) => {
+                        form.setValue("allowed_methods", next.allowed, {
+                            shouldDirty: true,
+                        })
+                        form.setValue("required_methods", next.required, {
+                            shouldDirty: true,
+                        })
+                        form.setValue("defaulttime", next.primary, {
+                            shouldDirty: true,
+                        })
+                    }}
+                    parentAllowed={parentAllowed}
+                    inheritedRequired={inheritedRequired}
+                    inheritedPrimary={inheritedDefault}
+                    allowInherit
+                    parentLabel={category.type === "per-game"
+                        ? "Full Game"
+                        : "Individual Levels"}
+                    error={
+                        form.formState.errors.allowed_methods?.message
+                        ?? form.formState.errors.required_methods?.message
+                        ?? form.formState.errors.defaulttime?.message
+                    }
                 />
                 <div className="flex flex-col gap-2">
                     <Button
@@ -210,7 +233,9 @@ export function CategoriesSection() {
         )
     }
 
-    const categories = game.data.categories ?? []
+    // Filter out archived categories; they are not editable right now, but it will
+    // be added kinda sorta soon.
+    const categories = (game.data.categories ?? []).filter((c) => !c.archive)
 
     if (categories.length === 0) {
         return (
@@ -219,7 +244,7 @@ export function CategoriesSection() {
                 description="Narrow timing methods on a per-category basis."
             >
                 <p className="text-sm text-muted-foreground">
-                    No categories defined for this game?????
+                    No categories are defined for this game.
                 </p>
             </SectionPanel>
         )

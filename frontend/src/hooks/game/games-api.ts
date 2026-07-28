@@ -5,6 +5,8 @@ import type { TimingMethodType } from "@/types/shared"
 export interface UpdateGameRequest {
     defaulttime?: TimingMethodType
     idefaulttime?: TimingMethodType
+    allowed_methods_fg?: TimingMethodType[]
+    allowed_methods_il?: TimingMethodType[]
     required_methods_fg?: TimingMethodType[]
     required_methods_il?: TimingMethodType[]
     rules?: string | null

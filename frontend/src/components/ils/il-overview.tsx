@@ -48,7 +48,7 @@ export const ILOverview = ({
 
     const ilCategories = useMemo(
         () => (gameDetail?.categories ?? []).filter(
-            (c) => c.type === "per-level",
+            (c) => c.type === "per-level" && !c.archive,
         ),
         [gameDetail],
     )

@@ -12,11 +12,18 @@ export type ReconcileStatus =
 
 export type ReconcilePhase = "P1" | "P2" | "P3"
 
+export type ReconcileMode = "recent" | "full_game" | "il"
+
+// Item-level outcomes as emitted by the backend ReconAction enum (lowercase on the
+// wire). Distinct from the coarse counts/breakdown buckets (created/updated/skipped/
+// failed): SKIPPED_LOCAL_WINS, SKIPPED_NO_CHANGE and MISSING_ON_SRC all roll into the
+// "skipped" bucket server-side.
 export type ReconcileItemAction =
     | "created"
     | "updated"
-    | "skipped"
+    | "skipped_local_wins"
     | "skipped_no_change"
+    | "missing_on_src"
     | "failed"
 
 export const STATUS_LABEL: Record<ReconcileStatus, string> = {
@@ -33,6 +40,21 @@ export const SCOPE_LABEL: Record<ReconcileScope, string> = {
     LEADERBOARD: "Leaderboard",
     RUN: "Run",
     SERIES: "Series",
+}
+
+export const MODE_LABEL: Record<ReconcileMode, string> = {
+    recent: "Recent verified runs",
+    full_game: "All full-game runs",
+    il: "All individual-level runs",
+}
+
+export const ACTION_LABEL: Record<ReconcileItemAction, string> = {
+    created: "Created",
+    updated: "Updated",
+    skipped_local_wins: "Skipped (local wins)",
+    skipped_no_change: "Skipped (no change)",
+    missing_on_src: "Missing on SRC",
+    failed: "Failed",
 }
 
 export const SOURCE_LABEL: Record<SourceOfTruth, string> = {
@@ -61,6 +83,8 @@ export interface ReconcileRequest {
     source_of_truth?: SourceOfTruth
     target_id?: string | null
     target_descriptor?: LeaderboardTarget | null
+    mode?: ReconcileMode
+    limit?: number
 }
 
 // JobOut
@@ -72,6 +96,8 @@ export interface ReconcileJob {
     source_of_truth: SourceOfTruth
     status: ReconcileStatus
     phase?: ReconcilePhase | null
+    mode?: ReconcileMode
+    run_limit?: number | null
     counts: ReconcileCounts
     requested_by: string | null
     created_at: string

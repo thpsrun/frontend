@@ -9,7 +9,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Panel } from "@/components/ui/panel"
 import {
     useBanUser,
@@ -58,6 +58,9 @@ function ConfirmAction({
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
+                            className={danger
+                                ? buttonVariants({ variant: "destructive" })
+                                : undefined}
                             onClick={() => {
                                 setOpen(false)
                                 onConfirm()

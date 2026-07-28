@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useId, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
@@ -22,10 +22,16 @@ export function TextFilterField({
     inputClassName = "w-44",
 }: Props) {
     const [value, setValue] = useState(initialValue)
+    const inputId = useId()
 
     return (
         <div className="space-y-1">
-            <span className="text-xs text-muted-foreground">{label}</span>
+            <label
+                htmlFor={inputId}
+                className="text-xs text-muted-foreground"
+            >
+                {label}
+            </label>
             <form
                 onSubmit={(e) => {
                     e.preventDefault()
@@ -34,6 +40,7 @@ export function TextFilterField({
                 className="flex gap-2"
             >
                 <Input
+                    id={inputId}
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
                     placeholder={placeholder}

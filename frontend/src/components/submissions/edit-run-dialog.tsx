@@ -419,8 +419,9 @@ function EditRunForm({
         selectedValueIds,
     )
 
-    // Prefer the live resolution for the currently selected category/level/variables, fall back
-    // to the resolution stored on the run, and require all three methods while neither is known.
+    const resolvedAllowed = timing?.resolved_allowed_methods
+        ?? detail.times.resolved_allowed_methods
+        ?? (["rta", "lrt", "igt"] as const)
     const resolvedRequired = timing?.resolved_required_methods
         ?? detail.times.resolved_required_methods
         ?? (["rta", "lrt", "igt"] as const)
@@ -767,23 +768,26 @@ function EditRunForm({
 
                     <div className="space-y-3">
                         <SectionLabel>Timing</SectionLabel>
-                        {resolvedRequired.includes("rta") && (
+                        {resolvedAllowed.includes("rta") && (
                             <TimeRow
-                                label="Real Time (RTA)"
+                                label={"Real Time (RTA)"
+                                    + (resolvedRequired.includes("rta") ? "" : " (optional)")}
                                 fields={rta}
                                 onChange={setRta}
                             />
                         )}
-                        {resolvedRequired.includes("lrt") && (
+                        {resolvedAllowed.includes("lrt") && (
                             <TimeRow
-                                label="Loads Removed (LRT)"
+                                label={"Loads Removed (LRT)"
+                                    + (resolvedRequired.includes("lrt") ? "" : " (optional)")}
                                 fields={nl}
                                 onChange={setNl}
                             />
                         )}
-                        {resolvedRequired.includes("igt") && (
+                        {resolvedAllowed.includes("igt") && (
                             <TimeRow
-                                label="In-Game Time (IGT)"
+                                label={"In-Game Time (IGT)"
+                                    + (resolvedRequired.includes("igt") ? "" : " (optional)")}
                                 fields={igt}
                                 onChange={setIgt}
                             />
