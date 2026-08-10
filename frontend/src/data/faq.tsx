@@ -1,5 +1,4 @@
 import type { ReactNode } from "react"
-import { Link } from "react-router"
 
 export type FaqEntry = {
     id: string,
@@ -28,7 +27,7 @@ export const FAQ_ENTRIES: FaqEntry[] = [
                 <p className="leading-relaxed">
                     Points (lovingly referred to as Packle Points by the community) is a sort-of numerical
                     score given to all speedruns on this site. Originally developed by goatrope and ibeechu at{" "}
-                    <Link to="https://haloruns.com">HaloRuns</Link>, this system incentivizes players to venture
+                    <a href="https://haloruns.com" target="_blank" rel="noopener noreferrer" className="text-link hover:underline">HaloRuns</a> this system incentivizes players to venture
                     out from their normal speedgames and get better in multiple games to add to their global "score".
                 </p>
                 <p className="leading-relaxed">
@@ -287,13 +286,13 @@ export const FAQ_ENTRIES: FaqEntry[] = [
             <div className="flex flex-col gap-2">
                 <p className="leading-relaxed">
                     Yes! You are fully allowed to use the API for your projects, bots, tools, and so-on. Obviously, you should be responsible with what you are doing.
-                    If you are interested, go to <Link to="/profile/settings/api-keys">your profile's API Keys page</Link> - there, you can create API keys for various
-                    methods with your current roles with the site. If you are a regular user, you will have vastly less powers (e.g. no PUT, PUSH, PATCH, DELETE, and so on),
+                    If you are interested, go to <a href="/profile/settings/api-keys" target="_blank" rel="noopener noreferrer" className="text-link hover:underline">your profile's API Keys page</a> - 
+                    there, you can create API keys for various methods with your current roles with the site. If you are a regular user, you will have vastly less powers (e.g. no PUT, PUSH, PATCH, DELETE, and so on),
                     but you can still perform GET requests to various endpoints. Moderators can request a lot more and scope it to the specific games of which they moderate,
                     and super admins (super mods, essentially) can use broader powers to programmatically edit the site.
                 </p>
                 <p className="flex flex-col gap-2">
-                    <Link to="/api/v1/docs">thps.run API Documentation</Link>
+                    <a href="/api/v1/docs" target="_blank" rel="noopener noreferrer" className="text-link hover:underline">thps.run API Documentation</a>
                 </p>
             </div>
         )
