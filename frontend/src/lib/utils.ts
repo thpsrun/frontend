@@ -52,3 +52,16 @@ export function formatBytes(bytes: number): string {
     const value = bytes / Math.pow(1024, i)
     return `${value.toFixed(i === 0 ? 0 : 1)} ${units[i]}`
 }
+
+// Weird version of Django's slugify. It doesn't allow unicode and tries to strip
+// 3verything before passing it to the backend.
+export function slugify(value: string): string {
+    const cleaned = value
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, "")
+    return cleaned
+        .replace(/[-\s]+/g, "-")
+        .replace(/^[-_]+|[-_]+$/g, "")
+}
