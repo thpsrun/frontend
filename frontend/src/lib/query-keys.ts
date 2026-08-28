@@ -39,8 +39,8 @@ export const queryKeys = {
         all: ["guides"] as const,
         list: (params: { game?: string; tag?: string; player_id?: string; embed?: string }) =>
             [...queryKeys.guides.all, "list", params] as const,
-        detail: (slug: string, embed?: string) =>
-            [...queryKeys.guides.all, "detail", slug, embed ?? ""] as const,
+        detail: (gameSlug: string, slug: string, embed?: string) =>
+            [...queryKeys.guides.all, "detail", gameSlug, slug, embed ?? ""] as const,
     },
 
     leaderboard: {

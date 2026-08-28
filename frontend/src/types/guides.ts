@@ -33,6 +33,7 @@ export interface Guide extends GuideListItem {
 
 export interface GuideCreateInput {
     title: string
+    slug?: string
     game_id: string
     tag_ids: string[]
     short_description: string

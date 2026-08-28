@@ -57,7 +57,7 @@ export function GuideDetailPage() {
         [player],
     )
 
-    const { data: guide, isLoading, isError, error } = useGuide(guideSlug)
+    const { data: guide, isLoading, isError, error } = useGuide(gameSlug, guideSlug)
     const tags = useTags()
     const siblings = useGuides({
         game: guide?.game?.slug,
@@ -120,9 +120,8 @@ export function GuideDetailPage() {
     const canEdit = canEditFallback(guide, isSuperuser, moderatedSlugs)
     const updatedDate = guide.updated_at ? new Date(guide.updated_at) : null
     const slug = guide.slug
+    const guideGameSlug = guide.game?.slug ?? gameSlug ?? ""
 
-    // Guides are fetched by slug alone, so a wrong game segment in the URL still resolves.
-    // Redirect to the canonical /guides/:game/:slug URL instead of rendering under it.
     if (
         guide.game?.slug
         && gameSlug
@@ -133,7 +132,7 @@ export function GuideDetailPage() {
 
     async function onConfirmDelete() {
         try {
-            await del.mutateAsync(slug)
+            await del.mutateAsync({ gameSlug: guideGameSlug, slug })
             toast.success("Guide deleted.")
             navigate("/guides")
         } catch (e) {

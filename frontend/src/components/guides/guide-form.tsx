@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { cn } from "@/lib/utils"
+import { cn, slugify } from "@/lib/utils"
 import {
     Select,
     SelectContent,
@@ -40,8 +40,10 @@ import {
     validateGuideTitle,
     validateGuideShortDescription,
     validateGuideContent,
+    validateGuideSlug,
 } from "@/lib/validation"
 import { applyValidationErrors } from "@/lib/validation-errors"
+import { ApiError } from "@/lib/api-client"
 import { buildGuideUrl, resolveGuideTags } from "@/lib/guide-urls"
 import type { Guide } from "@/types/guides"
 import { UnsavedChangesDialog } from "@/components/profile/unsaved-changes-dialog"
@@ -50,6 +52,7 @@ import { DeleteGuideDialog } from "./delete-guide-dialog"
 
 interface FormValues {
     title: string
+    slug: string
     short_description: string
     content: string
     game_id: string
@@ -88,20 +91,24 @@ function GuideFormInner({ mode, guide }: Props) {
         ? searchParams.get("game")
         : null
 
+    const prefilledGameId = requestedGameSlug && games.data
+        ? games.data.find((g) => g.slug === requestedGameSlug)?.id ?? ""
+        : ""
+
     const form = useForm<FormValues>({
         mode: "onBlur",
         defaultValues: {
             title: guide?.title ?? "",
+            slug: guide?.slug ?? "",
             short_description: guide?.short_description ?? "",
             content: guide?.content ?? "",
-            game_id: guide?.game?.id ?? "",
+            game_id: guide?.game?.id ?? prefilledGameId,
             tag_ids: resolveGuideTags(guide?.tags, []).map((t) => t.slug),
         },
     })
 
-    // Prefill the game field from ?game=slug once games load. Only seed if the
-    // user hasn't already chosen a game, so background refetches can't clobber
-    // their selection.
+    const titleValue = form.watch("title")
+
     useEffect(() => {
         if (!requestedGameSlug || !games.data) return
         if (form.getValues("game_id")) return
@@ -156,6 +163,7 @@ function GuideFormInner({ mode, guide }: Props) {
             if (mode === "create") {
                 const created = await create.mutateAsync({
                     title: values.title.trim(),
+                    slug: values.slug.trim() || undefined,
                     short_description: values.short_description.trim(),
                     content: values.content,
                     game_id: values.game_id,
@@ -169,9 +177,11 @@ function GuideFormInner({ mode, guide }: Props) {
                 navigate(buildGuideUrl(created))
             } else {
                 const updated = await update.mutateAsync({
+                    gameSlug: guide!.game?.slug ?? "",
                     slug: guide!.slug,
                     data: {
                         title: values.title.trim(),
+                        slug: values.slug.trim(),
                         short_description: values.short_description.trim(),
                         content: values.content,
                         tag_ids: tagIds,
@@ -184,8 +194,24 @@ function GuideFormInner({ mode, guide }: Props) {
                 navigate(buildGuideUrl(updated))
             }
         } catch (e) {
+            if (e instanceof ApiError && e.status === 400) {
+                const body = e.body as { error?: string } | null
+                if (body?.error === "Guide With Slug Already Exists") {
+                    form.setError("slug", {
+                        message: "That slug is already taken in this game. Choose another.",
+                    })
+                    return
+                }
+                if (body?.error === "Slug must contain at least one letter or number") {
+                    form.setError("slug", {
+                        message: "Slug must contain at least one letter or number.",
+                    })
+                    return
+                }
+            }
             setTopError(applyValidationErrors(e, form, [
                 "title",
+                "slug",
                 "short_description",
                 "content",
                 "game_id",
@@ -212,7 +238,7 @@ function GuideFormInner({ mode, guide }: Props) {
 
     async function onConfirmDelete() {
         if (!guide) return
-        await del.mutateAsync(guide.slug)
+        await del.mutateAsync({ gameSlug: guide.game?.slug ?? "", slug: guide.slug })
         toast.success("Guide deleted.")
         navigate("/guides")
     }
@@ -282,6 +308,55 @@ function GuideFormInner({ mode, guide }: Props) {
                             />
                         </>
                     )}
+                />
+            </div>
+
+            <div className="space-y-1.5">
+                <Label htmlFor="slug">Slug</Label>
+                <Controller
+                    control={form.control}
+                    name="slug"
+                    rules={{ validate: (v) => validateGuideSlug(v, mode === "edit") ?? true }}
+                    render={({ field, fieldState }) => {
+                        const typed = field.value.trim()
+                        const preview = slugify(field.value)
+                        const showPreview = typed.length > 0 && preview !== typed
+                        return (
+                            <>
+                                <Input
+                                    id="slug"
+                                    {...field}
+                                    maxLength={200}
+                                    className="font-mono"
+                                    placeholder={
+                                        mode === "create"
+                                            ? slugify(titleValue) || ""
+                                            : undefined
+                                    }
+                                />
+                                <FieldFooter
+                                    error={fieldState.error?.message}
+                                    count={field.value.length}
+                                    limit={200}
+                                />
+                                {showPreview && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Saved as <code className="font-mono">{preview}</code>
+                                    </p>
+                                )}
+                                {mode === "create" && typed.length === 0 && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Leave blank to generate one from the title.
+                                    </p>
+                                )}
+                                {mode === "edit" && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Changing the slug changes this guide's URL. Existing links to the old URL will break!!!!!!
+                                    </p>
+                                )}
+                            </>
+                        )
+                    }}
                 />
             </div>
 

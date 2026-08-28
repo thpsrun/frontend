@@ -16,7 +16,7 @@ interface Props {
 }
 
 export function GuideFormPage({ mode }: Props) {
-    const { guideSlug } = useParams<{ guideSlug: string }>()
+    const { gameSlug, guideSlug } = useParams<{ gameSlug: string; guideSlug: string }>()
     const { player } = useCurrentPlayer()
     useDocumentTitle(mode === "create" ? "New Guide" : "Edit Guide")
 
@@ -35,6 +35,7 @@ export function GuideFormPage({ mode }: Props) {
 
     return (
         <EditPage
+            gameSlug={gameSlug ?? ""}
             slug={guideSlug ?? ""}
             isSuperuser={!!player?.player.is_superuser}
             moderatedSlugs={(player?.moderation?.moderated_games ?? []).map((g) => g.slug)}
@@ -45,15 +46,17 @@ export function GuideFormPage({ mode }: Props) {
 // Split into a child component so useGuide is only mounted in edit mode; the create branch above
 // returns early and hooks cannot be called conditionally within one component.
 function EditPage({
+    gameSlug,
     slug,
     isSuperuser,
     moderatedSlugs,
 }: {
+    gameSlug: string
     slug: string
     isSuperuser: boolean
     moderatedSlugs: string[]
 }) {
-    const { data: guide, isLoading, isError, error } = useGuide(slug)
+    const { data: guide, isLoading, isError, error } = useGuide(gameSlug, slug)
 
     if (isLoading) {
         return (

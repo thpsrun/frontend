@@ -1,4 +1,5 @@
 import type { ZodType } from "zod"
+import { slugify } from "@/lib/utils"
 import {
     apiKeyLabelSchema,
     emailSchema,
@@ -40,6 +41,18 @@ export const validateGuideShortDescription = (v: string): string | null =>
 
 export const validateGuideContent = (v: string): string | null =>
     firstError(guideContentSchema, v)
+
+export function validateGuideSlug(
+    v: string,
+    required: boolean,
+): string | null {
+    const trimmed = v.trim()
+    if (!trimmed) return required ? "Slug is required." : null
+    const slug = slugify(trimmed)
+    if (!slug) return "Slug must contain at least one letter or number."
+    if (slug.length > 200) return "Slug must be 200 characters or fewer."
+    return null
+}
 
 export const validateTagName = (v: string): string | null =>
     firstError(tagNameSchema, v)
