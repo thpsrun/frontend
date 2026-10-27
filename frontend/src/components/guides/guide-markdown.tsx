@@ -7,7 +7,8 @@ import rehypeSlug from "rehype-slug"
 import rehypeHighlight from "rehype-highlight"
 import { Copy, Check } from "lucide-react"
 import type { Element } from "hast"
-import { cn } from "@/lib/utils"
+import { toString as nodeText } from "mdast-util-to-string"
+import { cn, isInternalPath } from "@/lib/utils"
 import "highlight.js/styles/github-dark.css"
 
 const YOUTUBE_HOSTS = new Set([
@@ -101,7 +102,7 @@ const REHYPE_PLUGINS = [
 ] as const
 
 function isExternalHref(href: string): boolean {
-    if (href.startsWith("/") || href.startsWith("#")) return false
+    if (isInternalPath(href) || href.startsWith("#")) return false
     try {
         const url = new URL(href, window.location.origin)
         return url.origin !== window.location.origin
@@ -110,12 +111,19 @@ function isExternalHref(href: string): boolean {
     }
 }
 
-// Fenced code block with a copy button. The plain text to copy arrives via the data-code prop
-// because the children here are React elements, not strings (see the pre renderer below).
-function CodeBlock({ children, ...rest }: React.ComponentProps<"pre">) {
+function withoutNode<P extends { node?: unknown }>(props: P): Omit<P, "node"> {
+    const rest = { ...props }
+    delete rest.node
+    return rest
+}
+
+function CodeBlock({
+    children,
+    codeText,
+    ...rest
+}: React.ComponentProps<"pre"> & { codeText: string }) {
     const [copied, setCopied] = useState(false)
     const timeoutRef = useRef<number | null>(null)
-    const codeText = (rest as { "data-code"?: string })["data-code"] ?? ""
 
     useEffect(() => () => {
         if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current)
@@ -154,7 +162,7 @@ const COMPONENTS: Components = {
     h1: ({ children, ...rest }) => (
         <h1
             className="scroll-mt-24 text-3xl font-bold tracking-tight mt-8 mb-4 pb-2 border-b border-border"
-            {...rest}
+            {...withoutNode(rest)}
         >
             {children}
         </h1>
@@ -162,30 +170,30 @@ const COMPONENTS: Components = {
     h2: ({ children, ...rest }) => (
         <h2
             className="scroll-mt-24 text-2xl font-bold tracking-tight mt-8 mb-3 pb-1 border-b border-border/60"
-            {...rest}
+            {...withoutNode(rest)}
         >
             {children}
         </h2>
     ),
     h3: ({ children, ...rest }) => (
-        <h3 className="scroll-mt-24 text-xl font-semibold mt-6 mb-2" {...rest}>
+        <h3 className="scroll-mt-24 text-xl font-semibold mt-6 mb-2" {...withoutNode(rest)}>
             {children}
         </h3>
     ),
     h4: ({ children, ...rest }) => (
-        <h4 className="scroll-mt-24 text-lg font-semibold mt-5 mb-2" {...rest}>
+        <h4 className="scroll-mt-24 text-lg font-semibold mt-5 mb-2" {...withoutNode(rest)}>
             {children}
         </h4>
     ),
     h5: ({ children, ...rest }) => (
-        <h5 className="scroll-mt-24 text-base font-semibold mt-4 mb-2" {...rest}>
+        <h5 className="scroll-mt-24 text-base font-semibold mt-4 mb-2" {...withoutNode(rest)}>
             {children}
         </h5>
     ),
     h6: ({ children, ...rest }) => (
         <h6
             className="scroll-mt-24 text-sm font-semibold uppercase tracking-wide mt-4 mb-2 text-muted-foreground"
-            {...rest}
+            {...withoutNode(rest)}
         >
             {children}
         </h6>
@@ -196,49 +204,49 @@ const COMPONENTS: Components = {
         return <p className="my-3 leading-relaxed" {...rest}>{children}</p>
     },
     ul: ({ children, ...rest }) => (
-        <ul className="my-3 list-disc pl-6 space-y-1" {...rest}>{children}</ul>
+        <ul className="my-3 list-disc pl-6 space-y-1" {...withoutNode(rest)}>{children}</ul>
     ),
     ol: ({ children, ...rest }) => (
-        <ol className="my-3 list-decimal pl-6 space-y-1" {...rest}>{children}</ol>
+        <ol className="my-3 list-decimal pl-6 space-y-1" {...withoutNode(rest)}>{children}</ol>
     ),
     blockquote: ({ children, ...rest }) => (
         <blockquote
             className="my-4 border-l-4 border-border pl-4 italic text-muted-foreground"
-            {...rest}
+            {...withoutNode(rest)}
         >
             {children}
         </blockquote>
     ),
     hr: () => <hr className="my-6 border-border" />,
     strong: ({ children, ...rest }) => (
-        <strong className="font-semibold" {...rest}>{children}</strong>
+        <strong className="font-semibold" {...withoutNode(rest)}>{children}</strong>
     ),
     em: ({ children, ...rest }) => (
-        <em className="italic" {...rest}>{children}</em>
+        <em className="italic" {...withoutNode(rest)}>{children}</em>
     ),
     table: ({ children, ...rest }) => (
         <div className="my-4 overflow-x-auto">
-            <table className="w-full border-collapse text-sm" {...rest}>{children}</table>
+            <table className="w-full border-collapse text-sm" {...withoutNode(rest)}>{children}</table>
         </div>
     ),
     thead: ({ children, ...rest }) => (
-        <thead className="border-b border-border" {...rest}>{children}</thead>
+        <thead className="border-b border-border" {...withoutNode(rest)}>{children}</thead>
     ),
     th: ({ children, ...rest }) => (
-        <th className="px-3 py-2 text-left font-semibold" {...rest}>{children}</th>
+        <th className="px-3 py-2 text-left font-semibold" {...withoutNode(rest)}>{children}</th>
     ),
     td: ({ children, ...rest }) => (
-        <td className="px-3 py-2 border-b border-border/40" {...rest}>{children}</td>
+        <td className="px-3 py-2 border-b border-border/40" {...withoutNode(rest)}>{children}</td>
     ),
     code: ({ children, className, ...rest }) => {
         const isBlock = typeof className === "string" && className.startsWith("language-")
         if (isBlock) {
-            return <code className={className} {...rest}>{children}</code>
+            return <code className={className} {...withoutNode(rest)}>{children}</code>
         }
         return (
             <code
                 className="rounded bg-muted px-1.5 py-0.5 text-[0.875em] font-mono"
-                {...rest}
+                {...withoutNode(rest)}
             >
                 {children}
             </code>
@@ -248,7 +256,7 @@ const COMPONENTS: Components = {
         const target = href ?? ""
         const linkClass = "text-link underline underline-offset-2 hover:opacity-80"
         // Root-relative links go through the SPA router to avoid a full page reload.
-        if (target.startsWith("/")) {
+        if (isInternalPath(target)) {
             return <Link to={target} className={linkClass}>{children}</Link>
         }
         if (isExternalHref(target)) {
@@ -258,13 +266,13 @@ const COMPONENTS: Components = {
                     target="_blank"
                     rel="noreferrer noopener"
                     className={linkClass}
-                    {...rest}
+                    {...withoutNode(rest)}
                 >
                     {children}
                 </a>
             )
         }
-        return <a href={target} className={linkClass} {...rest}>{children}</a>
+        return <a href={target} className={linkClass} {...withoutNode(rest)}>{children}</a>
     },
     img: ({ src, alt, ...rest }) => (
         <img
@@ -272,28 +280,15 @@ const COMPONENTS: Components = {
             alt={alt ?? ""}
             loading="lazy"
             className="max-w-full h-auto rounded-md"
-            {...rest}
+            {...withoutNode(rest)}
         />
     ),
-    pre: (props) => {
-        const childArray = Array.isArray(props.children)
-            ? props.children
-            : [props.children]
-        const codeChild = childArray.find(
-            (c): c is React.ReactElement =>
-                !!c
-                && typeof c === "object"
-                && "type" in (c as object)
-                && (c as React.ReactElement).type === "code",
-        )
-        const codeProps = codeChild?.props as { children?: unknown } | undefined
-        const codeText = typeof codeProps?.children === "string"
-            ? codeProps.children
-            : Array.isArray(codeProps?.children)
-                ? codeProps.children.filter((x: unknown) => typeof x === "string").join("")
-                : ""
-        return <CodeBlock {...props} data-code={codeText} />
-    },
+    pre: ({ node, ...rest }) => (
+        <CodeBlock
+            {...rest}
+            codeText={node ? nodeText(node).replace(/\n$/, "") : ""}
+        />
+    ),
 }
 
 interface Props {

@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { partialMatchKey, useQuery, useQueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/lib/query-keys"
 import { checkSession } from "./auth-api"
 
@@ -21,11 +21,17 @@ export function useSession() {
     }
 }
 
+const KEPT_ON_IDENTITY_CHANGE = [queryKeys.auth.session(), queryKeys.home.all]
+
 export function useInvalidateAuth() {
     const queryClient = useQueryClient()
     return () => {
+        queryClient.removeQueries({
+            predicate: (query) => !KEPT_ON_IDENTITY_CHANGE.some(
+                (key) => partialMatchKey(query.queryKey, key),
+            ),
+        })
         queryClient.invalidateQueries({ queryKey: queryKeys.auth.session() })
-        queryClient.invalidateQueries({ queryKey: queryKeys.auth.me() })
     }
 }
 

@@ -41,7 +41,7 @@ export function LeaderboardTargetBuilder({
         () => (gameDetail?.categories ?? []).filter((c) => !c.archive),
         [gameDetail],
     )
-    const levels = gameDetail?.levels ?? []
+    const levels = useMemo(() => gameDetail?.levels ?? [], [gameDetail])
 
     const liveCategory = useMemo<GameCategory | null>(() => {
         if (!value.category || !gameDetail) return value.category

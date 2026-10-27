@@ -15,7 +15,7 @@ import { useOauthLogin } from "@/hooks/auth/useOauthLogin"
 import { ApiError } from "@/lib/api-client"
 import { oauthLoginErrorMessage, turnstileErrorMessage } from "@/lib/auth-errors"
 import { isTurnstileEnabled } from "@/lib/turnstile"
-import { cn } from "@/lib/utils"
+import { cn, isInternalPath } from "@/lib/utils"
 import {
     TurnstileWidget,
     type TurnstileWidgetHandle,
@@ -52,7 +52,7 @@ function getReturnTo(state: unknown): string {
         && typeof (state as { from: unknown }).from === "string"
     ) {
         const from = (state as { from: string }).from
-        if (from.startsWith("/") && !from.startsWith("//")) {
+        if (isInternalPath(from)) {
             return from
         }
     }

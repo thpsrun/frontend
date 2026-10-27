@@ -1,4 +1,3 @@
-import * as flags from "country-flag-icons/react/3x2"
 import type { ReactNode } from "react"
 
 import { cn } from "@/lib/utils"
@@ -10,29 +9,30 @@ import type {
     CategoryVariable,
 } from "@/types/api"
 
-import traFlag from "@/assets/flags/tra.png"
-import enbyFlag from "@/assets/flags/enby.png"
-import priFlag from "@/assets/flags/pri.png"
 import eskiFlag from "@/assets/flags/es-ki.png"
 import gbEngFlag from "@/assets/flags/gb-eng.png"
 import gbNirFlag from "@/assets/flags/gb-nir.png"
 import gbSctFlag from "@/assets/flags/gb-sct.png"
 import gbWlsFlag from "@/assets/flags/gb-wls.png"
-import vhFlag from "@/assets/flags/vh.png"
 
+// Bundled only for codes the backend has no custom flag for (its CountryCodes.flag override wins
+// when set; trans, pride, enby, vh and demigirl come from there). ES-KI is in neither the backend
+// nor country-flag-icons; the GB nations override the library's versions.
 const customFlags: Record<string, string> = {
-    TRA: traFlag,
-    ENBY: enbyFlag,
-    PRI: priFlag,
     "ES-KI": eskiFlag,
     "GB-ENG": gbEngFlag,
     "GB-NIR": gbNirFlag,
     "GB-SCT": gbSctFlag,
     "GB-WLS": gbWlsFlag,
-    VH: vhFlag,
 }
 
-export type CountryCode = keyof typeof flags | string
+const FLAG_DIR = "/node_modules/country-flag-icons/3x2/"
+const flagUrls = import.meta.glob<string>(
+    "/node_modules/country-flag-icons/3x2/*.svg",
+    { query: "?no-inline", import: "default", eager: true },
+)
+
+export type CountryCode = string
 
 export const getRankBackground = (place: number) => {
     if (place === 1) return "bg-yellow-500/50"
@@ -75,12 +75,14 @@ export const CountryFlag = (
             />
         )
     }
-    const FlagIcon = flags[code as keyof typeof flags]
-    if (!FlagIcon) return null
+    const flagSrc = flagUrls[`${FLAG_DIR}${code}.svg`]
+    if (!flagSrc) return null
     return (
-        <FlagIcon
-            className={classes}
+        <img
+            src={flagSrc}
+            alt={title ?? code}
             title={title}
+            className={classes}
         />
     )
 }

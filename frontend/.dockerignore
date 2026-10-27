@@ -1,6 +1,18 @@
 # Node and React
 node_modules
 build
+dist
+
+# Local env files. The prod build gets its VITE_* values as build args (docker-compose.PROD.yml),
+# and those override any .env file anyway, so these would only leak local secrets into the image.
+.env
+.env.*
+!.env.example
+*.local
+
+# Local notes / tooling
+docs
+.superpowers
 
 # Cypress
 cypress

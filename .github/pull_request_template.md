@@ -32,4 +32,3 @@
 - [ ] New endpoints have an `*-api.ts` raw caller and a `use*` TanStack Query hook
 - [ ] New query keys extend `src/lib/query-keys.ts` (not hardcoded)
 - [ ] Forms use `react-hook-form` + `zodResolver` with schemas in `src/lib/schemas.ts`
-- [ ] No new client state added to Jotai unless it genuinely needs to be global

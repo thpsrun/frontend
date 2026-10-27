@@ -3,10 +3,6 @@ networks:
     name: thpsrun
     external: true
 
-volumes:
-    node_modules:
-      name: node_modules
-
 services:
   react:
     container_name: react
@@ -17,8 +13,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.prod
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
-        VITE_BACKEND_URL: ${VITE_BACKEND_URL}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:?VITE_API_BASE_URL must be set in .env}
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL:?VITE_BACKEND_URL must be set in .env}
         VITE_TURNSTILE_SITE_KEY: ${VITE_TURNSTILE_SITE_KEY}
     read_only: true
     tmpfs:
@@ -27,11 +23,5 @@ services:
       - /tmp
     security_opt:
       - no-new-privileges:true
-    env_file:
-      - .env
-    tty: true
-    volumes:
-      - ./frontend:/srv/app:rw
-      - node_modules:/srv/app/node_modules:rw
     networks:
       - thpsrun

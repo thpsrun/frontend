@@ -9,6 +9,10 @@ export function getErrorMessage(err: unknown, fallback: string): string {
     return err instanceof Error ? err.message : fallback
 }
 
+export function isInternalPath(path: string): boolean {
+    return path.startsWith("/") && path[1] !== "/" && path[1] !== "\\"
+}
+
 export function formatDate(
     iso: string | null | undefined,
     fallback: string = "-",
@@ -54,7 +58,7 @@ export function formatBytes(bytes: number): string {
 }
 
 // Weird version of Django's slugify. It doesn't allow unicode and tries to strip
-// 3verything before passing it to the backend.
+// everything before passing it to the backend.
 export function slugify(value: string): string {
     const cleaned = value
         .normalize("NFKD")

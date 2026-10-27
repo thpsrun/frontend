@@ -40,33 +40,31 @@ const GuideFormPage = lazy(() =>
     import("./components/guides/guide-form-page.tsx").then((m) => ({ default: m.GuideFormPage })),
 )
 
-// Profile settings/content + sections
-import { ProfileSettingsLayout } from "./components/profile/profile-settings-layout.tsx"
-import { ProfileContentLayout } from "./components/profile/profile-content-layout.tsx"
-import { GeneralSection } from "./components/profile/sections/general-section.tsx"
-import { CustomizationSection } from "./components/profile/sections/customization-section.tsx"
-import { SocialSection } from "./components/profile/sections/social-section.tsx"
-import { SecuritySection } from "./components/profile/sections/security-section.tsx"
-import { SrcApiSection } from "./components/profile/sections/src-api-section.tsx"
-import { ApiKeysSection } from "./components/profile/sections/api-keys-section.tsx"
-import { NotificationsSection } from "./components/profile/sections/notifications-section.tsx"
-import { DangerSection } from "./components/profile/sections/danger-section.tsx"
-import { GuidesSection } from "./components/profile/sections/guides-section.tsx"
-import { RunsSection } from "./components/profile/sections/runs-section.tsx"
-
 // Submissions / notifications
 import { SubmissionsHub } from "./components/submissions/submissions-hub.tsx"
 import { NotificationsPage } from "./components/notifications/notifications-page.tsx"
 
-// Admin and game-management are tabbed areas behind a shared layout. Each loads
-// as a single chunk via its barrel module (see admin-routes / manage-routes):
-// the names below are key-checked against the barrel's exports at compile time.
 function lazyArea<M extends Record<string, unknown>>(loader: () => Promise<M>) {
     return <K extends keyof M>(name: K): LazyExoticComponent<ComponentType> =>
         lazy(() => loader().then((m) => ({ default: m[name] as ComponentType })))
 }
 const lazyManage = lazyArea(() => import("./components/manage/manage-routes.ts"))
 const lazyAdmin = lazyArea(() => import("./components/admin/admin-routes.ts"))
+const lazyProfile = lazyArea(() => import("./components/profile/profile-routes.ts"))
+
+// Profile settings/content - signed-in only; pulls in the avatar cropper, API key and 2FA tooling
+const ProfileSettingsLayout = lazyProfile("ProfileSettingsLayout")
+const ProfileContentLayout = lazyProfile("ProfileContentLayout")
+const GeneralSection = lazyProfile("GeneralSection")
+const CustomizationSection = lazyProfile("CustomizationSection")
+const SocialSection = lazyProfile("SocialSection")
+const SecuritySection = lazyProfile("SecuritySection")
+const SrcApiSection = lazyProfile("SrcApiSection")
+const ApiKeysSection = lazyProfile("ApiKeysSection")
+const NotificationsSection = lazyProfile("NotificationsSection")
+const DangerSection = lazyProfile("DangerSection")
+const GuidesSection = lazyProfile("GuidesSection")
+const RunsSection = lazyProfile("RunsSection")
 
 // Game management (moderator)
 const GameManageLayout = lazyManage("GameManageLayout")
