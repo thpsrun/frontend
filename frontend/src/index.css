@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700&display=swap');
+@import "@fontsource/anton";
+@import "@fontsource-variable/outfit";
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -25,7 +26,7 @@ html, body {
 }
 
 :root {
-    font-family: "Outfit", system-ui, sans-serif;
+    font-family: "Outfit Variable", system-ui, sans-serif;
     line-height: 1.5;
     font-weight: 400;
 

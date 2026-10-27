@@ -13,7 +13,7 @@ export function SocialRedirect({ platform }: SocialRedirectProps) {
         const link = data.social.find(
             s => s.platform.toLowerCase() === platform.toLowerCase(),
         )
-        if (link) {
+        if (link && /^https?:\/\//i.test(link.url)) {
             window.location.replace(link.url)
         }
     }, [data, platform])

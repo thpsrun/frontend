@@ -29,6 +29,7 @@ import {
     EMAIL_TAKEN_TYPED_MESSAGE,
 } from "@/lib/oauth-signup-errors"
 import { isTurnstileEnabled } from "@/lib/turnstile"
+import { isInternalPath } from "@/lib/utils"
 import { stashSignupVerification } from "@/lib/signup-verification-state"
 import {
     TurnstileWidget,
@@ -45,7 +46,7 @@ function getReturnTo(state: unknown): string {
         && typeof (state as { from: unknown }).from === "string"
     ) {
         const from = (state as { from: string }).from
-        if (from.startsWith("/") && !from.startsWith("//")) {
+        if (isInternalPath(from)) {
             return from
         }
     }

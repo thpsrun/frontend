@@ -18,7 +18,6 @@ export const queryKeys = {
             [...queryKeys.games.all, "audit", gameSlug, "entry", auditId] as const,
         moderators: (gameSlug: string) =>
             [...queryKeys.games.all, "moderators", gameSlug] as const,
-        platforms: () => [...queryKeys.games.all, "platforms"] as const,
         timings: (
             gameSlug: string,
             categoryId: string,

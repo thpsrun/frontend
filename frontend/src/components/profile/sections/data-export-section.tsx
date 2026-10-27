@@ -110,9 +110,6 @@ export function DataExportSection() {
         }
     }
 
-    // Deliberately a raw fetch rather than apiFetch: the endpoint streams a zip and apiFetch
-    // parses every response as JSON. The auth-lost (401) and stale-export (404) handling that
-    // apiFetch would normally provide is replicated inline.
     const onDownload = async (id: string) => {
         try {
             const res = await fetch(exportDownloadHref(id), {
@@ -145,7 +142,7 @@ export function DataExportSection() {
             document.body.appendChild(a)
             a.click()
             a.remove()
-            URL.revokeObjectURL(url)
+            setTimeout(() => URL.revokeObjectURL(url), 30_000)
         } catch {
             toast.error("Download failed. Please try again.")
         }

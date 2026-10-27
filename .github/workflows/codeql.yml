@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - dev
   pull_request:
     branches:
       - main
+      - dev
   schedule:
     # Weekly scan on Monday at 09:00 UTC.
     - cron: "0 9 * * 1"

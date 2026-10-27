@@ -80,7 +80,7 @@ export const ILDetail = ({
         [gameDetail],
     )
 
-    const levels = gameDetail?.levels ?? []
+    const levels = useMemo(() => gameDetail?.levels ?? [], [gameDetail])
 
     const activeCategory: GameCategory | undefined =
         useMemo(
